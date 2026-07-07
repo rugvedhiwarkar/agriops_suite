@@ -83,8 +83,6 @@ fixtures = [
                     "Journal Entry-busy_voucher_ref",
                     "Payment Entry-busy_voucher_no",
                     "Payment Entry-busy_voucher_ref",
-                    # Migration tool toggle
-                    "BusyWin Masters Import-dry_run",
                 ],
             ]
         },

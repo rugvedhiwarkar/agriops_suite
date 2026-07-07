@@ -15,7 +15,7 @@ Pest, Crop, Weed, Grain Type, Product Detail Template, Product Detail Parameter*
 CD Scheme, CD Slab*, CD Scheme Vendor*, VAC Party, Credit Recovery.
 (* = child table.)
 
-### Custom Fields (26 of the 39 blank-module fields)
+### Custom Fields (25 of the 39 blank-module fields)
 - Item Product Details (14): `pd_section, pd_manufacturer, product_detail_template,
   pd_seed_grain_type, pd_seed_days_till_maturity, pd_seed_plant_breed,
   pd_pesticide_technical_name, pd_tn_pesticide_type, pd_tn_dosage_per_acre,
@@ -24,7 +24,6 @@ CD Scheme, CD Slab*, CD Scheme Vendor*, VAC Party, Credit Recovery.
 - Item Group (1): `product_detail_template`
 - Busy provenance (10): `busy_voucher_no` + `busy_voucher_ref` on Sales Invoice,
   Purchase Invoice, Stock Entry, Journal Entry, Payment Entry
-- Migration tool (1): `BusyWin Masters Import-dry_run`
 
 ### Client Scripts (3)
 Credit Recovery-Form, Credit Recovery-List, Item Product Detail Molecule Fetch.
@@ -45,6 +44,8 @@ Credit Recovery Dashboard, Cash Discount, Product Details.
   `UTM Campaign-crm_campaign`, `Print Settings-compact_item_print`,
   `Print Settings-print_uom_after_quantity`,
   `Print Settings-print_taxes_with_zero_amount` (standard ERPNext/CRM/regional).
+- **Orphaned custom field:** `BusyWin Masters Import-dry_run` — its DocType was
+  deleted, so the field is dangling. Excluded (see Open item 1).
 - **466 custom fields** in modules GST India (457), Income Tax India (7),
   Audit Trail (2) — owned by India Compliance et al.
 
@@ -61,10 +62,10 @@ Credit Recovery Dashboard, Cash Discount, Product Details.
 
 ## OPEN ITEMS (resolve in Phase 2)
 
-1. **`BusyWin Masters Import` DocType** has a custom field (`dry_run`) but did NOT
-   appear in the `custom=1` DocType list and is not owned by any installed app.
-   Determine where it lives (leftover on-disk doctype? orphan?) and whether it
-   must be captured, before finalizing.
+1. **`BusyWin Masters Import` DocType — RESOLVED 2026-07-07.** The DocType does
+   NOT exist (deleted). `BusyWin Masters Import-dry_run` is an ORPHANED custom
+   field left behind. Excluded from capture. Optional prod cleanup: delete the
+   orphan field — separate, needs an explicit go-ahead.
 2. **Property Setters (329, all blank-module):** a MIX of ours and an automated
    setup burst. 25 owned by `claude-agent@...` (2026-07-04, ours); ~200 in a
    `2026-06-09 19:29` burst across standard/India doctypes (setup/regional).
