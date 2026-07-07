@@ -132,14 +132,15 @@ fixtures = [
         },
     },
 
-    # --- Property Setters ---------------------------------------------------
-    # NOT FINALIZED. The 329 site property setters are a MIX of our UI
-    # customizations and an India-Compliance / ERPNext setup burst
-    # (2026-06-09 19:29). Do NOT blanket-export. Phase 2/5 will start from the
-    # conservative set below (our custom DocTypes + our custom fields +
-    # claude-agent-owned) and let the staging reconcile surface any true gaps.
-    # {
-    #     "dt": "Property Setter",
-    #     "filters": {"doc_type": ["in", [ <our custom doctypes> ]]},
-    # },
+    # --- Our Property Setters (UI tweaks made via Customize Form) -----------
+    # Captures our manual field-level customizations (2026-06-10 onward) plus
+    # the claude-agent Product Details reorderings. EXCLUDES the 2026-06-09
+    # setup burst — 107 records created in a 12-second programmatic pass at site
+    # setup (India Compliance audit-trail `track_changes`, `default_print_format`
+    # and regional field hides). A fresh ERPNext + India Compliance site
+    # recreates those on its own, so re-asserting them from here would be wrong.
+    {
+        "dt": "Property Setter",
+        "filters": {"creation": [">=", "2026-06-10 00:00:00"]},
+    },
 ]

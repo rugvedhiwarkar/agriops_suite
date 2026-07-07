@@ -35,6 +35,13 @@ Credit Recovery Validate (DocType Event), Credit Recovery Daily Refresh
 ### Workspaces (3)
 Credit Recovery Dashboard, Cash Discount, Product Details.
 
+### Property Setters (222)
+All site-level (blank-module) property setters created **2026-06-10 onward** —
+our manual Customize Form tweaks + the claude-agent Product Details reorderings.
+Filter: `{"creation": [">=", "2026-06-10 00:00:00"]}`. Top doc_types: Purchase
+Receipt, Purchase/Sales Invoice, Sales Order, Delivery Note, Quotation.
+EXCLUDES the 107-record 2026-06-09 setup burst (see EXCLUDE + Open item 2).
+
 ## EXCLUDE (app-owned or standard — NOT ours)
 
 - **Custom fields (13 of the 39 blank-module):** `User-assistant_enabled`,
@@ -66,8 +73,9 @@ Credit Recovery Dashboard, Cash Discount, Product Details.
    NOT exist (deleted). `BusyWin Masters Import-dry_run` is an ORPHANED custom
    field left behind. Excluded from capture. Optional prod cleanup: delete the
    orphan field — separate, needs an explicit go-ahead.
-2. **Property Setters (329, all blank-module):** a MIX of ours and an automated
-   setup burst. 25 owned by `claude-agent@...` (2026-07-04, ours); ~200 in a
-   `2026-06-09 19:29` burst across standard/India doctypes (setup/regional).
-   Strategy: start conservative (our custom DocTypes + our custom fields +
-   claude-agent-owned), then let the Phase 5 staging reconcile prove the set.
+2. **Property Setters — RESOLVED 2026-07-07.** Captured the **222** site-level
+   setters created 2026-06-10 onward (our UI tweaks). EXCLUDED the **107**-record
+   2026-06-09 setup burst — a 12-second programmatic pass (India Compliance
+   audit-trail `track_changes`, `default_print_format`, regional field hides)
+   that a fresh ERPNext + India Compliance site recreates on its own. Verified:
+   `sync_fixtures` imports the full set with exit code 0.

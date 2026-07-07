@@ -13,6 +13,8 @@ change lives in git instead of only in a live database.
 - **25 custom fields** — Product Details on Item, the Item Group template
   driver, and Busy migration provenance fields (`busy_voucher_*`).
 - **3 client scripts, 2 server scripts, 3 workspaces.**
+- **222 property setters** — our Customize Form UI tweaks (2026-06-10 onward),
+  excluding the 2026-06-09 India Compliance / ERPNext setup burst.
 
 ## What it deliberately does NOT capture
 
