@@ -1,0 +1,72 @@
+[
+ {
+  "add_total_row": 0,
+  "add_translate_data": 0,
+  "columns": [],
+  "disable_prepared_report_automation": 0,
+  "disabled": 0,
+  "docstatus": 0,
+  "doctype": "Report",
+  "filters": [],
+  "is_standard": "No",
+  "javascript": "frappe.query_reports[\"Credit Recovery Follow-ups\"] = {\n  filters: [\n    {fieldname: \"view\", label: \"View\", fieldtype: \"Select\", default: \"Detail\", options: [\"Detail\", \"By Customer\"]},\n    {fieldname: \"from_date\", label: \"From date\", fieldtype: \"Date\", default: frappe.datetime.add_months(frappe.datetime.get_today(), -12)},\n    {fieldname: \"to_date\", label: \"To date\", fieldtype: \"Date\", default: frappe.datetime.add_days(frappe.datetime.get_today(), 60)},\n    {fieldname: \"customer\", label: \"Customer\", fieldtype: \"Link\", options: \"Customer\", default: \"\"},\n    {fieldname: \"outcome\", label: \"Outcome\", fieldtype: \"Select\", default: \"\", options: [\"\", \"Called - No Answer\", \"Spoke - Promised\", \"Spoke - Slipped\", \"Partial Payment\", \"Left Message\", \"Visited\", \"Refused\", \"Dispute\", \"Other\"]},\n    {fieldname: \"logged_by\", label: \"Logged by\", fieldtype: \"Link\", options: \"User\", default: \"\"}\n  ]\n};",
+  "letter_head": "Company Letterhead - Grey",
+  "modified": "2026-07-08 08:59:04.719712",
+  "module": "Accounts",
+  "name": "Credit Recovery Follow-ups",
+  "prepared_report": 0,
+  "query": "",
+  "ref_doctype": "Credit Recovery",
+  "report_name": "Credit Recovery Follow-ups",
+  "report_script": "f = filters or {}\nview = f.get(\"view\") or \"Detail\"\nconds = {\"parenttype\": \"Credit Recovery\"}\nif f.get(\"from_date\") and f.get(\"to_date\"):\n    conds[\"follow_up_date\"] = [\"between\", [f.get(\"from_date\"), f.get(\"to_date\")]]\nelif f.get(\"from_date\"):\n    conds[\"follow_up_date\"] = [\">=\", f.get(\"from_date\")]\nelif f.get(\"to_date\"):\n    conds[\"follow_up_date\"] = [\"<=\", f.get(\"to_date\")]\nif f.get(\"outcome\"):\n    conds[\"outcome\"] = f.get(\"outcome\")\nif f.get(\"logged_by\"):\n    conds[\"logged_by\"] = f.get(\"logged_by\")\n\nrows = frappe.get_all(\"Credit Recovery Follow-up\",\n    filters=conds,\n    fields=[\"follow_up_date\", \"outcome\", \"promised_amount\", \"promised_date\",\n            \"next_follow_up_date\", \"logged_by\", \"notes\", \"parent\"],\n    order_by=\"follow_up_date desc, creation desc\",\n    limit_page_length=0)\n\nparent_names = list(set([r.parent for r in rows]))\nparents = {}\nif parent_names:\n    for d in frappe.get_all(\"Credit Recovery\",\n            filters={\"name\": [\"in\", parent_names]},\n            fields=[\"name\", \"customer\", \"outstanding_amount\", \"recovery_status\",\n                    \"next_follow_up_date\", \"promised_amount\", \"promised_payment_date\",\n                    \"last_contact_date\"],\n            limit_page_length=0):\n        parents[d.name] = d\n\nif f.get(\"customer\"):\n    rows = [r for r in rows if parents.get(r.parent) and parents[r.parent].customer == f.get(\"customer\")]\n\nif view == \"By Customer\":\n    seen = {}\n    counts = {}\n    for r in rows:\n        counts[r.parent] = counts.get(r.parent, 0) + 1\n        if r.parent not in seen:\n            seen[r.parent] = r\n    result = []\n    for pname, last in seen.items():\n        p = parents.get(pname)\n        if not p:\n            continue\n        result.append([p.customer, p.outstanding_amount, p.recovery_status,\n                       last.follow_up_date, last.outcome, p.promised_amount,\n                       p.promised_payment_date, p.next_follow_up_date,\n                       counts.get(pname, 0), pname])\n    result.sort(key=lambda x: (x[7] or \"9999-12-31\"))\n    columns = [\n        {\"label\": \"Customer\", \"fieldname\": \"customer\", \"fieldtype\": \"Link\", \"options\": \"Customer\", \"width\": 190},\n        {\"label\": \"Outstanding\", \"fieldname\": \"outstanding_amount\", \"fieldtype\": \"Currency\", \"width\": 110},\n        {\"label\": \"Status\", \"fieldname\": \"recovery_status\", \"fieldtype\": \"Data\", \"width\": 125},\n        {\"label\": \"Last Contact\", \"fieldname\": \"last_contact\", \"fieldtype\": \"Date\", \"width\": 100},\n        {\"label\": \"Last Outcome\", \"fieldname\": \"last_outcome\", \"fieldtype\": \"Data\", \"width\": 130},\n        {\"label\": \"Promised\", \"fieldname\": \"promised_amount\", \"fieldtype\": \"Currency\", \"width\": 100},\n        {\"label\": \"Promised Date\", \"fieldname\": \"promised_date\", \"fieldtype\": \"Date\", \"width\": 100},\n        {\"label\": \"Next Follow-up\", \"fieldname\": \"next_follow_up\", \"fieldtype\": \"Date\", \"width\": 105},\n        {\"label\": \"Logs\", \"fieldname\": \"log_count\", \"fieldtype\": \"Int\", \"width\": 55},\n        {\"label\": \"Record\", \"fieldname\": \"record\", \"fieldtype\": \"Link\", \"options\": \"Credit Recovery\", \"width\": 130},\n    ]\nelse:\n    result = []\n    for r in rows:\n        p = parents.get(r.parent)\n        result.append([r.follow_up_date, p.customer if p else None, r.outcome,\n                       r.promised_amount, r.promised_date, r.next_follow_up_date,\n                       r.logged_by, r.notes, r.parent])\n    columns = [\n        {\"label\": \"Date\", \"fieldname\": \"follow_up_date\", \"fieldtype\": \"Date\", \"width\": 95},\n        {\"label\": \"Customer\", \"fieldname\": \"customer\", \"fieldtype\": \"Link\", \"options\": \"Customer\", \"width\": 180},\n        {\"label\": \"Outcome\", \"fieldname\": \"outcome\", \"fieldtype\": \"Data\", \"width\": 140},\n        {\"label\": \"Promised\", \"fieldname\": \"promised_amount\", \"fieldtype\": \"Currency\", \"width\": 105},\n        {\"label\": \"Promised Date\", \"fieldname\": \"promised_date\", \"fieldtype\": \"Date\", \"width\": 105},\n        {\"label\": \"Next Follow-up\", \"fieldname\": \"next_follow_up_date\", \"fieldtype\": \"Date\", \"width\": 110},\n        {\"label\": \"Logged By\", \"fieldname\": \"logged_by\", \"fieldtype\": \"Link\", \"options\": \"User\", \"width\": 150},\n        {\"label\": \"Notes\", \"fieldname\": \"notes\", \"fieldtype\": \"Data\", \"width\": 300},\n        {\"label\": \"Record\", \"fieldname\": \"record\", \"fieldtype\": \"Link\", \"options\": \"Credit Recovery\", \"width\": 130},\n    ]\ndata = columns, result\n",
+  "report_type": "Script Report",
+  "roles": [
+   {
+    "role": "System Manager"
+   },
+   {
+    "role": "Accounts Manager"
+   },
+   {
+    "role": "Accounts User"
+   },
+   {
+    "role": "Sales User"
+   }
+  ],
+  "timeout": 0
+ },
+ {
+  "add_total_row": 0,
+  "add_translate_data": 0,
+  "columns": [],
+  "disable_prepared_report_automation": 0,
+  "disabled": 0,
+  "docstatus": 0,
+  "doctype": "Report",
+  "filters": [],
+  "is_standard": "No",
+  "javascript": "frappe.query_reports[\"VAC Customer Ledger Summary\"] = {\n  filters: [\n    {fieldname: \"company\", label: \"Company\", fieldtype: \"Link\", options: \"Company\", default: frappe.defaults.get_user_default(\"Company\"), reqd: 1},\n    {fieldname: \"from_date\", label: \"From Date\", fieldtype: \"Date\", default: frappe.datetime.add_months(frappe.datetime.get_today(), -1), reqd: 1},\n    {fieldname: \"to_date\", label: \"To Date\", fieldtype: \"Date\", default: frappe.datetime.get_today(), reqd: 1},\n    {fieldname: \"finance_book\", label: \"Finance Book\", fieldtype: \"Link\", options: \"Finance Book\"},\n    {fieldname: \"party\", label: \"Customer\", fieldtype: \"Link\", options: \"Customer\"},\n    {fieldname: \"customer_group\", label: \"Customer Group\", fieldtype: \"Link\", options: \"Customer Group\"},\n    {fieldname: \"payment_terms_template\", label: \"Payment Terms Template\", fieldtype: \"Link\", options: \"Payment Terms Template\"},\n    {fieldname: \"territory\", label: \"Territory\", fieldtype: \"Link\", options: \"Territory\"},\n    {fieldname: \"sales_partner\", label: \"Sales Partner\", fieldtype: \"Link\", options: \"Sales Partner\"},\n    {fieldname: \"sales_person\", label: \"Sales Person\", fieldtype: \"Link\", options: \"Sales Person\"},\n    {fieldname: \"ignore_cr_dr_notes\", label: \"Ignore System Generated Credit / Debit Notes\", fieldtype: \"Check\"}\n  ]\n};",
+  "letter_head": "Company Letterhead - Grey",
+  "modified": "2026-07-08 08:59:05.623199",
+  "module": "Accounts",
+  "name": "VAC Customer Ledger Summary",
+  "prepared_report": 0,
+  "ref_doctype": "Sales Invoice",
+  "report_name": "VAC Customer Ledger Summary",
+  "report_script": "std = frappe.get_doc(\"Report\", \"Customer Ledger Summary\")\ndata = std.execute_script_report(filters or {})\n",
+  "report_type": "Script Report",
+  "roles": [
+   {
+    "role": "Accounts Manager"
+   },
+   {
+    "role": "Accounts User"
+   },
+   {
+    "role": "System Manager"
+   }
+  ],
+  "timeout": 0
+ }
+]

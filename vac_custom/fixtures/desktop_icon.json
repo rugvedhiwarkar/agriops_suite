@@ -1,0 +1,51 @@
+[
+ {
+  "app": "erpnext",
+  "bg_color": "blue",
+  "docstatus": 0,
+  "doctype": "Desktop Icon",
+  "hidden": 0,
+  "icon": "hand-coins",
+  "icon_type": "Link",
+  "label": "Credit Recovery",
+  "link_to": "Credit Recovery",
+  "link_type": "Workspace Sidebar",
+  "modified": "2026-07-08 09:00:24.280017",
+  "name": "Credit Recovery",
+  "restrict_removal": 0,
+  "roles": [],
+  "sidebar": "Credit Recovery",
+  "standard": 0
+ },
+ {
+  "bg_color": "blue",
+  "docstatus": 0,
+  "doctype": "Desktop Icon",
+  "hidden": 0,
+  "icon_type": "Link",
+  "label": "Cash Discount",
+  "link_to": "Cash Discount",
+  "link_type": "Workspace Sidebar",
+  "modified": "2026-07-05 20:52:57.987979",
+  "name": "Cash Discount",
+  "restrict_removal": 0,
+  "roles": [],
+  "standard": 0
+ },
+ {
+  "bg_color": "blue",
+  "docstatus": 0,
+  "doctype": "Desktop Icon",
+  "hidden": 0,
+  "icon_type": "Link",
+  "label": "Product Details",
+  "link_to": "Product Details",
+  "link_type": "Workspace Sidebar",
+  "logo_url": "",
+  "modified": "2026-07-06 20:02:30.727668",
+  "name": "Product Details",
+  "restrict_removal": 0,
+  "roles": [],
+  "standard": 0
+ }
+]

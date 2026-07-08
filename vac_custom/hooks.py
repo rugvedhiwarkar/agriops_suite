@@ -43,6 +43,7 @@ fixtures = [
                     "CD Scheme Vendor",
                     "VAC Party",
                     "Credit Recovery",
+                    "Credit Recovery Follow-up",
                 ],
             ]
         },
@@ -112,8 +113,60 @@ fixtures = [
                 [
                     "Credit Recovery Validate",
                     "Credit Recovery Daily Refresh",
+                    "Credit Recovery Fetch Balance",
+                    "Credit Recovery Avg Days",
+                    "Credit Recovery Due Followups",
                 ],
             ]
+        },
+    },
+
+    # --- Credit Recovery dashboard widgets ----------------------------------
+    {
+        "dt": "Number Card",
+        "filters": {
+            "name": [
+                "in",
+                [
+                    "Total Outstanding",
+                    "Total Promised",
+                    "Total Critical Accounts",
+                    "Follow-ups Due Today",
+                    "Avg Days Outstanding",
+                    "Recovery This Month",
+                ],
+            ]
+        },
+    },
+    {
+        "dt": "Dashboard Chart",
+        "filters": {
+            "name": ["in", ["CR Outstanding by Status", "CR Outstanding by Territory"]]
+        },
+    },
+
+    # --- Our Reports (non-standard, DB-stored) ------------------------------
+    {
+        "dt": "Report",
+        "filters": {
+            "name": ["in", ["Credit Recovery Follow-ups", "VAC Customer Ledger Summary"]]
+        },
+    },
+
+    # --- v16 navigation (Workspace Sidebar + Desktop Icon per workspace) ----
+    # NOTE: keep standard=0 — programmatic standard=1 sidebars/icons don't
+    # render (frappe #38182/#38370). Icons must end up owned by Administrator
+    # to be visible to all users; fixture sync (runs as Administrator) does this.
+    {
+        "dt": "Workspace Sidebar",
+        "filters": {
+            "name": ["in", ["Credit Recovery", "Cash Discount", "Product Details"]]
+        },
+    },
+    {
+        "dt": "Desktop Icon",
+        "filters": {
+            "name": ["in", ["Credit Recovery", "Cash Discount", "Product Details"]]
         },
     },
 
