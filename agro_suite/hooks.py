@@ -10,6 +10,16 @@ app_email = "rugvedhiwarkar@gmail.com"
 app_license = "mit"
 
 # ---------------------------------------------------------------------------
+# Desk page extensions
+# ---------------------------------------------------------------------------
+# "Log Payment" button on the Point of Sale screen (Cash Desk). The JS is
+# self-gating: it renders only on sites where the `pos_cash_desk_flags`
+# Server Script API exists and returns enabled=1, so shipping this code to
+# the shared bench does NOT surface it on production until that site is
+# explicitly switched on (staging-first).
+page_js = {"point-of-sale": "public/js/pos_cash_desk.js"}
+
+# ---------------------------------------------------------------------------
 # Fixtures — the reproducible "recipe" for our customizations.
 # Exported/imported as JSON under agro_suite/fixtures/ and applied on
 # `bench migrate`.
