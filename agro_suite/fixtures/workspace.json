@@ -1,6 +1,6 @@
 [
  {
-  "app": "erpnext",
+  "app": null,
   "charts": [
    {
     "chart_name": "CR Outstanding by Status",
@@ -23,7 +23,7 @@
   "link_type": "DocType",
   "links": [],
   "modified": "2026-07-08 09:01:54.422102",
-  "module": "Accounts",
+  "module": null,
   "name": "Credit Recovery Dashboard",
   "number_cards": [
    {
@@ -90,7 +90,7 @@
   "type": "Workspace"
  },
  {
-  "app": "frappe",
+  "app": null,
   "charts": [
    {
     "chart_name": "Paddy Sales by Manufacturer",
@@ -342,7 +342,7 @@
    }
   ],
   "modified": "2026-07-05 18:59:22.135642",
-  "module": "Custom",
+  "module": null,
   "name": "Cash Discount",
   "number_cards": [
    {
@@ -496,7 +496,7 @@
   "type": "Workspace"
  },
  {
-  "app": "frappe",
+  "app": null,
   "charts": [],
   "content": "[{\"id\": \"TUMuIgAPxS\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h4\\\"><b>Product Details</b></span>\", \"col\": 12}}, {\"id\": \"peFpFoBgq9\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Technical Name\", \"col\": 3}}, {\"id\": \"cBgtDeonxq\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Manufacturer\", \"col\": 3}}, {\"id\": \"Cus6Zef3pW\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Product Detail Template\", \"col\": 3}}, {\"id\": \"u4drJ6e7ML\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Items\", \"col\": 3}}, {\"id\": \"CEOJb32LIJ\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h4\\\"><b>Masters</b></span>\", \"col\": 12}}, {\"id\": \"f4Kopc5AzZ\", \"type\": \"card\", \"data\": {\"card_name\": \"Templates\", \"col\": 4}}, {\"id\": \"HA2xlqxvEZ\", \"type\": \"card\", \"data\": {\"card_name\": \"Pesticides & PGRs\", \"col\": 4}}, {\"id\": \"MLQhJW4Vif\", \"type\": \"card\", \"data\": {\"card_name\": \"Seeds\", \"col\": 4}}, {\"id\": \"yuQSLki33v\", \"type\": \"card\", \"data\": {\"card_name\": \"Manufacturers\", \"col\": 4}}, {\"id\": \"b9bohdguVy\", \"type\": \"card\", \"data\": {\"card_name\": \"Linked Sub-Tables\", \"col\": 4}}]",
   "custom_blocks": [],
@@ -754,7 +754,7 @@
    }
   ],
   "modified": "2026-07-06 19:55:17.888494",
-  "module": "Custom",
+  "module": null,
   "name": "Product Details",
   "number_cards": [],
   "parent_page": "",
