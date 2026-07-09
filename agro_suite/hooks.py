@@ -19,6 +19,16 @@ app_license = "mit"
 # explicitly switched on (staging-first).
 page_js = {"point-of-sale": "public/js/pos_cash_desk.js"}
 
+# vac_theme: Claude-style desk theme (warm ivory/charcoal + terracotta). The
+# CSS is scoped under html[data-vac-theme]; vac_theme.js sets that attribute
+# only when boot carries vac_theme_enabled (per-site site_config flag, see
+# boot.py) — same staging-first contract as the POS Cash Desk JS above.
+app_include_js = ["/assets/agro_suite/js/vac_theme.js"]
+app_include_css = ["/assets/agro_suite/css/vac_theme.css"]
+
+# copies the per-site vac_theme_enabled flag into desk boot info
+extend_bootinfo = "agro_suite.boot.extend_bootinfo"
+
 # ---------------------------------------------------------------------------
 # Fixtures — the reproducible "recipe" for our customizations.
 # Exported/imported as JSON under agro_suite/fixtures/ and applied on
