@@ -19,6 +19,13 @@ app_license = "mit"
 # explicitly switched on (staging-first).
 page_js = {"point-of-sale": "public/js/pos_cash_desk.js"}
 
+# FinScope ledger features (persistent column order/hide/rename + Summarize
+# drill-down) for the "FinScope - *" report delegates. Loaded desk-wide but
+# self-gating on the report-name prefix, so standard reports — and sites where
+# no FinScope reports exist yet — are untouched (same staging-first contract
+# as the POS Cash Desk JS above).
+app_include_js = ["/assets/agro_suite/js/finscope.js"]
+
 # ---------------------------------------------------------------------------
 # Fixtures — the reproducible "recipe" for our customizations.
 # Exported/imported as JSON under agro_suite/fixtures/ and applied on
