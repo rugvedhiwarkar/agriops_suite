@@ -34,12 +34,29 @@
 	function add_ui(wrapper, flags) {
 		if (wrapper.__cash_desk_ready) return;
 		wrapper.__cash_desk_ready = true;
-		wrapper.page.add_button(__("Log Payment"), () => open_dialog(wrapper, flags), {
-			btn_class: "btn-primary",
-		});
-		wrapper.page.add_menu_item(__("Log Payment (Cash Desk)"), () =>
-			open_dialog(wrapper, flags)
-		);
+		// The POS controller rebuilds the header actions when its init finishes
+		// (and on later redraws), which removes buttons added before that point.
+		// Keep ours present with a re-adding observer instead of a one-shot add.
+		const ensure = () => {
+			const host =
+				wrapper.page &&
+				wrapper.page.wrapper &&
+				wrapper.page.wrapper.find(".page-actions")[0];
+			if (!host || host.querySelector(".cash-desk-log-payment")) return;
+			const $btn = wrapper.page.add_button(
+				__("Log Payment"),
+				() => open_dialog(wrapper, flags),
+				{ btn_class: "btn-primary" }
+			);
+			if ($btn && $btn.addClass) $btn.addClass("cash-desk-log-payment");
+		};
+		ensure();
+		const host = wrapper.page.wrapper.find(".page-actions")[0];
+		if (host) {
+			const obs = new MutationObserver(ensure);
+			obs.observe(host, { childList: true, subtree: true });
+			wrapper.__cash_desk_observer = obs;
+		}
 	}
 
 	function open_dialog(wrapper, flags) {
