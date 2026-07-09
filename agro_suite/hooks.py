@@ -19,11 +19,20 @@ app_license = "mit"
 # explicitly switched on (staging-first).
 page_js = {"point-of-sale": "public/js/pos_cash_desk.js"}
 
+# FinScope ledger features (persistent column order/hide/rename + Summarize
+# drill-down) for the "FinScope - *" report delegates. Loaded desk-wide but
+# self-gating on the report-name prefix, so standard reports — and sites where
+# no FinScope reports exist yet — are untouched (same staging-first contract
+# as the POS Cash Desk JS above).
+#
 # vac_theme: Claude-style desk theme (warm ivory/charcoal + terracotta). The
 # CSS is scoped under html[data-vac-theme]; vac_theme.js sets that attribute
 # only when boot carries vac_theme_enabled (per-site site_config flag, see
-# boot.py) — same staging-first contract as the POS Cash Desk JS above.
-app_include_js = ["/assets/agro_suite/js/vac_theme.js"]
+# boot.py) — same staging-first contract as the other includes.
+app_include_js = [
+    "/assets/agro_suite/js/finscope.js",
+    "/assets/agro_suite/js/vac_theme.js",
+]
 app_include_css = ["/assets/agro_suite/css/vac_theme.css"]
 
 # copies the per-site vac_theme_enabled flag into desk boot info
