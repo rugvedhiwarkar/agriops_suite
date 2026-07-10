@@ -29,9 +29,13 @@ page_js = {"point-of-sale": "public/js/pos_cash_desk.js"}
 # CSS is scoped under html[data-vac-theme]; vac_theme.js sets that attribute
 # only when boot carries vac_theme_enabled (per-site site_config flag, see
 # boot.py) — same staging-first contract as the other includes.
+# core_fixes: targeted runtime wraps for upstream ERPNext v16 bugs (currently:
+# horizontal Financial Report Templates rendering blank via is_blank_row) —
+# see the file header; drop entries as upstream fixes ship.
 app_include_js = [
     "/assets/agro_suite/js/finscope.js",
     "/assets/agro_suite/js/vac_theme.js",
+    "/assets/agro_suite/js/core_fixes.js",
 ]
 app_include_css = ["/assets/agro_suite/css/vac_theme.css"]
 
