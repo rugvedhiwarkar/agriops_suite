@@ -1,6 +1,6 @@
 # Capture Inventory — frozen 2026-07-07
 
-Read-only inventory of what `agro_suite` captures, taken from **production**
+Read-only inventory of what `agriops_suite` (ex `agro_suite`) captures, taken from **production**
 (`vijayagrocentre.frappe.cloud`). This is the source of truth for the fixture
 allowlists in `hooks.py`.
 

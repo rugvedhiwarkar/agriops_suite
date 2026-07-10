@@ -1,5 +1,5 @@
-app_name = "agro_suite"
-app_title = "Agro Suite"
+app_name = "agriops_suite"
+app_title = "AgriOps Suite"
 app_publisher = "Vijay Agro Centre"
 app_description = (
     "Vijay Agro Centre ERPNext customizations captured as versioned fixtures "
@@ -33,28 +33,28 @@ page_js = {"point-of-sale": "public/js/pos_cash_desk.js"}
 # horizontal Financial Report Templates rendering blank via is_blank_row) —
 # see the file header; drop entries as upstream fixes ship.
 app_include_js = [
-    "/assets/agro_suite/js/finscope.js",
-    "/assets/agro_suite/js/vac_theme.js",
-    "/assets/agro_suite/js/core_fixes.js",
+    "/assets/agriops_suite/js/finscope.js",
+    "/assets/agriops_suite/js/vac_theme.js",
+    "/assets/agriops_suite/js/core_fixes.js",
 ]
-app_include_css = ["/assets/agro_suite/css/vac_theme.css"]
+app_include_css = ["/assets/agriops_suite/css/vac_theme.css"]
 
 # copies the per-site vac_theme_enabled flag into desk boot info
-extend_bootinfo = "agro_suite.boot.extend_bootinfo"
+extend_bootinfo = "agriops_suite.boot.extend_bootinfo"
 
-# Party-integration tools (see agro_suite/party.py). The Customer/Supplier
+# Party-integration tools (see agriops_suite/party.py). The Customer/Supplier
 # sync is gated per-site by vac_party_tools_enabled; the Party Link guard is
 # ungated — it only rejects NEW duplicate links (erpnext #35184 gap), which
 # is pure protection for Common Party Accounting on any site.
 doc_events = {
-    "Customer": {"on_update": "agro_suite.party.sync_party_masters"},
-    "Supplier": {"on_update": "agro_suite.party.sync_party_masters"},
-    "Party Link": {"validate": "agro_suite.party.validate_party_link"},
+    "Customer": {"on_update": "agriops_suite.party.sync_party_masters"},
+    "Supplier": {"on_update": "agriops_suite.party.sync_party_masters"},
+    "Party Link": {"validate": "agriops_suite.party.validate_party_link"},
 }
 
 # ---------------------------------------------------------------------------
 # Fixtures — the reproducible "recipe" for our customizations.
-# Exported/imported as JSON under agro_suite/fixtures/ and applied on
+# Exported/imported as JSON under agriops_suite/fixtures/ and applied on
 # `bench migrate`.
 #
 # IMPORTANT: filters use EXPLICIT allowlists, NOT a blanket module filter.

@@ -1,5 +1,5 @@
 [project]
-name = "agro_suite"
+name = "agriops_suite"
 authors = [
     { name = "Vijay Agro Centre", email = "rugvedhiwarkar@gmail.com" }
 ]
@@ -14,7 +14,7 @@ requires = ["flit_core >=3.4,<4"]
 build-backend = "flit_core.buildapi"
 
 [tool.flit.module]
-name = "agro_suite"
+name = "agriops_suite"
 
 [tool.bench.frappe-dependencies]
 frappe = ">=16.0.0,<17.0.0"

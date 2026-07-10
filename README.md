@@ -1,4 +1,4 @@
-# Agro Suite
+# AgriOps Suite
 
 A Frappe/ERPNext app that captures **Vijay Agro Centre's customizations as
 versioned fixtures**, so staging and production stay reproducible and every
@@ -35,7 +35,7 @@ See `docs/CAPTURE_INVENTORY.md` for the full frozen classification.
 ```bash
 # App is added to the bench group from its private GitHub repo via the
 # Frappe Cloud dashboard, then:
-bench --site <site> install-app agro_suite
+bench --site <site> install-app agriops_suite
 bench --site <site> migrate      # applies fixtures
 bench --site <site> clear-cache
 ```
