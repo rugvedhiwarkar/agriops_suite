@@ -1,11 +1,12 @@
 // ============================================================================
-// FinScope — BusyWin-style ledger features for the FinScope report delegates.
+// FinScope — BusyWin-style ledger features for the FinScope report delegates
+// and the StockPilot report suite.
 //
 // Loaded on every desk page via app_include_js, but SELF-GATING: every hook
 // re-checks the current report name and activates ONLY on reports whose name
-// starts with "FinScope - ". Standard reports — and every report on a site
-// that has no FinScope reports — are untouched, so this file is safe to ship
-// to the shared prod+staging bench ahead of the reports themselves.
+// starts with one of the known prefixes. Standard reports — and every report
+// on a site that has none of ours — are untouched, so this file is safe to
+// ship to the shared prod+staging bench ahead of the reports themselves.
 //
 // Features (persisted per-browser in localStorage, keyed per report):
 //   - persistent column ORDER  (drag a column; survives Refresh and reload)
@@ -14,12 +15,25 @@
 //   - Summarize By any column  (2 levels) with collapsible drill-down; group
 //     headers subtotal amount columns only (balance/opening/closing excluded);
 //     GL-style Opening/Total/Closing rows are pinned outside the groups.
+//     Reports that render their OWN tree (rows carry `indent`, e.g. the
+//     StockPilot family reports) keep the column tools but skip Summarize —
+//     grouping an already-grouped tree would double-count parents.
 // ============================================================================
 frappe.provide("finscope");
 
-finscope.PREFIX = "FinScope - ";
+finscope.PREFIXES = ["FinScope - ", "StockPilot "];
 finscope.is_feature_report = function (name) {
-	return typeof name === "string" && name.indexOf(finscope.PREFIX) === 0;
+	if (typeof name !== "string") return false;
+	for (var i = 0; i < finscope.PREFIXES.length; i++) {
+		if (name.indexOf(finscope.PREFIXES[i]) === 0) return true;
+	}
+	return false;
+};
+finscope.native_tree = function (rows) {
+	for (var i = 0; i < (rows || []).length; i++) {
+		if (rows[i] && rows[i].indent !== undefined && rows[i].indent !== null) return true;
+	}
+	return false;
 };
 finscope.on = function () {
 	var r = frappe.query_report;
@@ -157,6 +171,9 @@ finscope.build_groups = function (flat, columns, by1, by2, all_cols) {
 };
 finscope.apply_summarize = function (report) {
 	var flat = report.__fs_flat; if (!flat) return;
+	// native-tree reports manage their own indent hierarchy — leave data,
+	// tree flags and rendering entirely alone
+	if (finscope.native_tree(flat)) return;
 	var sel = finscope.ls_get(finscope.sum_key()) || { by1: "", by2: "" };
 	var treeNow = !!sel.by1;
 	if (treeNow) {
@@ -187,20 +204,25 @@ finscope.add_control = function (report) {
 	if (!visCols.length) return;
 	report.__fs_ctrl = report.report_name;
 	$(".finscope-summarize-bar").remove();
-	var sel = finscope.ls_get(finscope.sum_key()) || { by1: "", by2: "" };
-	var groupCols = (report.__fs_cols && report.__fs_cols.length ? report.__fs_cols : report.columns).filter((c) => c.fieldname && c.label && !c.hidden);
+	var nativeTree = finscope.native_tree(report.__fs_flat);
 	var ren0 = finscope.get_renames();
-	var opts = '<option value="">— none —</option>' + groupCols.map((c) => '<option value="' + c.fieldname + '">' + frappe.utils.escape_html(ren0[c.fieldname] || c.label) + "</option>").join("");
-	var $bar = $('<div class="finscope-summarize-bar" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:2px 0 10px;">' +
-		'<span style="font-weight:600;">Summarize By</span>' +
-		'<select class="fs-by1 form-control input-xs" style="width:200px">' + opts + "</select>" +
-		'<span class="text-muted">then</span>' +
-		'<select class="fs-by2 form-control input-xs" style="width:200px">' + opts + "</select></div>");
-	$bar.find(".fs-by1").val(sel.by1 || ""); $bar.find(".fs-by2").val(sel.by2 || "");
-	$bar.find("select").on("change", function () {
-		finscope.ls_set(finscope.sum_key(), { by1: $bar.find(".fs-by1").val(), by2: $bar.find(".fs-by2").val() });
-		report.render_datatable();
-	});
+	var $bar = $('<div class="finscope-summarize-bar" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:2px 0 10px;"></div>');
+	if (!nativeTree) {
+		var sel = finscope.ls_get(finscope.sum_key()) || { by1: "", by2: "" };
+		var groupCols = (report.__fs_cols && report.__fs_cols.length ? report.__fs_cols : report.columns).filter((c) => c.fieldname && c.label && !c.hidden);
+		var opts = '<option value="">— none —</option>' + groupCols.map((c) => '<option value="' + c.fieldname + '">' + frappe.utils.escape_html(ren0[c.fieldname] || c.label) + "</option>").join("");
+		$bar.append('<span style="font-weight:600;">Summarize By</span>' +
+			'<select class="fs-by1 form-control input-xs" style="width:200px">' + opts + "</select>" +
+			'<span class="text-muted">then</span>' +
+			'<select class="fs-by2 form-control input-xs" style="width:200px">' + opts + "</select>");
+		$bar.find(".fs-by1").val(sel.by1 || ""); $bar.find(".fs-by2").val(sel.by2 || "");
+		$bar.find("select").on("change", function () {
+			finscope.ls_set(finscope.sum_key(), { by1: $bar.find(".fs-by1").val(), by2: $bar.find(".fs-by2").val() });
+			report.render_datatable();
+		});
+	} else {
+		$bar.append('<span style="font-weight:600;">' + __("Ledger Tools") + "</span>");
+	}
 
 	// --- Columns picker: show/hide checkbox + rename pencil + reset, persisted ---
 	var allCols = (report.__fs_cols && report.__fs_cols.length ? report.__fs_cols : report.columns).filter((c) => c.fieldname && c.label && !c.hidden);
@@ -336,7 +358,7 @@ finscope.init = function () {
 			}
 		} catch (e) {}
 	});
-	console.log("FinScope: ledger features active (order / hide / rename / summarize) for 'FinScope - *' reports");
+	console.log("FinScope: ledger features active (order / hide / rename / summarize) for 'FinScope - *' and 'StockPilot *' reports");
 };
 finscope.init();
 $(document).ready(finscope.init);
