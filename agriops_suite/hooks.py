@@ -212,6 +212,7 @@ fixtures = [
         "filters": {
             "name": ["in", ["LedgerLift Follow-ups",
                             "LedgerLift Customer Ledger Summary",
+                            "LedgerLift Status Breakdown",
                             "CashControl Day Book"]]
         },
     },

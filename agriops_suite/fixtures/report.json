@@ -106,5 +106,41 @@
    }
   ],
   "timeout": 0
+ },
+ {
+  "add_total_row": 0,
+  "add_translate_data": 0,
+  "columns": [],
+  "disable_prepared_report_automation": 0,
+  "disabled": 0,
+  "docstatus": 0,
+  "doctype": "Report",
+  "filters": [],
+  "is_standard": "No",
+  "javascript": null,
+  "json": null,
+  "letter_head": "Company Letterhead - Grey",
+  "modified": "2026-07-10 15:29:47.744892",
+  "module": "Custom",
+  "name": "LedgerLift Status Breakdown",
+  "prepared_report": 0,
+  "query": null,
+  "ref_doctype": "LedgerLift Tracker",
+  "reference_report": null,
+  "report_name": "LedgerLift Status Breakdown",
+  "report_script": "filters = filters or {}\nshort = {\"Payment Promised\": \"Promised\", \"Partial Payment\": \"Partial\"}\nrows = frappe.db.sql(\"\"\"SELECT recovery_status AS status,\n        SUM(outstanding_amount) AS outstanding\n    FROM `tabLedgerLift Tracker`\n    WHERE recovery_status != 'Paid'\n    GROUP BY recovery_status ORDER BY outstanding DESC\"\"\", as_dict=1)\nout = []\nfor r in rows:\n    nm = short.get(r[\"status\"] or \"\", r[\"status\"] or \"(none)\")\n    if len(nm) > 12:\n        nm = nm[:11] + \"…\"\n    val = frappe.utils.flt(r[\"outstanding\"])\n    if val > 0:\n        out.append({\"status\": nm, \"outstanding\": val})\ncols = [\n    {\"label\": \"Status\", \"fieldname\": \"status\", \"fieldtype\": \"Data\", \"width\": 160},\n    {\"label\": \"Outstanding\", \"fieldname\": \"outstanding\", \"fieldtype\": \"Currency\", \"width\": 160},\n]\ndata = [cols, out, \"Open outstanding by recovery status (excl. Paid)\", None, None, 1]\n",
+  "report_type": "Script Report",
+  "roles": [
+   {
+    "role": "System Manager"
+   },
+   {
+    "role": "Accounts Manager"
+   },
+   {
+    "role": "Sales User"
+   }
+  ],
+  "timeout": 0
  }
 ]

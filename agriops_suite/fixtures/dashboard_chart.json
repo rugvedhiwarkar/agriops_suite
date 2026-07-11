@@ -3,7 +3,7 @@
   "aggregate_function_based_on": "outstanding_amount",
   "based_on": null,
   "chart_name": "LedgerLift Outstanding by Status",
-  "chart_type": "Group By",
+  "chart_type": "Report",
   "color": null,
   "currency": "INR",
   "custom_options": null,
@@ -11,7 +11,7 @@
   "doctype": "Dashboard Chart",
   "document_type": "LedgerLift Tracker",
   "dynamic_filters_json": null,
-  "filters_json": "[[\"LedgerLift Tracker\", \"recovery_status\", \"!=\", \"Paid\"]]",
+  "filters_json": "{}",
   "from_date": null,
   "group_by_based_on": "recovery_status",
   "group_by_type": "Sum",
@@ -24,7 +24,7 @@
   "name": "LedgerLift Outstanding by Status",
   "number_of_groups": 0,
   "parent_document_type": null,
-  "report_name": null,
+  "report_name": "LedgerLift Status Breakdown",
   "roles": [],
   "show_values_over_chart": 0,
   "source": null,
@@ -35,8 +35,12 @@
   "type": "Donut",
   "use_report_chart": 0,
   "value_based_on": null,
-  "x_field": null,
-  "y_axis": []
+  "x_field": "status",
+  "y_axis": [
+   {
+    "y_field": "outstanding"
+   }
+  ]
  },
  {
   "aggregate_function_based_on": "outstanding_amount",
