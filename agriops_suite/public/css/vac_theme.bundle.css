@@ -595,70 +595,63 @@ html[data-vac-theme][data-theme="dark"] .number-widget-box:hover {
 	box-shadow: 0 16px 32px rgba(0, 0, 0, 0.34) !important;
 }
 
+/* morning greeting card — a subtle sibling of the KPI cards (same surface,
+   border and lift), not a floating gradient sticker; native desk typography */
 #vac-greet-wrap {
 	padding: 0 2px;
 }
 #vac-greet-wrap .b {
-	--vgl: #e4ebe7;
-	--vgbg: radial-gradient(120% 160% at 92% -30%, #dcebf2, transparent 60%),
-		linear-gradient(120deg, #e7f3ec, #ffffff);
-	--vgink: #1d2a30;
-	--vgmut: #5d7079;
-	--vgacc: #237046;
-	position: relative;
-	border-radius: 18px;
-	border: 1px solid var(--vgl);
-	padding: 22px 26px;
-	margin: 0 0 22px;
-	background: var(--vgbg);
-	color: var(--vgink);
-	font-family: -apple-system, "Segoe UI", system-ui, Roboto, sans-serif;
+	background: var(--card-bg, rgba(130, 175, 160, 0.06));
+	border: 1px solid var(--border-color, rgba(130, 175, 160, 0.16));
+	border-radius: 14px;
+	padding: 18px 22px;
+	margin: 0 0 18px;
+}
+html[data-theme="light"] #vac-greet-wrap .b {
+	box-shadow: 0 2px 8px rgba(18, 48, 59, 0.07);
+	border-color: #e4ebe7;
 }
 html[data-theme="dark"] #vac-greet-wrap .b {
-	--vgl: #233b41;
-	--vgbg: radial-gradient(120% 160% at 92% -30%, #15323e, transparent 60%),
-		linear-gradient(120deg, #173029, #15282e);
-	--vgink: #e9f1ee;
-	--vgmut: #9fb4b1;
-	--vgacc: #6fd6a4;
+	box-shadow: 0 3px 12px rgba(0, 0, 0, 0.22);
+	border-color: rgba(130, 175, 160, 0.15);
 }
 #vac-greet-wrap .eyebrow {
 	font-size: 11px;
-	letter-spacing: 0.14em;
+	letter-spacing: 0.12em;
 	text-transform: uppercase;
-	color: var(--vgacc);
+	color: var(--primary, #3fa878);
 	font-weight: 700;
 }
 #vac-greet-wrap h1 {
-	font-size: 23px;
-	font-weight: 800;
+	font-size: 22px;
+	font-weight: 600;
 	letter-spacing: -0.01em;
-	margin: 6px 0 3px;
+	margin: 5px 0 2px;
 	line-height: 1.2;
+	color: var(--heading-color, var(--text-color));
 }
 #vac-greet-wrap p {
-	color: var(--vgmut);
-	font-size: 14px;
+	color: var(--text-muted);
+	font-size: 13.5px;
 	margin: 0;
 }
 #vac-greet-wrap .meta {
-	margin-top: 14px;
+	margin-top: 12px;
 	display: flex;
-	gap: 8px;
+	align-items: center;
 	flex-wrap: wrap;
 }
 #vac-greet-wrap .tag {
-	font-size: 12px;
-	font-weight: 600;
-	padding: 5px 11px;
-	border-radius: 20px;
-	background: rgba(255, 255, 255, 0.5);
-	border: 1px solid var(--vgl);
-	color: var(--vgmut);
+	font-size: 12.5px;
+	font-weight: 500;
+	color: var(--text-muted);
 }
-html[data-theme="dark"] #vac-greet-wrap .tag {
-	background: rgba(8, 26, 26, 0.4);
+#vac-greet-wrap .tag:not(:last-child)::after {
+	content: "·";
+	margin: 0 9px;
+	opacity: 0.5;
 }
 #vac-greet-wrap .tag b {
-	color: var(--vgink);
+	color: var(--text-color);
+	font-weight: 600;
 }

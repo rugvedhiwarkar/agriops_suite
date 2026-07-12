@@ -29,13 +29,13 @@
 		wrap.id = "vac-greet-wrap";
 		wrap.innerHTML =
 			'<div class="b">' +
-			'<div class="eyebrow">This morning at the shop</div>' +
+			'<div class="eyebrow" id="vg-eyebrow">This morning at the shop</div>' +
 			'<h1 id="vg-greet">Good morning</h1>' +
 			"<p id=\"vg-sub\">Here's how Vijay Agro Centre is doing today.</p>" +
 			'<div class="meta">' +
 			'<span class="tag">FY <b id="vg-fy">—</b></span>' +
-			'<span class="tag"><b id="vg-tills">—</b> tills open</span>' +
-			'<span class="tag"><b id="vg-bills">—</b> bills so far today</span>' +
+			'<span class="tag" id="vg-tills-tag">— tills open</span>' +
+			'<span class="tag" id="vg-bills-tag">— bills so far today</span>' +
 			'<span class="tag">Last synced <b id="vg-sync">—</b></span>' +
 			"</div></div>";
 		return wrap;
@@ -46,11 +46,13 @@
 			return wrap.querySelector("#" + id);
 		}
 		var h = new Date().getHours();
-		var g = h < 12 ? "Good morning" : h < 17 ? "Good afternoon" : "Good evening";
+		var period = h < 12 ? "morning" : h < 17 ? "afternoon" : "evening";
 		var fn = ((frappe.session.user_fullname || "") + "").trim().split(" ")[0];
+		if (q("vg-eyebrow"))
+			q("vg-eyebrow").textContent = "This " + period + " at the shop";
 		if (q("vg-greet"))
 			q("vg-greet").textContent =
-				g + (fn ? ", " + fn : "") + " " + String.fromCodePoint(0x1f33e);
+				"Good " + period + (fn ? ", " + fn : "") + " " + String.fromCodePoint(0x1f33e);
 		var m = window.moment ? moment() : null;
 		if (q("vg-sub"))
 			q("vg-sub").textContent =
@@ -68,14 +70,18 @@
 			["status", "=", "Open"],
 			["docstatus", "=", 1],
 		]).then(function (n) {
-			if (n != null && q("vg-tills")) q("vg-tills").textContent = n;
+			if (n != null && q("vg-tills-tag"))
+				q("vg-tills-tag").innerHTML =
+					"<b>" + n + "</b> " + (n === 1 ? "till" : "tills") + " open";
 		});
 		count("Sales Invoice", [
 			["posting_date", "=", today],
 			["docstatus", "=", 1],
 			["is_return", "=", 0],
 		]).then(function (n) {
-			if (n != null && q("vg-bills")) q("vg-bills").textContent = n;
+			if (n != null && q("vg-bills-tag"))
+				q("vg-bills-tag").innerHTML =
+					"<b>" + n + "</b> " + (n === 1 ? "bill" : "bills") + " so far today";
 		});
 	}
 
