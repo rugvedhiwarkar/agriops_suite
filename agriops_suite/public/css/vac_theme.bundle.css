@@ -566,3 +566,99 @@ html[data-vac-theme] .print-format {
 	--gray-800: #383838;
 	--gray-900: #171717;
 }
+
+/* ====================================================================
+   Lifted-card finish (global) + VAC morning greeting banner.
+   Gated by html[data-vac-theme] so it only applies when the theme is on.
+   ==================================================================== */
+html[data-vac-theme] .number-widget-box,
+html[data-vac-theme] .chart-widget-box {
+	border-radius: 14px;
+	transition: transform 0.13s ease, box-shadow 0.13s ease;
+}
+html[data-vac-theme][data-theme="light"] .number-widget-box,
+html[data-vac-theme][data-theme="light"] .chart-widget-box {
+	border: 1px solid #e4ebe7 !important;
+	box-shadow: 0 2px 8px rgba(18, 48, 59, 0.07) !important;
+}
+html[data-vac-theme][data-theme="dark"] .number-widget-box,
+html[data-vac-theme][data-theme="dark"] .chart-widget-box {
+	border: 1px solid rgba(130, 175, 160, 0.15) !important;
+	box-shadow: 0 3px 12px rgba(0, 0, 0, 0.22) !important;
+}
+html[data-vac-theme][data-theme="light"] .number-widget-box:hover {
+	transform: translateY(-2px);
+	box-shadow: 0 12px 26px rgba(18, 48, 59, 0.12) !important;
+}
+html[data-vac-theme][data-theme="dark"] .number-widget-box:hover {
+	transform: translateY(-2px);
+	box-shadow: 0 16px 32px rgba(0, 0, 0, 0.34) !important;
+}
+
+#vac-greet-wrap {
+	padding: 0 2px;
+}
+#vac-greet-wrap .b {
+	--vgl: #e4ebe7;
+	--vgbg: radial-gradient(120% 160% at 92% -30%, #dcebf2, transparent 60%),
+		linear-gradient(120deg, #e7f3ec, #ffffff);
+	--vgink: #1d2a30;
+	--vgmut: #5d7079;
+	--vgacc: #237046;
+	position: relative;
+	border-radius: 18px;
+	border: 1px solid var(--vgl);
+	padding: 22px 26px;
+	margin: 0 0 22px;
+	background: var(--vgbg);
+	color: var(--vgink);
+	font-family: -apple-system, "Segoe UI", system-ui, Roboto, sans-serif;
+}
+html[data-theme="dark"] #vac-greet-wrap .b {
+	--vgl: #233b41;
+	--vgbg: radial-gradient(120% 160% at 92% -30%, #15323e, transparent 60%),
+		linear-gradient(120deg, #173029, #15282e);
+	--vgink: #e9f1ee;
+	--vgmut: #9fb4b1;
+	--vgacc: #6fd6a4;
+}
+#vac-greet-wrap .eyebrow {
+	font-size: 11px;
+	letter-spacing: 0.14em;
+	text-transform: uppercase;
+	color: var(--vgacc);
+	font-weight: 700;
+}
+#vac-greet-wrap h1 {
+	font-size: 23px;
+	font-weight: 800;
+	letter-spacing: -0.01em;
+	margin: 6px 0 3px;
+	line-height: 1.2;
+}
+#vac-greet-wrap p {
+	color: var(--vgmut);
+	font-size: 14px;
+	margin: 0;
+}
+#vac-greet-wrap .meta {
+	margin-top: 14px;
+	display: flex;
+	gap: 8px;
+	flex-wrap: wrap;
+}
+#vac-greet-wrap .tag {
+	font-size: 12px;
+	font-weight: 600;
+	padding: 5px 11px;
+	border-radius: 20px;
+	background: rgba(255, 255, 255, 0.5);
+	border: 1px solid var(--vgl);
+	color: var(--vgmut);
+}
+html[data-theme="dark"] #vac-greet-wrap .tag {
+	background: rgba(8, 26, 26, 0.4);
+}
+#vac-greet-wrap .tag b {
+	color: var(--vgink);
+}

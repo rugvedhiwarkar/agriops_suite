@@ -40,6 +40,8 @@ app_include_js = [
     # edit changes the hash and busts the immutable /assets cache (a raw
     # /assets path stays cached max-age=1yr and never updates).
     "vac_theme.bundle.js",
+    # morning greeting banner on the VAC landing workspace (theme-gated)
+    "vac_home.bundle.js",
     "/assets/agriops_suite/js/core_fixes.js",
     "/assets/agriops_suite/js/vac_desk.js",
     # POS order-summary: extra "Invoice A4" / "Delivery Slip" print buttons
