@@ -39,6 +39,8 @@ app_include_js = [
     "/assets/agriops_suite/js/vac_theme.js",
     "/assets/agriops_suite/js/core_fixes.js",
     "/assets/agriops_suite/js/vac_desk.js",
+    # POS order-summary: extra "Invoice A4" / "Delivery Slip" print buttons
+    "/assets/agriops_suite/js/vac_pos_print.js",
 ]
 app_include_css = [
     "/assets/agriops_suite/css/vac_theme.css",
