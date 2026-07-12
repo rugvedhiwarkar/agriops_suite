@@ -36,14 +36,18 @@ page_js = {"point-of-sale": "public/js/pos_cash_desk.js"}
 # on User.default_workspace being set; stock /desk behaviour otherwise).
 app_include_js = [
     "/assets/agriops_suite/js/finscope.js",
-    "/assets/agriops_suite/js/vac_theme.js",
+    # vac_theme is a .bundle.js so esbuild content-hashes its URL — a theme
+    # edit changes the hash and busts the immutable /assets cache (a raw
+    # /assets path stays cached max-age=1yr and never updates).
+    "vac_theme.bundle.js",
     "/assets/agriops_suite/js/core_fixes.js",
     "/assets/agriops_suite/js/vac_desk.js",
     # POS order-summary: extra "Invoice A4" / "Delivery Slip" print buttons
     "/assets/agriops_suite/js/vac_pos_print.js",
 ]
 app_include_css = [
-    "/assets/agriops_suite/css/vac_theme.css",
+    # content-hashed bundle (see vac_theme.bundle.js note) — cache-busts on edit
+    "vac_theme.bundle.css",
     # CSS sibling of core_fixes.js — upstream v16 workarounds (see file
     # header; new rules need a NEW file, /assets is proxy-cached immutable)
     "/assets/agriops_suite/css/core_fixes.css",
