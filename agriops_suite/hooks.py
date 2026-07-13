@@ -46,6 +46,11 @@ app_include_js = [
     "/assets/agriops_suite/js/vac_desk.js",
     # POS order-summary: extra "Invoice A4" / "Delivery Slip" print buttons
     "/assets/agriops_suite/js/vac_pos_print.js",
+    # POS: allow items with NO preset price to be billed (cashier types the rate)
+    # instead of ERPNext's hard "Price is not set for the item." block. Paired
+    # with the block_zero_rate_pos before_submit safeguard so nothing bills at 0.
+    # Content-hashed .bundle.js so an edit busts the immutable /assets cache.
+    "vac_pos.bundle.js",
 ]
 app_include_css = [
     # content-hashed bundle (see vac_theme.bundle.js note) — cache-busts on edit
@@ -73,6 +78,9 @@ doc_events = {
     "Customer": {"on_update": "agriops_suite.party.sync_party_masters"},
     "Supplier": {"on_update": "agriops_suite.party.sync_party_masters"},
     "Party Link": {"validate": "agriops_suite.party.validate_party_link"},
+    # POS "type the price at the register" safeguard: block completing a POS
+    # (is_pos) sale that still has a zero-rate line. Non-POS invoices untouched.
+    "Sales Invoice": {"before_submit": "agriops_suite.pos.block_zero_rate_pos"},
 }
 
 # ---------------------------------------------------------------------------
