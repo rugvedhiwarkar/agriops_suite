@@ -154,6 +154,48 @@
 		d.show();
 	}
 
+	// --- Fast Journal button (self-gated on fast_voucher_config). Added
+	// ALONGSIDE Log Payment during the transition; Log Payment is retired only
+	// at a deliberate production promotion. Opens the global dialog shipped by
+	// fast_journal.bundle.js. Gate is fast_voucher_config, which exists on
+	// staging only, so production POS is untouched until that site is switched on. ---
+	function fj_setup(wrapper) {
+		fetch("/api/method/fast_voucher_config", { headers: { "X-Frappe-CSRF-Token": frappe.csrf_token } })
+			.then((r) => (r.ok ? r.json() : null))
+			.then((j) => {
+				const cfg = j && j.message;
+				if (cfg && cfg.enabled) fj_add_button(wrapper);
+			})
+			.catch(() => {});
+	}
+
+	function fj_add_button(wrapper) {
+		if (wrapper.__fast_journal_ready) return;
+		wrapper.__fast_journal_ready = true;
+		const ensure = () => {
+			const host =
+				wrapper.page &&
+				wrapper.page.wrapper &&
+				wrapper.page.wrapper.find(".page-actions")[0];
+			if (!host || host.querySelector(".fast-journal-btn")) return;
+			const $btn = wrapper.page.add_button(
+				__("Fast Journal"),
+				() => {
+					if (window.__fast_journal_open) window.__fast_journal_open();
+				},
+				{ btn_class: "btn-primary" }
+			);
+			if ($btn && $btn.addClass) $btn.addClass("fast-journal-btn");
+		};
+		ensure();
+		const host = wrapper.page.wrapper.find(".page-actions")[0];
+		if (host) {
+			const obs = new MutationObserver(ensure);
+			obs.observe(host, { childList: true, subtree: true });
+			wrapper.__fast_journal_observer = obs;
+		}
+	}
+
 	// run after ERPNext's own on_page_load builds the POS
 	const page_wrapper = frappe.pages[PAGE];
 	if (page_wrapper) {
@@ -161,6 +203,7 @@
 		page_wrapper.on_page_load = function (wrapper) {
 			if (orig) orig.call(this, wrapper);
 			setup(wrapper);
+			fj_setup(wrapper);
 		};
 	}
 })();

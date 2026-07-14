@@ -51,6 +51,11 @@ app_include_js = [
     # with the block_zero_rate_pos before_submit safeguard so nothing bills at 0.
     # Content-hashed .bundle.js so an edit busts the immutable /assets cache.
     "vac_pos.bundle.js",
+    # Fast Journal dialog (window.__fast_journal_open) — global so the POS header
+    # button (pos_cash_desk.js), a desk button, or a shortcut can open it. UI-only;
+    # self-gates on the fast_voucher_config Server Script (staging-only), so it is
+    # inert on production until that site is switched on. Content-hashed bundle.
+    "fast_journal.bundle.js",
 ]
 app_include_css = [
     # content-hashed bundle (see vac_theme.bundle.js note) — cache-busts on edit
