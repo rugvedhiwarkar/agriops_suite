@@ -260,14 +260,14 @@ fixtures = [
         "dt": "Workspace Sidebar",
         "filters": {
             "name": ["in", ["LedgerLift", "CashControl", "ItemIntel",
-                            "SchemeWise", "StockPilot", "FinScope"]]
+                            "SchemeWise", "StockPilot"]]
         },
     },
     {
         "dt": "Desktop Icon",
         "filters": {
             "name": ["in", ["LedgerLift", "CashControl", "ItemIntel",
-                            "SchemeWise", "StockPilot", "FinScope"]]
+                            "SchemeWise", "StockPilot"]]
         },
     },
 
@@ -284,7 +284,6 @@ fixtures = [
                     "ItemIntel",
                     "SchemeWise",
                     "StockPilot",
-                    "FinScope",
                 ],
             ]
         },
