@@ -330,6 +330,55 @@ finscope.wrap_settings = function (report) {
 	};
 };
 
+// Replicate the FinScope-GL delegate's dual-role party search onto the STANDARD
+// General Ledger (only where the finscope_ledger_reports flag enabled GL): with no
+// Party Type chosen, search Customers AND Suppliers together (dual-role parties tagged
+// "Customer + Supplier"), and drop depends_on so Party is typeable without a type.
+finscope.dual_party_get_data = function (txt) {
+	var pt = frappe.query_report.get_filter_value("party_type");
+	if (pt) return frappe.db.get_link_options(pt, txt);
+	return Promise.all([
+		frappe.db.get_link_options("Customer", txt),
+		frappe.db.get_link_options("Supplier", txt),
+	]).then(function (res) {
+		var seen = {}, out = [];
+		[["Customer", res[0]], ["Supplier", res[1]]].forEach(function (pair) {
+			(pair[1] || []).forEach(function (o) {
+				var v = (o && o.value !== undefined) ? o.value : o;
+				if (seen[v]) { seen[v].description = "Customer + Supplier"; return; }
+				var row = { value: v, description: pair[0] }; seen[v] = row; out.push(row);
+			});
+		});
+		return out;
+	});
+};
+finscope.patch_gl_party = function () {
+	var KEY = "General Ledger";
+	var store = frappe.query_reports || (frappe.query_reports = {});
+	function patch(cfg) {
+		try {
+			if (!cfg || !cfg.filters || cfg.__fs_party) return cfg;
+			var party = cfg.filters.filter(function (f) { return f.fieldname === "party"; })[0];
+			if (!party) return cfg;
+			cfg.__fs_party = 1;
+			party.depends_on = undefined;
+			party.get_data = finscope.dual_party_get_data;
+		} catch (e) { console.error("FinScope GL party patch", e); }
+		return cfg;
+	}
+	// GL js is a page_js loaded after this boot script, so intercept its assignment;
+	// if it somehow loaded first, patch what's already there.
+	if (store[KEY]) { patch(store[KEY]); return; }
+	try {
+		var held;
+		Object.defineProperty(store, KEY, {
+			configurable: true, enumerable: true,
+			get: function () { return held; },
+			set: function (v) { held = patch(v); },
+		});
+	} catch (e) { /* interceptor unsupported — standard GL keeps its stock party filter */ }
+};
+
 finscope.init = function () {
 	if (finscope.__inited) return;
 	if (!(frappe.views && frappe.views.QueryReport)) return setTimeout(finscope.init, 200);
@@ -391,6 +440,8 @@ finscope.init = function () {
 			if (changed) finscope.set_widths(cur);
 		}, 150);
 	});
+	// GL dual-role party filter — only where the flag enabled the standard General Ledger.
+	if (finscope.is_feature_report("General Ledger")) { try { finscope.patch_gl_party(); } catch (e) {} }
 	console.log("FinScope: ledger features active (order / width / hide / rename / summarize) for 'FinScope - *' and 'StockPilot *' reports");
 };
 finscope.init();
