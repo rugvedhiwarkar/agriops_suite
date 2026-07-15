@@ -19,6 +19,7 @@ def extend_bootinfo(bootinfo):
 	#   bench --site <site> set-config finscope_ledger_reports '[...]' --parse
 	_conf_ledgers = frappe.conf.get("finscope_ledger_reports")
 	bootinfo.finscope_ledger_reports = _conf_ledgers if _conf_ledgers is not None else [
+		# financial ledgers
 		"General Ledger",
 		"Accounts Receivable",
 		"Accounts Payable",
@@ -26,4 +27,9 @@ def extend_bootinfo(bootinfo):
 		"Supplier Ledger Summary",
 		"Sales Register",
 		"Purchase Register",
+		# stock ledgers — the BusyWin Inventory Books / Stock Status / Stock
+		# Ageing (FIFO) equivalents (see docs/knowledge/busywin_erpnext_report_map.md)
+		"Stock Ledger",
+		"Stock Balance",
+		"Stock Ageing",
 	]

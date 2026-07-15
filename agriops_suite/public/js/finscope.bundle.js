@@ -149,10 +149,33 @@ finscope.decorate_options = function (options) {
 };
 
 /* ---- summarize + drill-down ---- */
+/* Group subtotals may only add up ADDITIVE columns. Running balances, rates and
+   ages are meaningless to sum. The generic name rule below covers most of it;
+   these two maps handle the cases a fieldname can't self-describe:
+     NO_SUM    - looks additive but is a running balance (Stock Ledger's
+                 qty_after_transaction / stock_value, Stock Ageing earliest/latest)
+     FORCE_SUM - matches the generic skip rule but IS additive across a group
+                 (Stock Balance's per-item opening_qty/opening_val) */
+finscope.NO_SUM = {
+	"Stock Ledger": ["qty_after_transaction", "stock_value"],
+	"Stock Ageing": ["earliest", "latest"],
+};
+finscope.FORCE_SUM = {
+	"Stock Balance": ["opening_qty", "opening_val"],
+};
 finscope.is_sum_col = function (col) {
 	var ft = (col.fieldtype || "").toLowerCase();
 	if (["currency", "float", "int", "percent"].indexOf(ft) < 0) return false;
-	return !/balance|closing|opening/.test((col.fieldname || "").toLowerCase());
+	var fn = col.fieldname || "";
+	var rn = finscope.rname();
+	if ((finscope.NO_SUM[rn] || []).indexOf(fn) >= 0) return false;
+	if ((finscope.FORCE_SUM[rn] || []).indexOf(fn) >= 0) return true;
+	var l = fn.toLowerCase();
+	// rates and ages never add up, on any report (e.g. valuation_rate, average_age,
+	// and the AR/AP "age" column)
+	if (/(^|_)(rate|age|avg|average)(_|$)/.test(l)) return false;
+	// GL-style running balances
+	return !/balance|closing|opening/.test(l);
 };
 finscope.cell = function (row, fn) { var v = row[fn]; return v === undefined || v === null || v === "" ? "(Blank)" : v; };
 finscope.pin_kind = function (row, columns) {
@@ -332,7 +355,17 @@ finscope.wrap_settings = function (report) {
 	};
 	var prevFmt = rs.formatter;
 	rs.formatter = function (value, row, column, data, df) {
-		if (finscope.on() && data && data.__fs_group) return "<b>" + df(value, row, column, data) + "</b>";
+		if (finscope.on() && data && data.__fs_group) {
+			// A group row carries subtotals ONLY for additive columns. Render the
+			// non-additive numerics (rates / ages / running balances) BLANK — left
+			// alone they fall through to "0.000", which reads as a real zero
+			// subtotal (e.g. "Average Age 0.000" on a Stock Ageing group).
+			var fn = column && column.fieldname;
+			var ft = ((column && (column.fieldtype || (column.docfield && column.docfield.fieldtype))) || "").toLowerCase();
+			if (fn && ["currency", "float", "int", "percent"].indexOf(ft) >= 0 &&
+				!finscope.is_sum_col({ fieldname: fn, fieldtype: ft })) return "";
+			return "<b>" + df(value, row, column, data) + "</b>";
+		}
 		if (prevFmt) { try { return prevFmt(value, row, column, data, df); } catch (e) {} }
 		return df(value, row, column, data);
 	};
