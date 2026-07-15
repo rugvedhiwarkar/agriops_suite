@@ -23,10 +23,18 @@ def extend_bootinfo(bootinfo):
 		"General Ledger",
 		"Accounts Receivable",
 		"Accounts Payable",
+		"Accounts Receivable Summary",
+		"Accounts Payable Summary",
 		"Customer Ledger Summary",
 		"Supplier Ledger Summary",
 		"Sales Register",
 		"Purchase Register",
+		# item-axis registers — the BusyWin Sales/Purchase Analysis (Item-wise)
+		# equivalents, and the Invoice Trends period rollups
+		"Item-wise Sales Register",
+		"Item-wise Purchase Register",
+		"Sales Invoice Trends",
+		"Purchase Invoice Trends",
 		# stock ledgers — the BusyWin Inventory Books / Stock Status / Stock
 		# Ageing (FIFO) equivalents (see docs/knowledge/busywin_erpnext_report_map.md)
 		"Stock Ledger",

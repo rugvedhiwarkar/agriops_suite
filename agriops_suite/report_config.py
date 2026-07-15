@@ -7,7 +7,17 @@ import frappe
 # re-assert after every migrate. Idempotent and guarded for fresh sites.
 #
 # To make another report live, just add its exact name here.
-LIVE_REPORTS = ["General Ledger"]
+#
+# ⚠️ CHECK IT CAN ACTUALLY RUN LIVE FIRST. Some reports ship prepared because they
+# genuinely cannot finish inside the gateway timeout — forcing those live gives a
+# report that 504s instead of one that is fresh. Verify with:
+#   /api/method/frappe.desk.query_report.run?report_name=X&filters=...&ignore_prepared_report=1
+# "Accounts Receivable Summary" is deliberately NOT here: it returned HTTP 504 on
+# exactly that check (2026-07-15), so it stays prepared (use its Rebuild button).
+LIVE_REPORTS = [
+    "General Ledger",
+    "Item-wise Sales Register",  # verified: runs live (1,836 rows) well inside the timeout
+]
 
 
 def ensure_live_reports():

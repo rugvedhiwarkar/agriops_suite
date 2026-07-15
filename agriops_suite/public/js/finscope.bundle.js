@@ -171,6 +171,11 @@ finscope.is_sum_col = function (col) {
 	if ((finscope.NO_SUM[rn] || []).indexOf(fn) >= 0) return false;
 	if ((finscope.FORCE_SUM[rn] || []).indexOf(fn) >= 0) return true;
 	var l = fn.toLowerCase();
+	// The "currency" column holds a currency CODE (INR) yet is typed Currency on the
+	// Item-wise Sales/Purchase Registers — adding it up is nonsense. EXACT match only:
+	// a segment rule would also kill debit_in_account_currency / credit_in_account_currency
+	// on the GL, which ARE real summable amounts.
+	if (l === "currency") return false;
 	// rates and ages never add up, on any report (e.g. valuation_rate, average_age,
 	// and the AR/AP "age" column)
 	if (/(^|_)(rate|age|avg|average)(_|$)/.test(l)) return false;
