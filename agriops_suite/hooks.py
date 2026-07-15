@@ -173,6 +173,13 @@ fixtures = [
                     "Payment Entry-busy_voucher_ref",
                     "Payment Entry-cd_scheme",
                     "Journal Entry-cd_scheme",
+                    # Village on Customer — backfilled from BusyWin
+                    # MasterAddressInfo.Address1, which the migration bridge dropped in
+                    # normalize.py before the bundle was built. Deliberately a Customer
+                    # custom field rather than an Address record: Address.city feeds GST
+                    # place-of-supply, and Busy has no state/pincode to populate one
+                    # safely (PINCode set on 6 of 3,923 masters).
+                    "Customer-custom_village",
                 ],
             ]
         },
