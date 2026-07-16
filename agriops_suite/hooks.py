@@ -131,6 +131,12 @@ fixtures = [
                     # workspace owns the plain "LedgerLift" name
                     "LedgerLift Tracker",
                     "LedgerLift Follow-up",
+                    # StockPilot config single (goal-11 residual, captured
+                    # 2026-07-16). Definition only — the VALUES (cutoffs,
+                    # frequencies, frozen class map) are user-tunable runtime
+                    # state and are deliberately NOT fixtures: a deploy must
+                    # never reset them.
+                    "StockPilot Settings",
                 ],
             ]
         },
@@ -205,6 +211,12 @@ fixtures = [
     },
 
     # --- Our Server Scripts -------------------------------------------------
+    # StockPilot: ONLY the two class-freeze scripts are fixtures — they are
+    # stable infra tied to the StockPilot Settings doctype (the Daily
+    # scheduler must survive every deploy). The suite's other server scripts
+    # (Make Count SR / Make PO / 4 number-card endpoints) stay installer-
+    # managed with the reports they serve, same boundary as the Report note
+    # below — fixture-syncing them would clobber installer iterations.
     {
         "dt": "Server Script",
         "filters": {
@@ -216,6 +228,8 @@ fixtures = [
                     "LedgerLift Fetch Balance",
                     "LedgerLift Avg Days",
                     "LedgerLift Due Followups",
+                    "StockPilot Freeze Classes",
+                    "StockPilot Class Freeze Refresh",
                 ],
             ]
         },

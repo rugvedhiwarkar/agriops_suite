@@ -764,21 +764,18 @@
     "label": "Counting Activity"
    }
   ],
-  "content": "[{\"id\": \"sphdr1\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h4\\\"><b>StockPilot</b></span>\", \"col\": 12}}, {\"id\": \"spnc1\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"Stock Value (book)\", \"col\": 4}}, {\"id\": \"spnc3\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"Families Below Reorder\", \"col\": 4}}, {\"id\": \"spnc5\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"Eating Buffer\", \"col\": 4}}, {\"id\": \"spnc6\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"Counts Due Today\", \"col\": 4}}, {\"id\": \"spnc2\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"Negative Stock Items\", \"col\": 4}}, {\"id\": \"spnc4\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"Dead Stock Value\", \"col\": 4}}, {\"id\": \"spch2\", \"type\": \"chart\", \"data\": {\"chart_name\": \"Monthly Demand (Sales)\", \"col\": 6}}, {\"id\": \"spch3\", \"type\": \"chart\", \"data\": {\"chart_name\": \"Monthly Purchases\", \"col\": 6}}, {\"id\": \"spch1\", \"type\": \"chart\", \"data\": {\"chart_name\": \"Counting Activity\", \"col\": 12}}, {\"id\": \"sphdr2\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h5\\\"><b>Order</b></span>\", \"col\": 12}}, {\"id\": \"spsc7\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Reorder List\", \"col\": 3}}, {\"id\": \"spsc8\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Safety Stock\", \"col\": 3}}, {\"id\": \"spsc1\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Replenishment\", \"col\": 3}}, {\"id\": \"sphdr3\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h5\\\"><b>Count</b></span>\", \"col\": 12}}, {\"id\": \"spsc9\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Count Schedule\", \"col\": 3}}, {\"id\": \"spsc3\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Count Variance\", \"col\": 3}}, {\"id\": \"spsc5\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Stock Reconciliation\", \"col\": 3}}, {\"id\": \"sphdr4\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h5\\\"><b>Health</b></span>\", \"col\": 12}}, {\"id\": \"spsc4\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Stock Audit\", \"col\": 3}}, {\"id\": \"spsc10\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Dead Stock\", \"col\": 3}}, {\"id\": \"spsc11\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Categories\", \"col\": 3}}, {\"id\": \"spsc6\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Item\", \"col\": 3}}, {\"id\": \"sphdr5\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h5\\\"><b>Stock Status</b></span>\", \"col\": 12}}, {\"id\": \"spsc12\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Stock Balance\", \"col\": 3}}, {\"id\": \"spsc13\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Stock Ledger\", \"col\": 3}}, {\"id\": \"spsc14\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Stock Ageing\", \"col\": 3}}]",
+  "content": "[{\"id\": \"sphdr1\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h4\\\"><b>StockPilot</b></span>\", \"col\": 12}}, {\"id\": \"spnc1\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"Stock Value (book)\", \"col\": 4}}, {\"id\": \"spnc3\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"Families Below Reorder\", \"col\": 4}}, {\"id\": \"spnc5\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"Eating Buffer\", \"col\": 4}}, {\"id\": \"spnc6\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"Counts Due Today\", \"col\": 4}}, {\"id\": \"spnc2\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"Negative Stock Items\", \"col\": 4}}, {\"id\": \"spnc4\", \"type\": \"number_card\", \"data\": {\"number_card_name\": \"Dead Stock Value\", \"col\": 4}}, {\"id\": \"spch2\", \"type\": \"chart\", \"data\": {\"chart_name\": \"Monthly Demand (Sales)\", \"col\": 6}}, {\"id\": \"spch3\", \"type\": \"chart\", \"data\": {\"chart_name\": \"Monthly Purchases\", \"col\": 6}}, {\"id\": \"spch1\", \"type\": \"chart\", \"data\": {\"chart_name\": \"Counting Activity\", \"col\": 12}}, {\"id\": \"sphdr2\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h5\\\"><b>Order</b></span>\", \"col\": 12}}, {\"id\": \"spsc7\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Reorder List\", \"col\": 3}}, {\"id\": \"spsc8\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Safety Stock\", \"col\": 3}}, {\"id\": \"spsc1\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Replenishment\", \"col\": 3}}, {\"id\": \"sphdr3\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h5\\\"><b>Count</b></span>\", \"col\": 12}}, {\"id\": \"spsc9\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Count Schedule\", \"col\": 3}}, {\"id\": \"spsc3\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Count Variance\", \"col\": 3}}, {\"id\": \"spsc5\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Stock Reconciliation\", \"col\": 3}}, {\"id\": \"sphdr4\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h5\\\"><b>Health</b></span>\", \"col\": 12}}, {\"id\": \"spsc4\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Stock Audit\", \"col\": 3}}, {\"id\": \"spsc10\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Dead Stock\", \"col\": 3}}, {\"id\": \"spsc11\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Categories\", \"col\": 3}}, {\"id\": \"spsc6\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Item\", \"col\": 3}}, {\"id\": \"sphdr5\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h5\\\"><b>Stock Status</b></span>\", \"col\": 12}}, {\"id\": \"spsc12\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Stock Balance\", \"col\": 3}}, {\"id\": \"spsc13\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Stock Ledger\", \"col\": 3}}, {\"id\": \"spsc14\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Stock Ageing\", \"col\": 3}}, {\"id\": \"sphdr6\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h5\\\"><b>Setup</b></span>\", \"col\": 12}}, {\"id\": \"spsc15\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Settings\", \"col\": 3}}]",
   "custom_blocks": [],
   "docstatus": 0,
   "doctype": "Workspace",
-  "external_link": null,
-  "for_user": null,
   "hide_custom": 0,
   "icon": "database",
   "indicator_color": "green",
   "is_hidden": 0,
   "label": "StockPilot",
-  "link_to": null,
   "link_type": "DocType",
   "links": [],
-  "modified": "2026-07-10 11:49:40.585934",
+  "modified": "2026-07-16 11:40:10.078581",
   "module": "",
   "name": "StockPilot",
   "number_cards": [
@@ -810,191 +807,111 @@
   "parent_page": "",
   "public": 1,
   "quick_lists": [],
-  "restrict_to_domain": null,
   "roles": [],
   "sequence_id": 1.8,
   "shortcuts": [
    {
     "color": "Red",
     "doc_view": "",
-    "format": null,
-    "icon": null,
-    "kanban_board": null,
     "label": "Reorder List",
     "link_to": "StockPilot Reorder List",
     "report_ref_doctype": "Item",
-    "restrict_to_domain": null,
-    "stats_filter": null,
-    "type": "Report",
-    "url": null
+    "type": "Report"
    },
    {
     "color": "Orange",
     "doc_view": "",
-    "format": null,
-    "icon": null,
-    "kanban_board": null,
     "label": "Safety Stock",
     "link_to": "StockPilot Safety Stock List",
     "report_ref_doctype": "Item",
-    "restrict_to_domain": null,
-    "stats_filter": null,
-    "type": "Report",
-    "url": null
+    "type": "Report"
    },
    {
-    "color": null,
     "doc_view": "",
-    "format": null,
-    "icon": null,
-    "kanban_board": null,
     "label": "Replenishment",
     "link_to": "StockPilot Replenishment",
     "report_ref_doctype": "Item",
-    "restrict_to_domain": null,
-    "stats_filter": null,
-    "type": "Report",
-    "url": null
+    "type": "Report"
    },
    {
     "color": "Green",
     "doc_view": "",
-    "format": null,
-    "icon": null,
-    "kanban_board": null,
     "label": "Count Schedule",
     "link_to": "StockPilot Count Schedule",
     "report_ref_doctype": "Item",
-    "restrict_to_domain": null,
-    "stats_filter": null,
-    "type": "Report",
-    "url": null
+    "type": "Report"
    },
    {
-    "color": null,
     "doc_view": "",
-    "format": null,
-    "icon": null,
-    "kanban_board": null,
     "label": "Count Variance",
     "link_to": "StockPilot Count Variance",
     "report_ref_doctype": "Stock Reconciliation",
-    "restrict_to_domain": null,
-    "stats_filter": null,
-    "type": "Report",
-    "url": null
+    "type": "Report"
    },
    {
-    "color": null,
     "doc_view": "",
-    "format": null,
-    "icon": null,
-    "kanban_board": null,
     "label": "Stock Audit",
     "link_to": "StockPilot Stock Audit",
     "report_ref_doctype": "Item",
-    "restrict_to_domain": null,
-    "stats_filter": null,
-    "type": "Report",
-    "url": null
+    "type": "Report"
    },
    {
     "color": "Grey",
     "doc_view": "",
-    "format": null,
-    "icon": null,
-    "kanban_board": null,
     "label": "Dead Stock",
     "link_to": "StockPilot Dead Stock",
     "report_ref_doctype": "Item",
-    "restrict_to_domain": null,
-    "stats_filter": null,
-    "type": "Report",
-    "url": null
+    "type": "Report"
    },
    {
     "color": "Purple",
     "doc_view": "",
-    "format": null,
-    "icon": null,
-    "kanban_board": null,
     "label": "Categories",
     "link_to": "StockPilot Categories",
     "report_ref_doctype": "Item",
-    "restrict_to_domain": null,
-    "stats_filter": null,
-    "type": "Report",
-    "url": null
+    "type": "Report"
    },
    {
     "color": "Green",
     "doc_view": "",
-    "format": null,
-    "icon": null,
-    "kanban_board": null,
     "label": "Stock Reconciliation",
     "link_to": "Stock Reconciliation",
-    "report_ref_doctype": null,
-    "restrict_to_domain": null,
-    "stats_filter": null,
-    "type": "DocType",
-    "url": null
+    "type": "DocType"
    },
    {
     "color": "Blue",
     "doc_view": "",
-    "format": null,
-    "icon": null,
-    "kanban_board": null,
     "label": "Item",
     "link_to": "Item",
-    "report_ref_doctype": null,
-    "restrict_to_domain": null,
-    "stats_filter": null,
-    "type": "DocType",
-    "url": null
+    "type": "DocType"
    },
    {
-    "color": null,
     "doc_view": "",
-    "format": null,
-    "icon": null,
-    "kanban_board": null,
     "label": "Stock Balance",
     "link_to": "Stock Balance",
     "report_ref_doctype": "Stock Ledger Entry",
-    "restrict_to_domain": null,
-    "stats_filter": null,
-    "type": "Report",
-    "url": null
+    "type": "Report"
    },
    {
-    "color": null,
     "doc_view": "",
-    "format": null,
-    "icon": null,
-    "kanban_board": null,
     "label": "Stock Ledger",
     "link_to": "Stock Ledger",
     "report_ref_doctype": "Stock Ledger Entry",
-    "restrict_to_domain": null,
-    "stats_filter": null,
-    "type": "Report",
-    "url": null
+    "type": "Report"
    },
    {
-    "color": null,
     "doc_view": "",
-    "format": null,
-    "icon": null,
-    "kanban_board": null,
     "label": "Stock Ageing",
     "link_to": "Stock Ageing",
     "report_ref_doctype": "Item",
-    "restrict_to_domain": null,
-    "stats_filter": null,
-    "type": "Report",
-    "url": null
+    "type": "Report"
+   },
+   {
+    "color": "Grey",
+    "doc_view": "",
+    "label": "Settings",
+    "link_to": "StockPilot Settings",
+    "type": "DocType"
    }
   ],
   "title": "StockPilot",

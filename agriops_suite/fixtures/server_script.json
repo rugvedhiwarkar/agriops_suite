@@ -93,5 +93,36 @@
   "reference_doctype": null,
   "script": "count = frappe.db.count(\"LedgerLift Tracker\", {\n    \"recovery_status\": [\"!=\", \"Paid\"],\n    \"next_follow_up_date\": [\"<=\", frappe.utils.nowdate()],\n})\nfrappe.response[\"message\"] = count\n",
   "script_type": "API"
+ },
+ {
+  "allow_guest": 0,
+  "api_method": "stockpilot_freeze_classes",
+  "disabled": 0,
+  "docstatus": 0,
+  "doctype": "Server Script",
+  "doctype_event": "Before Insert",
+  "enable_rate_limit": 0,
+  "event_frequency": "All",
+  "modified": "2026-07-16 11:40:00.576772",
+  "name": "StockPilot Freeze Classes",
+  "rate_limit_count": 5,
+  "rate_limit_seconds": 86400,
+  "script": "res = frappe.get_doc(\"Report\", \"StockPilot Categories\").execute_script_report({\"view\": \"raw\"})\nmp = {}\nfor r in res[1]:\n    cc = (r.get(\"m\") or \"C\") + (r.get(\"v\") or \"C\")\n    mp[r.get(\"code\")] = [cc, frappe.utils.flt(r.get(\"a12\"))]\ndoc = frappe.get_doc(\"StockPilot Settings\")\ndoc.frozen_class_map = json.dumps(mp)\ndoc.frozen_on = frappe.utils.nowdate()\ndoc.save()\nfrappe.response[\"message\"] = \"%d items frozen on %s\" % (len(mp), doc.frozen_on)\n",
+  "script_type": "API"
+ },
+ {
+  "allow_guest": 0,
+  "disabled": 0,
+  "docstatus": 0,
+  "doctype": "Server Script",
+  "doctype_event": "Before Insert",
+  "enable_rate_limit": 0,
+  "event_frequency": "Daily",
+  "modified": "2026-07-16 11:40:00.732382",
+  "name": "StockPilot Class Freeze Refresh",
+  "rate_limit_count": 5,
+  "rate_limit_seconds": 86400,
+  "script": "s = frappe.get_doc(\"StockPilot Settings\")\nif frappe.utils.cint(s.freeze_classes):\n    months = frappe.utils.cint(s.class_freeze_months)\n    if months < 1:\n        months = 3\n    refresh = 0\n    if not s.frozen_on:\n        refresh = 1\n    elif frappe.utils.date_diff(frappe.utils.nowdate(), frappe.utils.add_months(s.frozen_on, months)) >= 0:\n        refresh = 1\n    if refresh:\n        res = frappe.get_doc(\"Report\", \"StockPilot Categories\").execute_script_report({\"view\": \"raw\"})\n        mp = {}\n        for r in res[1]:\n            cc = (r.get(\"m\") or \"C\") + (r.get(\"v\") or \"C\")\n            mp[r.get(\"code\")] = [cc, frappe.utils.flt(r.get(\"a12\"))]\n        s.frozen_class_map = json.dumps(mp)\n        s.frozen_on = frappe.utils.nowdate()\n        s.save()\n",
+  "script_type": "Scheduler Event"
  }
 ]

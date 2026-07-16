@@ -49,6 +49,21 @@ Filter: `{"creation": [">=", "2026-06-10 00:00:00"]}`. Top doc_types: Purchase
 Receipt, Purchase/Sales Invoice, Sales Order, Delivery Note, Quotation.
 EXCLUDES the 107-record 2026-06-09 setup burst (see EXCLUDE + Open item 2).
 
+### Amendment 2026-07-16 — StockPilot goal-11 residual captured
+- **DocType `StockPilot Settings`** (custom single, 44 fields): definition only.
+  Its VALUES (cutoffs, count frequencies, lead time, `frozen_class_map`,
+  `frozen_on`) are user-tunable runtime state — deliberately NOT fixtures.
+- **Server Scripts `StockPilot Freeze Classes`** (API) **+ `StockPilot Class
+  Freeze Refresh`** (Daily Scheduler Event): stable infra for the class
+  freeze; the scheduler must survive every deploy.
+- **Workspace / Workspace Sidebar / Desktop Icon `StockPilot`** re-exported
+  from prod (Rounds 11–12 added the Setup section + Settings shortcut; the
+  2026-07-10 export predated them and would have stripped them on migrate).
+- Boundary unchanged: the 8 StockPilot reports, 6 number cards,
+  dashboard/charts and the Make-SR/Make-PO/card server scripts stay
+  installer-managed (`custom_doctypes/stockpilot/`), NOT fixtures — fixture
+  sync would clobber installer iterations on every deploy.
+
 ## EXCLUDE (app-owned or standard — NOT ours)
 
 - **Custom fields (13 of the 39 blank-module):** `User-assistant_enabled`,
