@@ -68,6 +68,34 @@
     d.set_df_property('party_account', 'hidden', needAcct ? 0 : 1);
     d.set_df_property('party_account', 'label', pt + ' account');
     if (d.fields_dict.party.refresh) d.fields_dict.party.refresh();
+    if (ptOn) fv_pt_wire(d, pt);
+  }
+
+  /* v16 quirk (verified on staging 2026-07-16): a dialog Select created with
+   * hidden:1 renders NO <option>s — set_options() caches last_options before
+   * the input exists, then every later call early-returns as "unchanged". And
+   * hidden fields have no $input at dialog-creation time, so change handlers
+   * bound there never attach. So wire options + handlers HERE, after
+   * set_df_property('hidden', 0) has made the inputs (that part is sync). */
+  function fv_pt_wire(d, pt) {
+    var ptf = d.fields_dict.party_type;
+    if (ptf && ptf.$input) {
+      if (ptf.set_options && !ptf.$input.find('option').length) {
+        ptf.last_options = null;
+        ptf.set_options();
+      }
+      d.set_value('party_type', pt);  // sync model + display now that options exist
+      ptf.$input.off('change.fvpt').on('change.fvpt', function () {
+        d.set_value('party', ''); d.set_value('party_account', '');
+        fv_party_apply(d); fv_bind_enter(d); fv_preview(d);
+        var p = d.fields_dict.party;
+        setTimeout(function () { if (p && p.$input) p.$input.focus(); }, 80);
+      });
+    }
+    var paf = d.fields_dict.party_account;
+    if (paf && paf.$input) {
+      paf.$input.off('change.fvpt').on('change.fvpt', function () { fv_bind_enter(d); fv_preview(d); });
+    }
   }
 
   function fv_acct_query(d) {
@@ -299,17 +327,8 @@
     d.__bal = {};
     d.show();
     d.fields_dict.vtype.$input.on('change', function () { fv_relayout(d); });
-    if (d.fields_dict.party_type && d.fields_dict.party_type.$input) {
-      d.fields_dict.party_type.$input.on('change', function () {
-        d.set_value('party', ''); d.set_value('party_account', '');
-        fv_party_apply(d); fv_bind_enter(d); fv_preview(d);
-        var p = d.fields_dict.party;
-        setTimeout(function () { if (p && p.$input) p.$input.focus(); }, 80);
-      });
-    }
-    if (d.fields_dict.party_account && d.fields_dict.party_account.$input) {
-      d.fields_dict.party_account.$input.on('change', function () { fv_bind_enter(d); fv_preview(d); });
-    }
+    // party_type / party_account handlers are wired in fv_pt_wire — their
+    // inputs do not exist yet here (created hidden, made lazily on unhide).
     if (d.fields_dict.mode.$input) {
       d.fields_dict.mode.$input.on('change', function () {
         var acct = modeMap[d.get_value('mode')];
