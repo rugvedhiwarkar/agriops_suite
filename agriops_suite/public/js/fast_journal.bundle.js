@@ -29,10 +29,15 @@
 
   function fv_pt_default(vt) { return vt === 'Receipt' ? 'Customer' : 'Supplier'; }
 
+  // DOM-first: the select's DOM value reflects the user's pick instantly, while
+  // the model value updates through an async set_value chain (and a v16 refresh
+  // can even reset it to df.default mid-pass — see fv_toggle).
   function fv_pt_current(d) {
     var vt = d.get_value('vtype') || 'Payment';
     if (!fv_pt_enabled(d.cfg)) return fv_pt_default(vt);
-    return d.get_value('party_type') || fv_pt_default(vt);
+    var f = d.fields_dict.party_type;
+    var v = (f && f.$input && f.$input.val()) || d.get_value('party_type');
+    return v || fv_pt_default(vt);
   }
 
   function fv_pt_req_at(d) {
@@ -43,10 +48,20 @@
 
   // Party-side account the server will use (for the Dr/Cr preview); null means
   // the type has no default and the dialog must collect an explicit pick.
-  function fv_party_default_acct(d) {
+  function fv_party_default_acct(d, pt) {
     var cfg = d.cfg;
     if (!fv_pt_enabled(cfg)) return (d.get_value('vtype') === 'Receipt') ? cfg.receivable : cfg.payable;
-    return (cfg.party_defaults || {})[fv_pt_current(d)] || null;
+    return (cfg.party_defaults || {})[pt] || null;
+  }
+
+  // v16 (verified in the desk console 2026-07-16): set_df_property('hidden', ...)
+  // refreshes the control even when the flag did not change, and a refreshed
+  // Select RESETS to df.default — flipping both DOM and model mid-pass. Only
+  // touch hidden when it actually changes.
+  function fv_toggle(d, fn, show) {
+    var f = d.fields_dict[fn];
+    if (f && !f.df.hidden === !!show) return;
+    d.set_df_property(fn, 'hidden', show ? 0 : 1);
   }
 
   function fv_party_acct_query(d) {
@@ -60,12 +75,12 @@
     var vt = d.get_value('vtype') || 'Payment';
     var on = vt === 'Payment' || vt === 'Receipt';
     var ptOn = on && fv_pt_enabled(d.cfg);
-    var pt = fv_pt_current(d);
-    d.set_df_property('party_type', 'hidden', ptOn ? 0 : 1);
+    var pt = fv_pt_current(d);  // computed ONCE; threaded through the whole pass
+    fv_toggle(d, 'party_type', ptOn);
     d.set_df_property('party', 'label', pt);
     d.set_df_property('party', 'options', pt);
-    var needAcct = ptOn && !fv_party_default_acct(d);
-    d.set_df_property('party_account', 'hidden', needAcct ? 0 : 1);
+    var needAcct = ptOn && !fv_party_default_acct(d, pt);
+    fv_toggle(d, 'party_account', needAcct);
     d.set_df_property('party_account', 'label', pt + ' account');
     if (d.fields_dict.party.refresh) d.fields_dict.party.refresh();
     if (ptOn) fv_pt_wire(d, pt);
@@ -116,7 +131,11 @@
     var show = function (fn, on) { d.set_df_property(fn, 'hidden', on ? 0 : 1); };
     d.set_value('party', '');
     d.set_value('party_account', '');
-    if (fv_pt_enabled(d.cfg)) d.set_value('party_type', fv_pt_default(vt));
+    if (fv_pt_enabled(d.cfg)) {
+      var ptf0 = d.fields_dict.party_type;
+      if (ptf0 && ptf0.$input) ptf0.$input.val(fv_pt_default(vt));  // DOM now — set_value lands async
+      d.set_value('party_type', fv_pt_default(vt));
+    }
     ['party', 'mode', 'from_account', 'to_account'].forEach(function (fn) { show(fn, false); });
     if (vt === 'Payment') {
       show('party', true); show('mode', true); show('from_account', true);
@@ -201,7 +220,7 @@
   function fv_sides(d) {
     var vt = d.get_value('vtype');
     var from = d.get_value('from_account'), to = d.get_value('to_account');
-    var pacc = d.get_value('party_account') || fv_party_default_acct(d) || '(party account)';
+    var pacc = d.get_value('party_account') || fv_party_default_acct(d, fv_pt_current(d)) || '(party account)';
     if (vt === 'Payment') return { cr: from || '(drawer)', dr: pacc };
     if (vt === 'Receipt') return { cr: pacc, dr: to || '(drawer)' };
     return { cr: from || '(from)', dr: to || '(to)' };
