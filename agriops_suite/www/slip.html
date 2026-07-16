@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="mr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#166b41">
+<meta name="description" content="Vijay Agro Centre — driver delivery slip capture">
+<title>VAC स्लिप</title>
+<link rel="manifest" href="/api/method/agriops_suite.slip.manifest">
+<link rel="icon" href="/assets/agriops_suite/images/slip-icon-192.png">
+<link rel="apple-touch-icon" href="/assets/agriops_suite/images/slip-icon-192.png">
+<style>
+:root {
+	--green: #166b41;
+	--green-dark: #0e4d2e;
+	--green-soft: #e3f0e8;
+	--ivory: #f6f5f0;
+	--card: #ffffff;
+	--ink: #22221e;
+	--muted: #6b6b62;
+	--line: #dddbd2;
+	--amber: #b45309;
+	--amber-soft: #fdf0e0;
+	--red: #b91c1c;
+	--red-soft: #fdecec;
+	--radius: 14px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html { font-size: 17px; }
+body {
+	font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans Devanagari", sans-serif;
+	background: var(--ivory); color: var(--ink);
+	min-height: 100vh; overscroll-behavior-y: contain;
+}
+button { font: inherit; border: 0; cursor: pointer; background: none; color: inherit; }
+input { font: inherit; color: inherit; }
+#app { max-width: 480px; margin: 0 auto; padding-bottom: 40px; }
+
+/* header */
+.hdr {
+	position: sticky; top: 0; z-index: 20;
+	background: var(--green); color: #fff;
+	padding: 12px 14px calc(12px);
+	display: flex; align-items: center; gap: 10px;
+	box-shadow: 0 2px 8px rgba(0,0,0,.18);
+}
+.hdr .ttl { font-size: 1.15rem; font-weight: 700; letter-spacing: .3px; }
+.hdr .who { font-size: .8rem; opacity: .85; margin-top: 1px; }
+.hdr .grow { flex: 1; }
+.netdot { width: 11px; height: 11px; border-radius: 50%; background: #7ef0ae; box-shadow: 0 0 6px #7ef0ae; }
+.netdot.off { background: #f3b13c; box-shadow: none; }
+.hdr .sync {
+	min-width: 44px; height: 44px; border-radius: 12px; font-size: 1.35rem;
+	background: rgba(255,255,255,.14); color: #fff; display: flex; align-items: center; justify-content: center;
+}
+.hdr .sync:active { background: rgba(255,255,255,.3); }
+.hdr .sync.spin { animation: spin 1s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.pendbadge {
+	background: #fff; color: var(--green-dark); font-weight: 800; font-size: .85rem;
+	border-radius: 999px; padding: 3px 10px;
+}
+
+/* offline banner */
+.offbar {
+	background: var(--amber-soft); color: var(--amber);
+	font-size: .88rem; font-weight: 600; text-align: center;
+	padding: 8px 12px; border-bottom: 1px solid #f0ddc2;
+}
+
+/* cards & form */
+.card { background: var(--card); border-radius: var(--radius); box-shadow: 0 1px 4px rgba(40,40,20,.08); margin: 14px 12px; padding: 16px 14px; }
+.flabel { display: flex; align-items: baseline; gap: 8px; font-weight: 700; font-size: 1.02rem; margin: 18px 2px 8px; }
+.flabel:first-child { margin-top: 2px; }
+.flabel .num {
+	background: var(--green-soft); color: var(--green-dark);
+	border-radius: 8px; min-width: 28px; height: 28px; display: inline-flex; align-items: center; justify-content: center;
+	font-size: .95rem;
+}
+.flabel .hint { font-weight: 500; font-size: .8rem; color: var(--muted); }
+.tin {
+	width: 100%; border: 2px solid var(--line); border-radius: 12px;
+	padding: 13px 14px; font-size: 1.25rem; background: #fff;
+}
+.tin:focus { outline: none; border-color: var(--green); }
+.row { display: flex; gap: 10px; }
+.row > * { flex: 1; }
+.chip {
+	border: 2px solid var(--line); border-radius: 999px; padding: 9px 14px;
+	font-size: .95rem; font-weight: 600; background: #fff; white-space: nowrap;
+}
+.chip:active, .chip.on { border-color: var(--green); background: var(--green-soft); color: var(--green-dark); }
+
+/* big toggle (from-place) */
+.fromgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.fromgrid button {
+	border: 2px solid var(--line); border-radius: var(--radius); background: #fff;
+	padding: 14px 8px; text-align: center; min-height: 84px;
+}
+.fromgrid .b1 { font-weight: 800; font-size: 1.02rem; }
+.fromgrid .b2 { font-size: .8rem; color: var(--muted); margin-top: 4px; }
+.fromgrid button.on { border-color: var(--green); background: var(--green-soft); }
+.fromgrid button.on .b1 { color: var(--green-dark); }
+.dirhint { margin-top: 8px; font-size: .92rem; font-weight: 700; text-align: center; border-radius: 10px; padding: 7px; }
+.dirhint.pur { background: var(--green-soft); color: var(--green-dark); }
+.dirhint.sal { background: #e7ecfb; color: #24418f; }
+
+/* item grid */
+.itemgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.itemgrid button {
+	border: 2px solid var(--line); border-radius: var(--radius); background: #fff;
+	padding: 12px 8px; min-height: 64px; font-weight: 700; font-size: .93rem; line-height: 1.25;
+}
+.itemgrid button.on { border-color: var(--green); background: var(--green-soft); color: var(--green-dark); }
+.itemgrid button.more { border-style: dashed; color: var(--muted); font-weight: 600; }
+.itemsel {
+	margin-top: 10px; background: var(--green-soft); color: var(--green-dark);
+	border-radius: 10px; padding: 10px 12px; font-weight: 800; font-size: 1.05rem;
+	display: none; align-items: center; gap: 8px;
+}
+.itemsel.show { display: flex; }
+
+/* qty */
+.qtyrow { display: flex; gap: 10px; align-items: stretch; }
+.qtyrow .tin { text-align: center; font-size: 1.7rem; font-weight: 800; }
+.qbtn {
+	min-width: 62px; border: 2px solid var(--line); border-radius: 12px; background: #fff;
+	font-size: 1.6rem; font-weight: 800; color: var(--green-dark);
+}
+.qbtn:active { background: var(--green-soft); }
+
+/* photo */
+.photorow { display: flex; align-items: center; gap: 12px; margin-top: 4px; }
+.pbtn {
+	flex: 1; border: 2px dashed var(--line); border-radius: 12px; padding: 12px;
+	font-weight: 600; color: var(--muted); font-size: .95rem; text-align: center;
+}
+.pthumb { width: 58px; height: 58px; border-radius: 10px; object-fit: cover; display: none; border: 2px solid var(--line); }
+.pthumb.show { display: block; }
+
+/* save */
+.save {
+	width: 100%; margin-top: 20px; background: var(--green); color: #fff;
+	border-radius: var(--radius); padding: 17px; font-size: 1.25rem; font-weight: 800;
+	box-shadow: 0 3px 10px rgba(22,107,65,.35);
+}
+.save:active { background: var(--green-dark); }
+
+/* queue list */
+.qhead { display: flex; align-items: center; margin: 20px 14px 4px; gap: 8px; }
+.qhead h2 { font-size: 1rem; color: var(--muted); font-weight: 700; }
+.qitem { display: flex; gap: 10px; align-items: center; padding: 12px 4px; border-bottom: 1px solid var(--line); }
+.qitem:last-child { border-bottom: 0; }
+.qitem .qi1 { font-weight: 700; font-size: .97rem; }
+.qitem .qi2 { font-size: .82rem; color: var(--muted); margin-top: 2px; }
+.qitem .grow { flex: 1; min-width: 0; }
+.badge { font-size: .78rem; font-weight: 800; border-radius: 999px; padding: 4px 10px; white-space: nowrap; }
+.badge.wait { background: var(--amber-soft); color: var(--amber); }
+.badge.ok { background: var(--green-soft); color: var(--green-dark); }
+.badge.err { background: var(--red-soft); color: var(--red); }
+.empty { text-align: center; color: var(--muted); padding: 18px 0 8px; font-size: .92rem; }
+
+/* pairing */
+.pairwrap { padding: 48px 22px; text-align: center; }
+.pairwrap .logo {
+	width: 88px; height: 88px; border-radius: 22px; background: var(--green); color: #fff;
+	font-size: 2.6rem; display: flex; align-items: center; justify-content: center; margin: 0 auto 18px;
+	font-weight: 800;
+}
+.pairwrap h1 { font-size: 1.35rem; margin-bottom: 10px; }
+.pairwrap p { color: var(--muted); font-size: .95rem; line-height: 1.55; margin-bottom: 22px; }
+.pairerr { color: var(--red); font-weight: 700; font-size: .9rem; margin-top: 12px; min-height: 1.2em; }
+
+/* search overlay */
+.ovl { position: fixed; inset: 0; background: var(--ivory); z-index: 50; display: none; flex-direction: column; }
+.ovl.show { display: flex; }
+.ovl .obar { display: flex; gap: 8px; padding: 10px 12px; background: var(--green); }
+.ovl .obar .tin { border: 0; font-size: 1.1rem; }
+.ovl .obar .back { color: #fff; font-size: 1.5rem; min-width: 44px; }
+.ovl .olist { flex: 1; overflow-y: auto; padding: 6px 12px 30px; }
+.ovl .olist button {
+	display: block; width: 100%; text-align: left; background: #fff; border: 1px solid var(--line);
+	border-radius: 10px; padding: 13px 14px; margin-top: 8px; font-weight: 600; font-size: .98rem;
+}
+.ovl .olist button:active { background: var(--green-soft); }
+.ovl .olist .uom { color: var(--muted); font-size: .8rem; font-weight: 500; }
+
+/* toast */
+#toast {
+	position: fixed; left: 50%; bottom: 26px; transform: translateX(-50%) translateY(90px);
+	background: var(--ink); color: #fff; border-radius: 12px; padding: 12px 20px;
+	font-weight: 700; font-size: .97rem; z-index: 99; transition: transform .25s ease; max-width: 90vw;
+	box-shadow: 0 6px 20px rgba(0,0,0,.3);
+}
+#toast.show { transform: translateX(-50%) translateY(0); }
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div id="toast"></div>
+
+{% raw %}
+<script>
+"use strict";
+/* ============================================================
+   VAC स्लिप — Driver Slip PWA
+   Offline-first capture of the paper transport book's 5 fields.
+   One slip = one document; sync is idempotent on client_uid.
+   ============================================================ */
+
+var LS = window.localStorage;
+var $id = function (i) { return document.getElementById(i); };
+
+/* ---------- tiny IndexedDB wrapper ---------- */
+var _db = null;
+function db() {
+	return _db ? Promise.resolve(_db) : new Promise(function (res, rej) {
+		var r = indexedDB.open("vacslip", 1);
+		r.onupgradeneeded = function () {
+			var d = r.result;
+			if (!d.objectStoreNames.contains("queue")) d.createObjectStore("queue", { keyPath: "uid" });
+			if (!d.objectStoreNames.contains("photos")) d.createObjectStore("photos", { keyPath: "uid" });
+		};
+		r.onsuccess = function () { _db = r.result; res(_db); };
+		r.onerror = function () { rej(r.error); };
+	});
+}
+function idbPut(st, v) { return db().then(function (d) { return new Promise(function (res, rej) { var t = d.transaction(st, "readwrite"); t.objectStore(st).put(v); t.oncomplete = function () { res(); }; t.onerror = function () { rej(t.error); }; }); }); }
+function idbDel(st, k) { return db().then(function (d) { return new Promise(function (res, rej) { var t = d.transaction(st, "readwrite"); t.objectStore(st).delete(k); t.oncomplete = function () { res(); }; t.onerror = function () { rej(t.error); }; }); }); }
+function idbGet(st, k) { return db().then(function (d) { return new Promise(function (res, rej) { var q = d.transaction(st).objectStore(st).get(k); q.onsuccess = function () { res(q.result); }; q.onerror = function () { rej(q.error); }; }); }); }
+function idbAll(st) { return db().then(function (d) { return new Promise(function (res, rej) { var q = d.transaction(st).objectStore(st).getAll(); q.onsuccess = function () { res(q.result || []); }; q.onerror = function () { rej(q.error); }; }); }); }
+
+/* ---------- api ---------- */
+function api(path, opts) {
+	opts = opts || {};
+	var headers = opts.headers || {};
+	if (LS.vacslip_token) headers["Authorization"] = "token " + LS.vacslip_token;
+	var body = opts.body;
+	if (opts.json) { headers["Content-Type"] = "application/json"; body = JSON.stringify(opts.json); }
+	return fetch(path, { method: opts.method || "GET", headers: headers, body: body }).catch(function () {
+		throw { net: true, message: "नेटवर्क नाही" };
+	}).then(function (res) {
+		if (res.status === 401 || res.status === 403) throw { auth: true, message: "जोडणी अवैध" };
+		return res.text().then(function (text) {
+			var data = {};
+			try { data = JSON.parse(text); } catch (e) { }
+			if (!res.ok) {
+				var m = data.exception || ("HTTP " + res.status);
+				if (data._server_messages) {
+					try { m = JSON.parse(JSON.parse(data._server_messages)[0]).message || m; } catch (e) { }
+				}
+				throw { message: String(m).replace(/<[^>]*>/g, "").slice(0, 160) };
+			}
+			return data;
+		});
+	});
+}
+
+/* ---------- bootstrap cache (driver name, shortlist, item master) ---------- */
+function getBoot() { try { return JSON.parse(LS.vacslip_boot || "null"); } catch (e) { return null; } }
+function refreshBoot(force) {
+	var boot = getBoot();
+	if (!force && boot && Date.now() - boot.ts < 24 * 3600 * 1000) return Promise.resolve(boot);
+	if (!navigator.onLine && boot) return Promise.resolve(boot);
+	return api("/api/method/driver_slip_bootstrap", { method: "POST" }).then(function (r) {
+		var b = r.message || {}; b.ts = Date.now();
+		LS.vacslip_boot = JSON.stringify(b);
+		return b;
+	}).catch(function (e) {
+		if (e.auth && !boot) throw e;
+		return boot; // stale is fine offline
+	});
+}
+function itemLabel(code) {
+	var b = getBoot();
+	if (b && b.items) for (var i = 0; i < b.items.length; i++) if (b.items[i].name === code) return b.items[i].item_name || code;
+	return code;
+}
+
+/* ---------- recent destinations ---------- */
+function getDests() { try { return JSON.parse(LS.vacslip_dests || "[]"); } catch (e) { return []; } }
+function pushDest(d) {
+	if (!d) return;
+	var a = getDests().filter(function (x) { return x !== d; });
+	a.unshift(d);
+	LS.vacslip_dests = JSON.stringify(a.slice(0, 15));
+}
+
+/* ---------- sync engine ---------- */
+var syncing = false;
+function syncNow() {
+	if (syncing || !navigator.onLine || !LS.vacslip_token) { updateNet(); return Promise.resolve(); }
+	syncing = true; updateNet();
+	return idbAll("queue").then(function (items) {
+		items.sort(function (a, b) { return a.created_at - b.created_at; });
+		var chain = Promise.resolve();
+		items.filter(function (x) { return x.state === "queued" || x.state === "error"; }).forEach(function (q) {
+			chain = chain.then(function () {
+				return api("/api/method/driver_slip_submit", {
+					method: "POST",
+					json: { client_uid: q.uid, slip_date: q.slip_date, challan_no: q.challan_no, from_place: q.from_place, item: q.item, qty: q.qty, destination: q.destination }
+				}).then(function (r) {
+					q.server_name = (r.message || {}).name || "";
+					q.state = q.has_photo ? "synced" : "done";
+					q.err = "";
+					return idbPut("queue", q).then(renderList);
+				}).catch(function (e) {
+					if (e.auth) { needPair(); throw e; }
+					if (e.net) throw e; // stop the chain, we're offline
+					q.state = "error"; q.err = e.message || "?";
+					return idbPut("queue", q).then(renderList);
+				});
+			});
+		});
+		return chain.then(function () { return idbAll("queue"); });
+	}).then(function (items) {
+		// photo follow-ups (best-effort, after the slip itself is safe)
+		var chain = Promise.resolve();
+		items.filter(function (x) { return x.state === "synced"; }).forEach(function (q) {
+			chain = chain.then(function () {
+				return idbGet("photos", q.uid).then(function (ph) {
+					if (!ph || !ph.blob) { q.state = "done"; return idbPut("queue", q).then(renderList); }
+					var fd = new FormData();
+					fd.append("file", ph.blob, q.uid + ".jpg");
+					fd.append("is_private", "1");
+					fd.append("doctype", "Driver Slip");
+					fd.append("docname", q.server_name);
+					fd.append("fieldname", "slip_photo");
+					return api("/api/method/upload_file", { method: "POST", body: fd }).then(function (up) {
+						/* v16 upload_file attaches the File but does NOT set the doc
+						   field — write slip_photo ourselves. If the office already
+						   reviewed the slip (edit lock), the attachment alone is fine. */
+						var furl = (up.message || {}).file_url;
+						var setField = furl
+							? api("/api/resource/Driver Slip/" + encodeURIComponent(q.server_name), { method: "PUT", json: { slip_photo: furl } }).catch(function (e) { if (e.auth) throw e; })
+							: Promise.resolve();
+						return setField.then(function () {
+							q.state = "done";
+							return idbDel("photos", q.uid).then(function () { return idbPut("queue", q); }).then(renderList);
+						});
+					}).catch(function (e) {
+						if (e.auth) { needPair(); throw e; }
+						/* keep photo queued for a later pass */
+					});
+				});
+			});
+		});
+		return chain;
+	}).catch(function () { /* offline or auth — queue stays */ })
+	.then(function () { syncing = false; updateNet(); renderList(); });
+}
+
+/* ---------- ui helpers ---------- */
+var toastTimer = null;
+function toast(msg) {
+	var t = $id("toast"); t.textContent = msg; t.classList.add("show");
+	clearTimeout(toastTimer);
+	toastTimer = setTimeout(function () { t.classList.remove("show"); }, 2200);
+}
+function today() {
+	var d = new Date();
+	return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+}
+function niceDate(iso) {
+	if (!iso) return "";
+	var p = iso.split("-");
+	return p[2] + "/" + p[1];
+}
+function uidNew() {
+	return (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : "u" + Date.now() + "-" + Math.random().toString(36).slice(2, 10);
+}
+
+/* ---------- pairing ---------- */
+function checkPairFromHash() {
+	var m = (location.hash || "").match(/[#&]pair=([^&]+)/);
+	if (m) {
+		LS.vacslip_token_candidate = decodeURIComponent(m[1]).trim();
+		history.replaceState(null, "", location.pathname);
+	}
+}
+function tryPair(tok) {
+	tok = (tok || "").trim();
+	if (!tok || tok.indexOf(":") < 1) return Promise.reject({ message: "कोड चुकीचा आहे" });
+	var prev = LS.vacslip_token;
+	LS.vacslip_token = tok;
+	return api("/api/method/driver_slip_bootstrap", { method: "POST" }).then(function (r) {
+		var b = r.message || {}; b.ts = Date.now();
+		LS.vacslip_boot = JSON.stringify(b);
+		delete LS.vacslip_token_candidate;
+		return b;
+	}).catch(function (e) {
+		if (prev) LS.vacslip_token = prev; else LS.removeItem("vacslip_token");
+		throw e.net ? { message: "इंटरनेट नाही — नेटवर्क चालू करून पुन्हा प्रयत्न करा" } : { message: "जोडणी जमली नाही — ऑफिसशी संपर्क करा" };
+	});
+}
+function needPair() {
+	renderPair("जोडणी संपली आहे किंवा बदलली आहे — ऑफिसकडून नवीन QR कोड घ्या.");
+}
+
+/* ---------- screens ---------- */
+function renderPair(msg) {
+	var el = $id("app");
+	el.innerHTML =
+		'<div class="pairwrap">' +
+		'<div class="logo">V</div>' +
+		'<h1>VAC स्लिप — जोडणी</h1>' +
+		'<p>ऑफिसकडून मिळालेला QR कोड फोनच्या कॅमेऱ्याने स्कॅन करा.<br>किंवा जोडणी कोड खाली टाका.</p>' +
+		'<input id="pairin" class="tin" placeholder="जोडणी कोड" autocomplete="off" autocapitalize="off" spellcheck="false">' +
+		'<button id="pairgo" class="save">जोडा</button>' +
+		'<div id="pairerr" class="pairerr">' + (msg || "") + "</div>" +
+		"</div>";
+	$id("pairgo").onclick = function () {
+		$id("pairerr").textContent = "जोडणी चालू आहे…";
+		tryPair($id("pairin").value).then(function () { boot(); toast("जोडणी झाली ✓"); }).catch(function (e) {
+			$id("pairerr").textContent = e.message || "जमले नाही";
+		});
+	};
+}
+
+var F = { slip_date: "", challan_no: "", from_place: "", item: "", qty: "", destination: "", photo: null };
+
+function renderMain() {
+	var b = getBoot() || {};
+	var el = $id("app");
+	el.innerHTML =
+		'<header class="hdr">' +
+		'<div><div class="ttl">VAC स्लिप</div><div class="who">' + (b.driver || "") + "</div></div>" +
+		'<div class="grow"></div>' +
+		'<span id="pend" class="pendbadge" style="display:none"></span>' +
+		'<div id="netdot" class="netdot"></div>' +
+		'<button id="syncbtn" class="sync" aria-label="sync">↻</button>' +
+		"</header>" +
+		'<div id="offbar" class="offbar" style="display:none">इंटरनेट नाही — स्लिप फोनमध्ये जतन होईल, नंतर आपोआप जाईल</div>' +
+		'<div class="card" id="formcard">' +
+
+		'<div class="flabel"><span class="num">१</span> तारीख</div>' +
+		'<div class="row"><input id="f_date" type="date" class="tin"><button id="f_today" class="chip" style="flex:0 0 auto">आज</button></div>' +
+
+		'<div class="flabel"><span class="num">२</span> बिल नं <span class="hint">(स्लिप बुकातला)</span></div>' +
+		'<input id="f_challan" class="tin" inputmode="numeric" autocomplete="off" placeholder="—">' +
+
+		'<div class="flabel"><span class="num">३</span> माल कुठून निघाला?</div>' +
+		'<div class="fromgrid">' +
+		'<button id="fp_kp"><div class="b1">मेन स्टोअर<br>परसवाडा</div><div class="b2">प्लांटवरून माल आणला</div></button>' +
+		'<button id="fp_vac"><div class="b1">परिजात</div><div class="b2">दुकानातून माल नेला</div></button>' +
+		"</div>" +
+		'<div id="dirhint" class="dirhint" style="display:none"></div>' +
+
+		'<div class="flabel"><span class="num">४</span> मालाचे नाव</div>' +
+		'<div id="itemgrid" class="itemgrid"></div>' +
+		'<div id="itemsel" class="itemsel"><span>✓</span><span id="itemselname"></span></div>' +
+
+		'<div class="flabel"><span class="num">५</span> नग <span class="hint">(पोती / बॅगा)</span></div>' +
+		'<div class="qtyrow">' +
+		'<button class="qbtn" id="q_minus">−</button>' +
+		'<input id="f_qty" class="tin" inputmode="numeric" placeholder="0" autocomplete="off">' +
+		'<button class="qbtn" id="q_plus">+</button>' +
+		"</div>" +
+
+		'<div class="flabel"><span class="num">६</span> कुठे नेला? <span class="hint">(गाव — फक्त माहितीसाठी)</span></div>' +
+		'<input id="f_dest" class="tin" autocomplete="off" list="destlist" placeholder="गावाचे नाव">' +
+		"<datalist id='destlist'></datalist>" +
+
+		'<div class="flabel">फोटो <span class="hint">(ऐच्छिक)</span></div>' +
+		'<div class="photorow">' +
+		'<button id="pbtn" class="pbtn">📷 स्लिपचा फोटो जोडा</button>' +
+		'<img id="pthumb" class="pthumb" alt="">' +
+		'<input id="f_photo" type="file" accept="image/*" capture="environment" style="display:none">' +
+		"</div>" +
+
+		'<button id="savebtn" class="save">✓ स्लिप जतन करा</button>' +
+		"</div>" +
+
+		'<div class="qhead"><h2>स्लिपा</h2></div>' +
+		'<div class="card" id="qlist" style="margin-top:4px"></div>' +
+
+		'<div id="ovl" class="ovl">' +
+		'<div class="obar"><button class="back" id="ovlback">←</button><input id="ovlin" class="tin" placeholder="माल शोधा…" autocomplete="off"></div>' +
+		'<div class="olist" id="ovllist"></div>' +
+		"</div>";
+
+	/* wire up */
+	$id("f_date").value = F.slip_date || today();
+	$id("f_today").onclick = function () { $id("f_date").value = today(); };
+	$id("f_challan").value = F.challan_no || "";
+	$id("f_qty").value = F.qty || "";
+	$id("f_dest").value = F.destination || "";
+
+	var dl = $id("destlist");
+	getDests().forEach(function (d) { var o = document.createElement("option"); o.value = d; dl.appendChild(o); });
+
+	$id("fp_kp").onclick = function () { setFrom("Main Store Paraswada (KP)"); };
+	$id("fp_vac").onclick = function () { setFrom("Parijat (VAC)"); };
+	if (F.from_place) setFrom(F.from_place);
+
+	renderItemGrid();
+	if (F.item) setItem(F.item, true);
+
+	$id("q_minus").onclick = function () { bump(-1); };
+	$id("q_plus").onclick = function () { bump(1); };
+
+	$id("pbtn").onclick = function () { $id("f_photo").click(); };
+	$id("f_photo").onchange = function () {
+		var f = this.files && this.files[0];
+		if (!f) return;
+		shrinkImage(f).then(function (blob) {
+			F.photo = blob;
+			var u = URL.createObjectURL(blob);
+			var t = $id("pthumb"); t.src = u; t.classList.add("show");
+			$id("pbtn").textContent = "📷 फोटो जोडला ✓ (बदलण्यासाठी दाबा)";
+		});
+	};
+
+	$id("savebtn").onclick = saveSlip;
+	$id("syncbtn").onclick = function () { toast("पाठवत आहे…"); syncNow(); };
+	$id("ovlback").onclick = function () { $id("ovl").classList.remove("show"); };
+	$id("ovlin").oninput = function () { renderOvlList(this.value); };
+
+	updateNet();
+	renderList();
+}
+
+function setFrom(v) {
+	F.from_place = v;
+	var kp = v.indexOf("Main Store") === 0;
+	$id("fp_kp").classList.toggle("on", kp);
+	$id("fp_vac").classList.toggle("on", !kp);
+	var h = $id("dirhint");
+	h.style.display = "block";
+	h.className = "dirhint " + (kp ? "pur" : "sal");
+	h.textContent = kp ? "खरेदी — KP कडून माल आला" : "विक्री — KP ला माल गेला";
+}
+
+function renderItemGrid() {
+	var b = getBoot() || {};
+	var g = $id("itemgrid");
+	g.innerHTML = "";
+	(b.shortlist || []).slice(0, 7).forEach(function (code) {
+		var btn = document.createElement("button");
+		btn.textContent = itemLabel(code);
+		btn.dataset.code = code;
+		btn.onclick = function () { setItem(code); };
+		g.appendChild(btn);
+	});
+	var more = document.createElement("button");
+	more.className = "more";
+	more.textContent = "🔍 दुसरा माल…";
+	more.onclick = function () {
+		$id("ovl").classList.add("show");
+		$id("ovlin").value = "";
+		renderOvlList("");
+		$id("ovlin").focus();
+	};
+	g.appendChild(more);
+}
+
+function setItem(code, silent) {
+	F.item = code;
+	var g = $id("itemgrid");
+	Array.prototype.forEach.call(g.children, function (c) { c.classList.toggle("on", c.dataset.code === code); });
+	var found = false;
+	Array.prototype.forEach.call(g.children, function (c) { if (c.dataset.code === code) found = true; });
+	var sel = $id("itemsel");
+	if (!found) { $id("itemselname").textContent = itemLabel(code); sel.classList.add("show"); }
+	else sel.classList.remove("show");
+	if (!silent) $id("ovl").classList.remove("show");
+}
+
+function renderOvlList(qstr) {
+	var b = getBoot() || {};
+	var list = $id("ovllist");
+	list.innerHTML = "";
+	var q = (qstr || "").toLowerCase().trim();
+	var hits = 0;
+	(b.items || []).some(function (it) {
+		var lbl = (it.item_name || it.name);
+		if (q && lbl.toLowerCase().indexOf(q) < 0 && it.name.toLowerCase().indexOf(q) < 0) return false;
+		var btn = document.createElement("button");
+		btn.innerHTML = lbl.replace(/</g, "&lt;") + ' <span class="uom">' + (it.stock_uom || "") + "</span>";
+		btn.onclick = function () { setItem(it.name); };
+		list.appendChild(btn);
+		hits++;
+		return hits >= 30;
+	});
+	if (!hits) list.innerHTML = '<div class="empty">काही सापडले नाही</div>';
+}
+
+function bump(d) {
+	var i = $id("f_qty");
+	var v = parseFloat(i.value || "0") + d;
+	i.value = v > 0 ? String(v) : "";
+}
+
+function shrinkImage(file) {
+	return new Promise(function (res) {
+		var img = new Image();
+		img.onload = function () {
+			var MAX = 1600;
+			var w = img.width, h = img.height;
+			if (w > MAX || h > MAX) { var k = MAX / Math.max(w, h); w = Math.round(w * k); h = Math.round(h * k); }
+			var c = document.createElement("canvas");
+			c.width = w; c.height = h;
+			c.getContext("2d").drawImage(img, 0, 0, w, h);
+			c.toBlob(function (b) { res(b || file); URL.revokeObjectURL(img.src); }, "image/jpeg", 0.72);
+		};
+		img.onerror = function () { res(file); };
+		img.src = URL.createObjectURL(file);
+	});
+}
+
+function saveSlip() {
+	var date = $id("f_date").value;
+	var challan = $id("f_challan").value.trim();
+	var qty = parseFloat($id("f_qty").value || "0");
+	var dest = $id("f_dest").value.trim();
+	if (!date) return toast("१ — तारीख भरा");
+	if (!challan) return toast("२ — बिल नं भरा");
+	if (!F.from_place) return toast("३ — माल कुठून ते निवडा");
+	if (!F.item) return toast("४ — मालाचे नाव निवडा");
+	if (!(qty > 0)) return toast("५ — नग भरा");
+
+	var q = {
+		uid: uidNew(),
+		slip_date: date, challan_no: challan, from_place: F.from_place,
+		item: F.item, item_label: itemLabel(F.item), qty: qty, destination: dest,
+		has_photo: !!F.photo, state: "queued", server_name: "", err: "",
+		created_at: Date.now()
+	};
+	var photo = F.photo;
+	idbPut("queue", q).then(function () {
+		if (photo) return idbPut("photos", { uid: q.uid, blob: photo });
+	}).then(function () {
+		pushDest(dest);
+		/* sticky fields for the next slip of the same trip: date, from, item */
+		F.photo = null; F.qty = ""; F.destination = "";
+		var num = parseInt(challan, 10);
+		F.challan_no = isNaN(num) ? "" : String(num + 1);
+		F.slip_date = date;
+		renderMain();
+		toast("स्लिप जतन झाली ✓");
+		syncNow();
+	}).catch(function () { toast("जतन जमले नाही — पुन्हा प्रयत्न करा"); });
+}
+
+function renderList() {
+	var wrap = $id("qlist");
+	if (!wrap) return;
+	idbAll("queue").then(function (items) {
+		items.sort(function (a, b) { return b.created_at - a.created_at; });
+		/* prune old finished entries */
+		var cutoff = Date.now() - 60 * 24 * 3600 * 1000;
+		items.filter(function (x) { return x.state === "done" && x.created_at < cutoff; }).forEach(function (x) { idbDel("queue", x.uid); });
+		items = items.filter(function (x) { return !(x.state === "done" && x.created_at < cutoff); }).slice(0, 30);
+
+		var pend = items.filter(function (x) { return x.state === "queued" || x.state === "error"; }).length;
+		var pb = $id("pend");
+		if (pb) { pb.style.display = pend ? "" : "none"; pb.textContent = pend + " बाकी"; }
+
+		if (!items.length) { wrap.innerHTML = '<div class="empty">अजून एकही स्लिप नाही</div>'; return; }
+		wrap.innerHTML = "";
+		items.forEach(function (q) {
+			var d = document.createElement("div");
+			d.className = "qitem";
+			var badge;
+			if (q.state === "queued") badge = '<span class="badge wait">पाठवायची ⏳</span>';
+			else if (q.state === "error") badge = '<span class="badge err">अडचण — पुन्हा जाईल</span>';
+			else if (q.state === "synced") badge = '<span class="badge ok">पोहोचली ✓ फोटो बाकी</span>';
+			else badge = '<span class="badge ok">पोहोचली ✓</span>';
+			var dir = (q.from_place || "").indexOf("Main Store") === 0 ? "खरेदी" : "विक्री";
+			d.innerHTML =
+				'<div class="grow"><div class="qi1">' + (q.item_label || q.item) + " — " + q.qty + " नग</div>" +
+				'<div class="qi2">' + niceDate(q.slip_date) + " · बिल " + q.challan_no + " · " + dir +
+				(q.destination ? " · " + q.destination : "") +
+				(q.server_name ? " · " + q.server_name : "") + "</div></div>" + badge;
+			wrap.appendChild(d);
+		});
+	});
+}
+
+function updateNet() {
+	var dot = $id("netdot"), bar = $id("offbar"), btn = $id("syncbtn");
+	if (!dot) return;
+	var on = navigator.onLine;
+	dot.classList.toggle("off", !on);
+	bar.style.display = on ? "none" : "";
+	if (btn) btn.classList.toggle("spin", syncing);
+}
+
+/* ---------- boot ---------- */
+function boot() {
+	checkPairFromHash();
+	if (LS.vacslip_token_candidate) {
+		var cand = LS.vacslip_token_candidate;
+		renderPair("जोडणी चालू आहे…");
+		tryPair(cand).then(function () { boot(); toast("जोडणी झाली ✓"); }).catch(function (e) { renderPair(e.message); });
+		return;
+	}
+	if (!LS.vacslip_token) { renderPair(""); return; }
+	renderMain();
+	refreshBoot(false).then(function () { renderItemGrid(); if (F.item) setItem(F.item, true); var b = getBoot(); if (b) { var w = document.querySelector(".hdr .who"); if (w) w.textContent = b.driver || ""; } }).catch(function (e) { if (e.auth) needPair(); });
+	syncNow();
+}
+
+window.addEventListener("hashchange", function () {
+	if ((location.hash || "").indexOf("pair=") >= 0) boot();
+});
+window.addEventListener("online", function () { updateNet(); syncNow(); });
+window.addEventListener("offline", updateNet);
+document.addEventListener("visibilitychange", function () { if (!document.hidden) syncNow(); });
+
+if ("serviceWorker" in navigator) {
+	try { navigator.serviceWorker.register("/api/method/agriops_suite.slip.sw", { scope: "/slip" }).catch(function () { }); } catch (e) { }
+}
+
+boot();
+</script>
+{% endraw %}
+</body>
+</html>

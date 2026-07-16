@@ -107,6 +107,17 @@ doc_events = {
 # ---------------------------------------------------------------------------
 
 fixtures = [
+    # --- Roles our DocTypes' permissions reference -------------------------
+    # MUST sync before the DocType block: Driver Slip's permission rows link
+    # to Role "Driver", so a fresh site needs the role row first.
+    # NB: keep is_custom=0 on Driver — a role with is_custom=1 cannot be
+    # granted on a custom DocType by non-Administrator users (v16
+    # validate_permission_for_all_role), which breaks REST/fixture edits.
+    {
+        "dt": "Role",
+        "filters": {"name": ["in", ["Driver"]]},
+    },
+
     # --- Our custom DocType definitions (records are seeded separately) -----
     {
         "dt": "DocType",
@@ -137,6 +148,10 @@ fixtures = [
                     # state and are deliberately NOT fixtures: a deploy must
                     # never reset them.
                     "StockPilot Settings",
+                    # Driver Slip PWA (/slip): the phone-captured transport-log
+                    # record. Series DRS- ("Expression (old style)" — format:
+                    # autoname's bare {#####} shares ONE global counter).
+                    "Driver Slip",
                 ],
             ]
         },
@@ -214,6 +229,9 @@ fixtures = [
                     "VAC Print Buttons - Purchase Order",
                     "VAC Print Buttons - Purchase Receipt",
                     "VAC Print Buttons - Purchase Invoice",
+                    # Driver Slip office review: Make Invoice button + challan
+                    # duplicate warning (the PWA's desk-side counterpart)
+                    "Driver Slip - Make Invoice",
                 ],
             ]
         },
@@ -264,6 +282,14 @@ fixtures = [
                     "LedgerLift Due Followups",
                     "StockPilot Freeze Classes",
                     "StockPilot Class Freeze Refresh",
+                    # Driver Slip PWA endpoints (DB records like LedgerLift's;
+                    # safe_exec notes: no generate_hash / get_roles in there —
+                    # uid fallback is "desk-"+doc.name, office check is
+                    # user_type System User vs Website User)
+                    "Driver Slip Validate",
+                    "Driver Slip Submit",
+                    "Driver Slip Bootstrap",
+                    "Driver Slip Make Invoice",
                 ],
             ]
         },
