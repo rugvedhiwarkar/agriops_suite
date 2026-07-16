@@ -20,6 +20,56 @@
     return ['from_account', 'to_account', 'amount']; // Contra / Journal
   }
 
+  /* Party-type support (Customer / Supplier / Employee / Shareholder).
+   * Gated on cfg.party_types from fast_voucher_config: absent -> the selector
+   * never renders and the payload carries no party_type, i.e. the original
+   * fixed Payment=Supplier / Receipt=Customer behaviour (prod stays inert
+   * until its config + post scripts are promoted). */
+  function fv_pt_enabled(cfg) { return !!(cfg.party_types && cfg.party_types.length); }
+
+  function fv_pt_default(vt) { return vt === 'Receipt' ? 'Customer' : 'Supplier'; }
+
+  function fv_pt_current(d) {
+    var vt = d.get_value('vtype') || 'Payment';
+    if (!fv_pt_enabled(d.cfg)) return fv_pt_default(vt);
+    return d.get_value('party_type') || fv_pt_default(vt);
+  }
+
+  function fv_pt_req_at(d) {
+    var pt = fv_pt_current(d);
+    var rows = (d.cfg.party_types || []).filter(function (r) { return r.party_type === pt; });
+    return rows.length ? rows[0].account_type : null;
+  }
+
+  // Party-side account the server will use (for the Dr/Cr preview); null means
+  // the type has no default and the dialog must collect an explicit pick.
+  function fv_party_default_acct(d) {
+    var cfg = d.cfg;
+    if (!fv_pt_enabled(cfg)) return (d.get_value('vtype') === 'Receipt') ? cfg.receivable : cfg.payable;
+    return (cfg.party_defaults || {})[fv_pt_current(d)] || null;
+  }
+
+  function fv_party_acct_query(d) {
+    var f = { company: 'Vijay Agro Centre', is_group: 0, disabled: 0 };
+    var at = fv_pt_req_at(d);
+    if (at) f.account_type = at;
+    return { filters: f };
+  }
+
+  function fv_party_apply(d) {
+    var vt = d.get_value('vtype') || 'Payment';
+    var on = vt === 'Payment' || vt === 'Receipt';
+    var ptOn = on && fv_pt_enabled(d.cfg);
+    var pt = fv_pt_current(d);
+    d.set_df_property('party_type', 'hidden', ptOn ? 0 : 1);
+    d.set_df_property('party', 'label', pt);
+    d.set_df_property('party', 'options', pt);
+    var needAcct = ptOn && !fv_party_default_acct(d);
+    d.set_df_property('party_account', 'hidden', needAcct ? 0 : 1);
+    d.set_df_property('party_account', 'label', pt + ' account');
+    if (d.fields_dict.party.refresh) d.fields_dict.party.refresh();
+  }
+
   function fv_acct_query(d) {
     var vt = d.get_value('vtype') || 'Payment';
     var f = { company: 'Vijay Agro Centre', is_group: 0, disabled: 0 };
@@ -37,15 +87,13 @@
     var vt = d.get_value('vtype') || 'Payment';
     var show = function (fn, on) { d.set_df_property(fn, 'hidden', on ? 0 : 1); };
     d.set_value('party', '');
+    d.set_value('party_account', '');
+    if (fv_pt_enabled(d.cfg)) d.set_value('party_type', fv_pt_default(vt));
     ['party', 'mode', 'from_account', 'to_account'].forEach(function (fn) { show(fn, false); });
     if (vt === 'Payment') {
-      d.set_df_property('party', 'label', 'Supplier');
-      d.set_df_property('party', 'options', 'Supplier');
       show('party', true); show('mode', true); show('from_account', true);
       d.set_df_property('from_account', 'label', 'Paid from (drawer)');
     } else if (vt === 'Receipt') {
-      d.set_df_property('party', 'label', 'Customer');
-      d.set_df_property('party', 'options', 'Customer');
       show('party', true); show('mode', true); show('to_account', true);
       d.set_df_property('to_account', 'label', 'Deposit to (drawer)');
     } else if (vt === 'Contra') {
@@ -61,7 +109,7 @@
       d.set_df_property('from_account', 'label', 'From');
       d.set_df_property('to_account', 'label', 'To');
     }
-    if (d.fields_dict.party.refresh) d.fields_dict.party.refresh();
+    fv_party_apply(d);
     fv_ref_toggle(d);
     fv_bind_enter(d);
     fv_preview(d);
@@ -95,11 +143,15 @@
   }
 
   function fv_bind_enter(d) {
-    ['party', 'mode', 'from_account', 'to_account', 'reference_no', 'amount', 'remark'].forEach(function (fn) {
+    ['party', 'party_account', 'mode', 'from_account', 'to_account', 'reference_no', 'amount', 'remark'].forEach(function (fn) {
       var fd = d.fields_dict[fn];
       if (fd && fd.$input) fd.$input.off('keydown.fv');
     });
     var flow = fv_flow(d.get_value('vtype') || 'Payment');
+    if (d.fields_dict.party_account && !d.fields_dict.party_account.df.hidden) {
+      var pi = flow.indexOf('party');
+      if (pi >= 0) flow.splice(pi + 1, 0, 'party_account');
+    }
     if (d.fields_dict.reference_no && !d.fields_dict.reference_no.df.hidden) {
       var ai = flow.indexOf('amount');
       if (ai >= 0) flow.splice(ai, 0, 'reference_no');
@@ -119,10 +171,11 @@
   }
 
   function fv_sides(d) {
-    var cfg = d.cfg, vt = d.get_value('vtype');
+    var vt = d.get_value('vtype');
     var from = d.get_value('from_account'), to = d.get_value('to_account');
-    if (vt === 'Payment') return { cr: from || '(drawer)', dr: cfg.payable };
-    if (vt === 'Receipt') return { cr: cfg.receivable, dr: to || '(drawer)' };
+    var pacc = d.get_value('party_account') || fv_party_default_acct(d) || '(party account)';
+    if (vt === 'Payment') return { cr: from || '(drawer)', dr: pacc };
+    if (vt === 'Receipt') return { cr: pacc, dr: to || '(drawer)' };
     return { cr: from || '(from)', dr: to || '(to)' };
   }
 
@@ -157,8 +210,8 @@
   }
 
   function fv_after_post(d) {
-    var vt = d.get_value('vtype');
-    ['party', 'mode', 'from_account', 'to_account', 'reference_no', 'amount', 'remark'].forEach(function (fn) { d.set_value(fn, ''); });
+    var vt = d.get_value('vtype');  // party_type stays sticky for batch entry
+    ['party', 'party_account', 'mode', 'from_account', 'to_account', 'reference_no', 'amount', 'remark'].forEach(function (fn) { d.set_value(fn, ''); });
     d.__bal = {};  // posting changed balances — refetch on next selection
     var first = d.fields_dict[fv_flow(vt)[0]];
     setTimeout(function () { if (first && first.$input) first.$input.focus(); }, 150);
@@ -170,14 +223,25 @@
     var amt = flt(d.get_value('amount'));
     if (!amt || amt <= 0) { frappe.show_alert({ message: 'Amount must be greater than zero', indicator: 'red' }); return; }
     var payload = { vtype: vt, amount: amt, remark: d.get_value('remark') || '', posting_date: d.get_value('posting_date') || frappe.datetime.get_today(), reference_no: d.get_value('reference_no') || '' };
-    if (vt === 'payment') {
-      payload.party = d.get_value('party'); payload.from_account = d.get_value('from_account');
-      if (!payload.party) { frappe.show_alert({ message: 'Supplier is required', indicator: 'red' }); return; }
-      if (!payload.from_account) { frappe.show_alert({ message: 'Drawer is required', indicator: 'red' }); return; }
-    } else if (vt === 'receipt') {
-      payload.party = d.get_value('party'); payload.to_account = d.get_value('to_account');
-      if (!payload.party) { frappe.show_alert({ message: 'Customer is required', indicator: 'red' }); return; }
-      if (!payload.to_account) { frappe.show_alert({ message: 'Drawer is required', indicator: 'red' }); return; }
+    if (vt === 'payment' || vt === 'receipt') {
+      var pt = fv_pt_current(d);
+      payload.party = d.get_value('party');
+      if (!payload.party) { frappe.show_alert({ message: pt + ' is required', indicator: 'red' }); return; }
+      if (vt === 'payment') {
+        payload.from_account = d.get_value('from_account');
+        if (!payload.from_account) { frappe.show_alert({ message: 'Drawer is required', indicator: 'red' }); return; }
+      } else {
+        payload.to_account = d.get_value('to_account');
+        if (!payload.to_account) { frappe.show_alert({ message: 'Drawer is required', indicator: 'red' }); return; }
+      }
+      if (fv_pt_enabled(cfg)) {
+        payload.party_type = pt;
+        var pacc = d.get_value('party_account');
+        if (pacc) payload.party_account = pacc;
+        if (!pacc && d.fields_dict.party_account && !d.fields_dict.party_account.df.hidden) {
+          frappe.show_alert({ message: 'Pick the ' + pt + ' account', indicator: 'red' }); return;
+        }
+      }
     } else {
       payload.from_account = d.get_value('from_account'); payload.to_account = d.get_value('to_account');
       if (!payload.from_account || !payload.to_account) { frappe.show_alert({ message: 'Both accounts are required', indicator: 'red' }); return; }
@@ -210,11 +274,14 @@
     var modeMap = {}; (cfg.modes || []).forEach(function (m) { if (m.account) modeMap[m.mode] = m.account; });
     var modeNames = (cfg.modes || []).filter(function (m) { return m.account; }).map(function (m) { return m.mode; });
     var drawerType = {}; (cfg.drawers || []).forEach(function (dd) { drawerType[dd.account] = dd.type; });
+    var ptNames = (cfg.party_types || []).map(function (p) { return p.party_type; });
     var d = new frappe.ui.Dialog({
       title: '⚡ Fast Journal',
       fields: [
         { fieldname: 'vtype', fieldtype: 'Select', label: 'Type', reqd: 1, options: ['Payment', 'Receipt', 'Contra', 'Journal'].join('\n'), default: 'Payment' },
+        { fieldname: 'party_type', fieldtype: 'Select', label: 'Party type', options: ptNames.join('\n'), default: ptNames.length ? 'Supplier' : '', hidden: 1 },
         { fieldname: 'party', fieldtype: 'Link', label: 'Supplier', options: 'Supplier' },
+        { fieldname: 'party_account', fieldtype: 'Link', label: 'Party account', options: 'Account', hidden: 1, get_query: function () { return fv_party_acct_query(d); } },
         { fieldname: 'mode', fieldtype: 'Select', label: 'Mode (fills drawer)', options: [''].concat(modeNames).join('\n') },
         { fieldname: 'from_account', fieldtype: 'Link', label: 'From', options: 'Account', get_query: function () { return fv_acct_query(d); } },
         { fieldname: 'to_account', fieldtype: 'Link', label: 'To', options: 'Account', get_query: function () { return fv_acct_query(d); } },
@@ -232,6 +299,17 @@
     d.__bal = {};
     d.show();
     d.fields_dict.vtype.$input.on('change', function () { fv_relayout(d); });
+    if (d.fields_dict.party_type && d.fields_dict.party_type.$input) {
+      d.fields_dict.party_type.$input.on('change', function () {
+        d.set_value('party', ''); d.set_value('party_account', '');
+        fv_party_apply(d); fv_bind_enter(d); fv_preview(d);
+        var p = d.fields_dict.party;
+        setTimeout(function () { if (p && p.$input) p.$input.focus(); }, 80);
+      });
+    }
+    if (d.fields_dict.party_account && d.fields_dict.party_account.$input) {
+      d.fields_dict.party_account.$input.on('change', function () { fv_bind_enter(d); fv_preview(d); });
+    }
     if (d.fields_dict.mode.$input) {
       d.fields_dict.mode.$input.on('change', function () {
         var acct = modeMap[d.get_value('mode')];
