@@ -36,12 +36,12 @@
 }
 * { box-sizing:border-box; }
 body { background:var(--page); color:var(--ink); margin:0; padding:0 20px 56px;
-	font:14px/1.55 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; }
+	font:1em/1.55 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; }
 .wrap { max-width:1120px; margin:0 auto; }
-.eyebrow { font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--accent);
+.eyebrow { font-size:0.786em; letter-spacing:.14em; text-transform:uppercase; color:var(--accent);
 	font-weight:600; padding-top:24px; }
-h1 { font-size:23px; margin:6px 0 2px; font-weight:650; }
-.status { font-size:12px; color:var(--muted); margin:2px 0 6px; }
+h1 { font-size:1.643em; margin:6px 0 2px; font-weight:650; }
+.status { font-size:0.857em; color:var(--muted); margin:2px 0 6px; }
 .status .ok { color:var(--goodtext); font-weight:600; }
 .status .bad { color:var(--crit); font-weight:600; }
 #err { display:none; margin:16px 0; padding:12px 16px; border:1px solid var(--crit);
@@ -49,33 +49,33 @@ h1 { font-size:23px; margin:6px 0 2px; font-weight:650; }
 .nav { position:sticky; top:0; z-index:20; background:var(--page); padding:10px 0 0;
 	border-bottom:1px solid var(--grid); display:flex; gap:2px; flex-wrap:wrap; }
 .nav button { appearance:none; border:0; background:none; color:var(--ink2); font:inherit;
-	font-weight:600; font-size:13.5px; padding:8px 12px 10px; cursor:pointer;
+	font-weight:600; font-size:0.964em; padding:8px 12px 10px; cursor:pointer;
 	border-radius:8px 8px 0 0; position:relative; }
 .nav button:hover { color:var(--ink); background:var(--chipbg); }
 .nav button[aria-selected="true"] { color:var(--ink); }
 .nav button[aria-selected="true"]::after { content:""; position:absolute; left:8px; right:8px;
 	bottom:-1px; height:2px; background:var(--accent); border-radius:2px; }
 .nav .spacer { flex:1; }
-.nav .printbtn { align-self:center; font-size:12px; border:1px solid var(--border);
+.nav .printbtn { align-self:center; font-size:0.857em; border:1px solid var(--border);
 	border-radius:999px; padding:4px 12px; background:var(--surface); color:var(--ink2); cursor:pointer; }
 .fbar { display:flex; flex-wrap:wrap; align-items:center; gap:8px; padding:12px 0 6px; }
-.fchip { appearance:none; font:inherit; font-size:12.5px; font-weight:600; color:var(--ink2);
+.fchip { appearance:none; font:inherit; font-size:0.893em; font-weight:600; color:var(--ink2);
 	border:1px solid var(--border); background:var(--surface); border-radius:999px;
 	padding:5px 13px; cursor:pointer; }
 .fchip:hover { color:var(--ink); }
 .fchip[aria-pressed="true"] { color:var(--accent); border-color:var(--accent); background:var(--chipbg); }
-.fbar label { font-size:12px; color:var(--muted); }
-.fbar select, .fbar input[type=date], .fbar input[type=text] { font:inherit; font-size:12.5px;
+.fbar label { font-size:0.857em; color:var(--muted); }
+.fbar select, .fbar input[type=date], .fbar input[type=text] { font:inherit; font-size:0.893em;
 	color:var(--ink); background:var(--surface); border:1px solid var(--border);
 	border-radius:8px; padding:4px 8px; }
 .fsep { width:1px; height:22px; background:var(--grid); }
-.resolved { font-size:12.5px; color:var(--muted); padding:2px 0 8px; font-variant-numeric:tabular-nums; }
+.resolved { font-size:0.893em; color:var(--muted); padding:2px 0 8px; font-variant-numeric:tabular-nums; }
 .resolved b { color:var(--ink2); }
 .narr { border-left:3px solid var(--accent); background:var(--surface);
-	border-radius:0 10px 10px 0; padding:10px 16px; font-size:13px; color:var(--ink2); margin:6px 0 12px; }
+	border-radius:0 10px 10px 0; padding:10px 16px; font-size:0.929em; color:var(--ink2); margin:6px 0 12px; }
 .narr b { color:var(--ink); }
 .flags { display:flex; flex-wrap:wrap; gap:8px; margin:0 0 12px; }
-.flag { display:inline-flex; align-items:center; gap:5px; font-size:11px; font-weight:600;
+.flag { display:inline-flex; align-items:center; gap:5px; font-size:0.786em; font-weight:600;
 	border-radius:999px; padding:2px 9px; border:1px solid var(--border); white-space:nowrap; }
 .flag.warn { color:var(--warnink); background:rgba(250,178,25,.16); }
 .flag.info { color:var(--ink2); background:var(--chipbg); }
@@ -83,9 +83,9 @@ h1 { font-size:23px; margin:6px 0 2px; font-weight:650; }
 @media (max-width:900px) { .tiles { grid-template-columns:repeat(2,1fr); } }
 .tile { background:var(--surface); border:1px solid var(--border); border-radius:12px;
 	padding:13px 15px; min-width:0; }
-.tlabel { font-size:12px; color:var(--ink2); }
-.tval { font-size:23px; font-weight:650; margin-top:2px; line-height:1.1; white-space:nowrap; }
-.tdelta { font-size:12px; margin-top:5px; color:var(--ink2); }
+.tlabel { font-size:0.857em; color:var(--ink2); }
+.tval { font-size:1.643em; font-weight:650; margin-top:2px; line-height:1.1; white-space:nowrap; }
+.tdelta { font-size:0.857em; margin-top:5px; color:var(--ink2); }
 .up { color:var(--goodtext); font-weight:600; }
 .down { color:var(--crit); font-weight:600; }
 .flat { color:var(--muted); font-weight:600; }
@@ -94,11 +94,11 @@ section.block { margin-top:22px; }
 .cardgrid { display:grid; gap:14px; }
 .cols2 { grid-template-columns:1fr 1fr; }
 @media (max-width:880px) { .cols2 { grid-template-columns:1fr; } }
-h2 { font-size:16px; margin:0 0 4px; font-weight:650; }
-.why { color:var(--ink2); font-size:13px; margin:0 0 12px; max-width:80ch; }
-.ctitle { font-size:13px; font-weight:650; margin:0 0 2px; }
-.cnote { font-size:12px; color:var(--muted); margin:0 0 10px; }
-.legend { display:flex; gap:14px; flex-wrap:wrap; font-size:12px; color:var(--ink2); margin:2px 0 10px; }
+h2 { font-size:1.143em; margin:0 0 4px; font-weight:650; }
+.why { color:var(--ink2); font-size:0.929em; margin:0 0 12px; max-width:80ch; }
+.ctitle { font-size:0.929em; font-weight:650; margin:0 0 2px; }
+.cnote { font-size:0.857em; color:var(--muted); margin:0 0 10px; }
+.legend { display:flex; gap:14px; flex-wrap:wrap; font-size:0.857em; color:var(--ink2); margin:2px 0 10px; }
 .legend .k { display:inline-flex; align-items:center; gap:6px; }
 .sw { width:10px; height:10px; border-radius:3px; display:inline-block; }
 .lkey { width:14px; height:0; border-top:3px solid; display:inline-block; border-radius:2px; }
@@ -113,50 +113,51 @@ svg text { font-family:inherit; }
 @media (max-width:640px) { .hrow { grid-template-columns:130px 1fr 100px; } }
 .hrow.click { cursor:pointer; border-radius:6px; }
 .hrow.click:hover { background:var(--chipbg); }
-.hlab { font-size:12.5px; color:var(--ink2); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.hlab { font-size:0.893em; color:var(--ink2); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .htrack { height:16px; position:relative; min-width:0; }
 .hfill { height:100%; border-radius:0 4px 4px 0; background:var(--barfill); min-width:2px; }
 .hly { position:absolute; top:-3px; bottom:-3px; width:2px; background:var(--muted); }
-.hval { font-size:12px; font-weight:600; text-align:right; font-variant-numeric:tabular-nums; white-space:nowrap; }
+.hval { font-size:0.857em; font-weight:600; text-align:right; font-variant-numeric:tabular-nums; white-space:nowrap; }
 .hpct { color:var(--muted); font-weight:400; }
 .drill { background:var(--page); border:1px solid var(--grid); border-radius:8px;
-	padding:10px 14px; font-size:12px; color:var(--ink2); margin:2px 0 6px; }
+	padding:10px 14px; font-size:0.857em; color:var(--ink2); margin:2px 0 6px; }
 .grplink { color:inherit; text-decoration:none; border-bottom:1px dotted var(--baseline); cursor:pointer; }
 .grplink:hover { color:var(--blue); border-color:var(--blue); }
 .lens { display:flex; align-items:center; gap:10px; background:var(--chipbg);
-	border:1px solid var(--border); border-radius:10px; padding:8px 14px; font-size:13px; margin:0 0 12px; }
+	border:1px solid var(--border); border-radius:10px; padding:8px 14px; font-size:0.929em; margin:0 0 12px; }
 .lens b { color:var(--ink); }
 .stackrow { margin-bottom:14px; }
-.stackhead { display:flex; justify-content:space-between; align-items:baseline; font-size:13px; margin-bottom:6px; }
+.stackhead { display:flex; justify-content:space-between; align-items:baseline; font-size:0.929em; margin-bottom:6px; }
 .stack { display:flex; gap:2px; height:32px; border-radius:6px; overflow:hidden; }
 .stack.ghost { height:14px; opacity:.55; margin-top:4px; }
 .seg { position:relative; min-width:3px; }
 .seg span { position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
-	font-size:11px; font-weight:600; color:#fff; overflow:hidden; padding:0 4px; white-space:nowrap; }
-.seglist { display:flex; flex-wrap:wrap; gap:6px 16px; margin-top:8px; font-size:12px; color:var(--ink2); }
+	font-size:0.786em; font-weight:600; color:#fff; overflow:hidden; padding:0 4px; white-space:nowrap; }
+.seglist { display:flex; flex-wrap:wrap; gap:6px 16px; margin-top:8px; font-size:0.857em; color:var(--ink2); }
 .seglist .k { display:inline-flex; align-items:center; gap:6px; font-variant-numeric:tabular-nums; }
 .s1 { background:var(--ramp1); } .s2 { background:var(--ramp2); } .s3 { background:var(--ramp3); }
 .s4 { background:var(--ramp4); } .s5 { background:var(--ramp5); }
-.dchip { font-size:11px; font-weight:600; border-radius:999px; padding:1px 7px; background:var(--chipbg); }
+.dchip { font-size:0.786em; font-weight:600; border-radius:999px; padding:1px 7px; background:var(--chipbg); }
 .dchip.up { color:var(--goodtext); } .dchip.down { color:var(--crit); } .dchip.flat { color:var(--muted); }
 .sparkgrid { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; }
 @media (max-width:820px) { .sparkgrid { grid-template-columns:repeat(2,1fr); } }
 .sparktile { border:1px solid var(--border); border-radius:10px; padding:12px 14px; background:var(--surface); }
-.sparktile .tv { font-size:16px; font-weight:650; font-variant-numeric:tabular-nums; }
-table { border-collapse:collapse; width:100%; font-size:12px; margin-top:8px; }
+.sparktile .tv { font-size:1.143em; font-weight:650; font-variant-numeric:tabular-nums; }
+table { border-collapse:collapse; width:100%; font-size:0.857em; margin-top:8px; }
 th, td { padding:5px 10px; text-align:right; font-variant-numeric:tabular-nums;
 	border-bottom:1px solid var(--grid); white-space:nowrap; }
 th:first-child, td:first-child, th.lbl, td.lbl { text-align:left; }
 th { color:var(--muted); font-weight:600; }
 .neg { color:var(--crit); }
 .totrow td { font-weight:650; color:var(--ink); }
+.subwrap td { background:var(--page); }
 .tscroll { overflow-x:auto; }
-.acct h3 { font-size:14px; font-weight:650; margin:20px 0 6px; }
-.acct p { font-size:13px; color:var(--ink2); max-width:88ch; margin:4px 0; }
-.foot { margin-top:28px; font-size:12px; color:var(--muted); }
-.loading { color:var(--muted); font-size:13px; padding:12px 0; }
+.acct h3 { font-size:1em; font-weight:650; margin:20px 0 6px; }
+.acct p { font-size:0.929em; color:var(--ink2); max-width:88ch; margin:4px 0; }
+.foot { margin-top:28px; font-size:0.857em; color:var(--muted); }
+.loading { color:var(--muted); font-size:0.929em; padding:12px 0; }
 #tt { position:fixed; z-index:50; pointer-events:none; background:var(--ink); color:var(--page);
-	font-size:12px; line-height:1.4; padding:7px 10px; border-radius:8px; max-width:300px;
+	font-size:0.857em; line-height:1.4; padding:7px 10px; border-radius:8px; max-width:300px;
 	opacity:0; transition:opacity .08s; }
 .pg { display:none; } .pg.on { display:block; }
 @media print {
@@ -184,6 +185,8 @@ th { color:var(--muted); font-weight:600; }
 		<button role="tab" data-pg="st" aria-selected="false" id="tab-st">Stock</button>
 		<button role="tab" data-pg="ac" aria-selected="false" id="tab-ac">Accountant</button>
 		<span class="spacer"></span>
+		<button class="printbtn" id="fs-minus" title="Smaller text">A−</button>
+		<button class="printbtn" id="fs-plus" title="Larger text">A+</button>
 		<button class="printbtn" onclick="window.print()">Print / PDF</button>
 	</div>
 
@@ -208,10 +211,18 @@ th { color:var(--muted); font-weight:600; }
 		<div class="tiles" id="pl-tiles"></div>
 
 		<div class="fbar" style="padding-top:14px">
-			<span style="font-size:12px; color:var(--muted)">View as</span>
+			<span style="font-size:0.857em; color:var(--muted)">View as</span>
 			<button class="fchip" id="pl-v-g" aria-pressed="true">Graphic</button>
 			<button class="fchip" id="pl-v-v" aria-pressed="false">Vertical statement</button>
 			<button class="fchip" id="pl-v-t" aria-pressed="false">T-form</button>
+			<span class="fsep"></span>
+			<label for="pl-colsel">Columns</label>
+			<select id="pl-colsel">
+				<option value="range">Selected period</option>
+				<option value="year">Yearly</option>
+				<option value="quarter">Quarterly</option>
+				<option value="month">Monthly</option>
+			</select>
 		</div>
 
 		<section class="block" id="pl-stmt" style="display:none"><div class="card">
@@ -302,10 +313,18 @@ th { color:var(--muted); font-weight:600; }
 		<div class="tiles" id="bs-tiles"></div>
 
 		<div class="fbar" style="padding-top:14px">
-			<span style="font-size:12px; color:var(--muted)">View as</span>
+			<span style="font-size:0.857em; color:var(--muted)">View as</span>
 			<button class="fchip" id="bs-v-g" aria-pressed="true">Graphic</button>
 			<button class="fchip" id="bs-v-v" aria-pressed="false">Vertical statement</button>
 			<button class="fchip" id="bs-v-t" aria-pressed="false">T-form</button>
+			<span class="fsep"></span>
+			<label for="bs-colsel">Columns</label>
+			<select id="bs-colsel">
+				<option value="range">As-of date</option>
+				<option value="year">Yearly ends</option>
+				<option value="quarter">Quarter ends</option>
+				<option value="month">Month ends</option>
+			</select>
 		</div>
 
 		<section class="block" id="bs-stmt" style="display:none"><div class="card">
@@ -369,9 +388,17 @@ th { color:var(--muted); font-weight:600; }
 		<div class="tiles" id="cf-tiles"></div>
 
 		<div class="fbar" style="padding-top:14px">
-			<span style="font-size:12px; color:var(--muted)">View as</span>
+			<span style="font-size:0.857em; color:var(--muted)">View as</span>
 			<button class="fchip" id="cf-v-g" aria-pressed="true">Graphic</button>
 			<button class="fchip" id="cf-v-v" aria-pressed="false">Statement</button>
+			<span class="fsep"></span>
+			<label for="cf-colsel">Columns</label>
+			<select id="cf-colsel">
+				<option value="range">Selected period</option>
+				<option value="year">Yearly</option>
+				<option value="quarter">Quarterly</option>
+				<option value="month">Monthly</option>
+			</select>
 		</div>
 
 		<section class="block" id="cf-stmt" style="display:none"><div class="card">
@@ -424,7 +451,7 @@ th { color:var(--muted); font-weight:600; }
 			<label for="gl-vt">Filter</label>
 			<select id="gl-vt"><option value="">All voucher types</option></select>
 			<span class="fsep"></span>
-			<span style="font-size:12px; color:var(--muted)">Columns</span>
+			<span style="font-size:0.857em; color:var(--muted)">Columns</span>
 			<button class="fchip" id="gl-col-vt" aria-pressed="true">Voucher type</button>
 			<button class="fchip" id="gl-col-party" aria-pressed="false">Party</button>
 			<button class="fchip" id="gl-col-acct" aria-pressed="false">Account</button>
@@ -822,7 +849,7 @@ function hbars(hostId, items, opts) {
 }
 function sparkTile(label, series, asofM, cmpM) {
 	var d = document.createElement("div"); d.className = "sparktile";
-	d.innerHTML = '<div class="tlabel" style="font-size:11.5px">' + label + "</div>";
+	d.innerHTML = '<div class="tlabel" style="font-size:0.821em">' + label + "</div>";
 	var w = 220, h = 44;
 	var svg = el("svg", { viewBox: "0 0 " + w + " " + h, style: "width:100%; height:auto" });
 	var lo = Math.min.apply(null, series.concat([0])), hi = Math.max.apply(null, series.concat([1]));
@@ -932,6 +959,7 @@ function showGroup(spec) {
 var plCtx = null;
 var plState = { a: 0, b: 0, cmp: 1, preset: "fytd", lens: null };
 var plView = "g";
+var plColsMode = "range", bsColsMode = "range", cfColsMode = "range";
 var LINES = ["Fertilizer", "Paddy", "Seed", "Plant Protection", "Plant Nutrition", "Hardware"];
 function lineRev(nm, a, b) { return FL("Sale - " + nm + VACSUF, a, b); }
 function lineCogs(nm, a, b) { return FL("COGS - " + nm + VACSUF, a, b); }
@@ -1184,6 +1212,108 @@ function renderForecast() {
 		tile("True profit — better case", fmtL(est * Math.max(mPrev, mPrev2)), "at " + (Math.max(mPrev, mPrev2) * 100).toFixed(1) + "% adjusted margin") +
 		tile("Vs last FY", deltaHTML(est, totPrev, true, ""), "last FY closed at " + fmtL(totPrev));
 }
+/* ---- statement helpers: collapse + ERPNext-style period columns ---- */
+var STMT_COLLAPSE = { pl: {}, bs: {}, cf: {} };
+function caret(page, key) {
+	return '<a class="grplink" data-sec="' + page + ':' + key +
+		'" style="border-bottom:0; margin-right:5px">' +
+		(STMT_COLLAPSE[page][key] ? "▸" : "▾") + "</a>";
+}
+function secOpen(page, key) { return !STMT_COLLAPSE[page][key]; }
+function fyShort(i) { return FYNAMES[fyOf(i)].replace("FY ", ""); }
+function periodsFor(mode, a, b) {
+	if (mode === "range") return null;
+	var out = [], i;
+	if (mode === "year") {
+		for (i = 0; i < FYSTART.length; i++) {
+			var pa = FYSTART[i], pz = i + 1 < FYSTART.length ? FYSTART[i + 1] - 1 : LAST;
+			var ca = Math.max(pa, a), cz = Math.min(pz, b);
+			if (ca <= cz) out.push({ a: ca, z: cz, label: FYNAMES[i] + (ca > pa || cz < pz ? "*" : "") });
+		}
+		return out;
+	}
+	var step = mode === "quarter" ? 3 : 1;
+	var m0 = monthOfDay(a);
+	if (mode === "quarter") while (m0 > 0 && (calMonth(m0) - 4 + 12) % 12 % 3 !== 0) m0--;
+	for (var mi = m0; mi <= monthOfDay(b); mi += step) {
+		var pa2 = monthStartIdx(mi), pz2 = monthEndIdx(Math.min(mi + step - 1, NMON - 1));
+		var ca2 = Math.max(pa2, a), cz2 = Math.min(pz2, b);
+		if (ca2 > cz2) continue;
+		var lab = mode === "month" ? monthLabel(mi)
+			: "Q" + (Math.floor((calMonth(mi) - 4 + 12) % 12 / 3) + 1) + " " + fyShort(pa2);
+		out.push({ a: ca2, z: cz2, label: lab + (ca2 > pa2 || cz2 < pz2 ? "*" : "") });
+	}
+	return out;
+}
+function stmtCells(vals) {
+	return vals.map(function (v) {
+		if (v === null) return "<td></td>";
+		if (typeof v === "string") return "<td>" + v + "</td>";
+		return '<td class="' + (v < 0 ? "neg" : "") + '">' + fmtIN(v) + "</td>";
+	}).join("");
+}
+// emits a statement from a rows-spec: [{t:'sec'|'row'|'tot'|'blank', key, label, fn(a,z)}]
+// cols: null -> single range (+optional cmp), else period list (+Total)
+function emitStmt(page, spec, cols, range, cmp, cmpRangeArr) {
+	var headCells, valFns;
+	if (cols) {
+		headCells = cols.map(function (p) { return "<th>" + p.label + "</th>"; }).join("") + "<th>Total</th>";
+		valFns = function (fn) {
+			var tot = 0;
+			var tds = cols.map(function (p) {
+				var v = fn(p.a, p.z);
+				tot += v;
+				return '<td class="' + (v < 0 ? "neg" : "") + '">' + fmtIN(v) + "</td>";
+			}).join("");
+			return tds + '<td class="' + (tot < 0 ? "neg" : "") + '"><b>' + fmtIN(tot) + "</b></td>";
+		};
+	} else {
+		headCells = "<th>This period</th>" + (cmp ? "<th>Compare</th><th>Δ</th>" : "");
+		valFns = function (fn) {
+			var v = fn(range[0], range[1]);
+			if (!cmp) return stmtCells([v]);
+			var c = fn(cmpRangeArr[0], cmpRangeArr[1]);
+			return stmtCells([v, c, v - c]);
+		};
+	}
+	var blankCells = cols ? cols.length + 1 : (cmp ? 3 : 1);
+	var blanks = "";
+	for (var i = 0; i < blankCells; i++) blanks += "<td></td>";
+	var h = "", curSec = null;
+	spec.forEach(function (r) {
+		if (r.t === "sec") {
+			curSec = r.key;
+			h += "<tr><td class=\"lbl\" style=\"padding-top:14px; color:var(--muted); font-weight:600\">" +
+				caret(page, r.key) + r.label + "</td>" + blanks + "</tr>";
+			return;
+		}
+		if (r.t === "row") {
+			if (curSec && !secOpen(page, curSec)) return;
+			h += '<tr><td class="lbl" style="padding-left:26px">' + r.label + "</td>" + valFns(r.fn) + "</tr>";
+			return;
+		}
+		if (r.t === "tot") {
+			curSec = null;
+			h += '<tr class="totrow"><td class="lbl">' + r.label + "</td>" + valFns(r.fn) + "</tr>";
+		}
+	});
+	return { head: '<tr><th class="lbl">Particulars</th>' + headCells + "</tr>", body: h };
+}
+
+/* ---- font size control ---- */
+var FSIZES = [12, 13, 14, 15.5, 17, 19];
+function applyFont() {
+	var i = +(localStorage.getItem("fin_fs") || 2);
+	i = Math.max(0, Math.min(FSIZES.length - 1, i));
+	document.body.style.fontSize = FSIZES[i] + "px";
+}
+function bumpFont(d) {
+	var i = +(localStorage.getItem("fin_fs") || 2) + d;
+	i = Math.max(0, Math.min(FSIZES.length - 1, i));
+	localStorage.setItem("fin_fs", String(i));
+	applyFont();
+}
+
 function applyPLView() {
 	["g", "v", "t"].forEach(function (k) {
 		document.getElementById("pl-v-" + k).setAttribute("aria-pressed", String(plView === k));
@@ -1201,54 +1331,64 @@ function renderPLStmt() {
 	}).sort(function (x, y) { return y.v - x.v; });
 	function cols(v, c) { return cmp ? [v, c, v - c] : [v]; }
 	if (plView === "v") {
+		var pcols = periodsFor(plColsMode, a, b);
 		document.getElementById("pl-stmt-title").textContent =
-			"Profit & Loss statement — " + dot(a) + " → " + dot(b) + " (vertical form)";
-		head.innerHTML = '<tr><th class="lbl">Particulars</th><th>This period</th>' +
-			(cmp ? "<th>Compare</th><th>Δ</th>" : "") + "</tr>";
-		var h = stmtRow(grpLink("INCOME", { page: "pl", roots: ["Income"] }), cmp ? [null, null, null] : [null], { section: true });
-		var lineSum = 0, lineSumC = 0;
+			"Profit & Loss statement — " + dot(a) + " → " + dot(b) +
+			(pcols ? " · one column per " + (plColsMode === "year" ? "fiscal year" : plColsMode) : " (vertical form)");
+		function lineFn(nm) { return function (x, y) { return lineRev(nm, x, y); }; }
+		function cogsFn(nm) { return function (x, y) { return lineCogs(nm, x, y); }; }
+		var spec = [];
+		spec.push({ t: "sec", key: "inc", label: grpLink("INCOME", { page: "pl", roots: ["Income"] }) });
 		lines.forEach(function (d) {
-			lineSum += d.v; lineSumC += d.c;
-			h += stmtRow(ledLink("Sale — " + d.l, "Sale - " + d.l), cols(d.v, d.c), { indent: true });
+			spec.push({ t: "row", label: ledLink("Sale — " + d.l, "Sale - " + d.l), fn: lineFn(d.l) });
 		});
-		h += stmtRow(grpLink("Other income", { page: "pl", roots: ["Income"], label: "Income" }),
-			cols(rev - lineSum, cmp ? F("inc", cr[0], cr[1]) - lineSumC : 0), { indent: true });
-		h += stmtRow("Total revenue", cols(rev, cmp ? F("inc", cr[0], cr[1]) : 0), { strong: true });
-		h += stmtRow(grpLink("DIRECT COSTS", { page: "pl", roots: ["Direct Expenses"] }), cmp ? [null, null, null] : [null], { section: true });
-		var cogsSum = 0, cogsSumC = 0;
+		spec.push({ t: "row", label: grpLink("Other income", { page: "pl", roots: ["Income"], label: "Income" }),
+			fn: function (x, y) {
+				var s = F("inc", x, y);
+				LINES.forEach(function (nm) { s -= lineRev(nm, x, y); });
+				return s;
+			} });
+		spec.push({ t: "tot", label: "Total revenue", fn: function (x, y) { return F("inc", x, y); } });
+		spec.push({ t: "sec", key: "dx", label: grpLink("DIRECT COSTS", { page: "pl", roots: ["Direct Expenses"] }) });
 		lines.forEach(function (d) {
-			var v = lineCogs(d.l, a, b), c = cmp ? lineCogs(d.l, cr[0], cr[1]) : 0;
-			cogsSum += v; cogsSumC += c;
-			h += stmtRow(ledLink("COGS — " + d.l, "COGS - " + d.l), cols(v, c), { indent: true });
+			spec.push({ t: "row", label: ledLink("COGS — " + d.l, "COGS - " + d.l), fn: cogsFn(d.l) });
 		});
-		h += stmtRow("Other direct (unallocated COGS, hamali, discounts)",
-			cols(dx - cogsSum, cmp ? F("dexp", cr[0], cr[1]) - cogsSumC : 0), { indent: true });
-		h += stmtRow("Total direct costs", cols(dx, cmp ? F("dexp", cr[0], cr[1]) : 0), { strong: true });
-		h += stmtRow("GROSS PROFIT (" + (rev ? (100 * (rev - dx) / rev).toFixed(1) : 0) + "%)",
-			cols(rev - dx, cmp ? F("inc", cr[0], cr[1]) - F("dexp", cr[0], cr[1]) : 0), { strong: true });
-		h += stmtRow(grpLink("OVERHEADS", { page: "pl", roots: ["Indirect Expenses"] }), cmp ? [null, null, null] : [null], { section: true });
+		spec.push({ t: "row", label: "Other direct (unallocated COGS, hamali, discounts)",
+			fn: function (x, y) {
+				var s = F("dexp", x, y);
+				LINES.forEach(function (nm) { s -= lineCogs(nm, x, y); });
+				return s;
+			} });
+		spec.push({ t: "tot", label: "Total direct costs", fn: function (x, y) { return F("dexp", x, y); } });
+		spec.push({ t: "tot", label: "GROSS PROFIT (" + (rev ? (100 * (rev - dx) / rev).toFixed(1) : 0) + "% overall)",
+			fn: function (x, y) { return F("inc", x, y) - F("dexp", x, y); } });
+		spec.push({ t: "sec", key: "ix", label: grpLink("OVERHEADS", { page: "pl", roots: ["Indirect Expenses"] }) });
 		var leaves = [];
 		for (var nm in D.leaf) {
 			if (!isIndirect(nm)) continue;
-			var v2 = FL(nm, a, b);
-			if (Math.abs(v2) < 0.5) continue;
-			leaves.push({ l: nm.replace(VACSUF, "").replace(" Expenses", ""), acct: nm.replace(VACSUF, ""),
-				v: v2, c: cmp ? FL(nm, cr[0], cr[1]) : 0 });
+			if (Math.abs(FL(nm, a, b)) < 0.5) continue;
+			leaves.push(nm);
 		}
-		leaves.sort(function (x, y) { return Math.abs(y.v) - Math.abs(x.v); });
-		var shown = 0, shownC = 0;
-		leaves.slice(0, 6).forEach(function (d) {
-			shown += d.v; shownC += d.c;
-			h += stmtRow(ledLink(d.l, d.acct), cols(d.v, d.c), { indent: true });
+		leaves.sort(function (x, y) { return Math.abs(FL(y, a, b)) - Math.abs(FL(x, a, b)); });
+		var top6 = leaves.slice(0, 6);
+		top6.forEach(function (k) {
+			spec.push({ t: "row", label: ledLink(k.replace(VACSUF, "").replace(" Expenses", ""), k.replace(VACSUF, "")),
+				fn: (function (kk) { return function (x, y) { return FL(kk, x, y); }; })(k) });
 		});
-		h += stmtRow(grpLink("Other overheads", { page: "pl", roots: ["Indirect Expenses"], label: "Indirect Expenses" }),
-			cols(ix - shown, cmp ? F("iexp", cr[0], cr[1]) - shownC : 0), { indent: true });
-		h += stmtRow("Total overheads", cols(ix, cmp ? F("iexp", cr[0], cr[1]) : 0), { strong: true });
-		h += stmtRow("NET PROFIT (" + (rev ? (100 * np / rev).toFixed(1) : 0) + "% of sales)",
-			cols(np, cmp ? PROFIT(cr[0], cr[1]) : 0), { strong: true });
-		body.innerHTML = h;
-		document.getElementById("pl-stmt-note").textContent =
-			cmp ? "Compare column: " + dot(cr[0]) + " → " + dot(cr[1]) + "." : "";
+		spec.push({ t: "row", label: grpLink("Other overheads", { page: "pl", roots: ["Indirect Expenses"], label: "Indirect Expenses" }),
+			fn: function (x, y) {
+				var s = F("iexp", x, y);
+				top6.forEach(function (k) { s -= FL(k, x, y); });
+				return s;
+			} });
+		spec.push({ t: "tot", label: "Total overheads", fn: function (x, y) { return F("iexp", x, y); } });
+		spec.push({ t: "tot", label: "NET PROFIT (" + (rev ? (100 * np / rev).toFixed(1) : 0) + "% overall)", fn: PROFIT });
+		var out = emitStmt("pl", spec, pcols, [a, b], cmp && !pcols, cr);
+		head.innerHTML = out.head;
+		body.innerHTML = out.body;
+		document.getElementById("pl-stmt-note").textContent = "▾ collapses a section to its totals. " +
+			(pcols ? "* = period clipped to the selected dates."
+				: (cmp ? "Compare column: " + dot(cr[0]) + " → " + dot(cr[1]) + "." : ""));
 	} else {
 		document.getElementById("pl-stmt-title").textContent =
 			"Profit & Loss account — " + dot(a) + " → " + dot(b) + " (T-form)";
@@ -1256,10 +1396,13 @@ function renderPLStmt() {
 		var drs = [[grpLink("To Direct costs", { page: "pl", roots: ["Direct Expenses"], label: "Direct Expenses" }), dx],
 			[grpLink("To Overheads", { page: "pl", roots: ["Indirect Expenses"], label: "Indirect Expenses" }), ix]];
 		if (np >= 0) drs.push(["To Net profit c/d", np]);
-		var crs = lines.filter(function (d) { return d.v > 0; }).map(function (d) {
-			return [ledLink("By Sale — " + d.l, "Sale - " + d.l), d.v];
-		});
-		crs.push(["By Other income", rev - crs.reduce(function (t, x) { return t + x[1]; }, 0)]);
+		var salesTot = lines.reduce(function (t, d) { return t + Math.max(d.v, 0); }, 0);
+		var crs = [[caret("pl", "tsales") + "By Sales (" + lines.filter(function (d) { return d.v > 0; }).length + " lines)", salesTot]];
+		if (secOpen("pl", "tsales"))
+			lines.filter(function (d) { return d.v > 0; }).forEach(function (d) {
+				crs.push(["&nbsp;&nbsp;&nbsp;" + ledLink("Sale — " + d.l, "Sale - " + d.l), d.v]);
+			});
+		crs.push(["By Other income", rev - salesTot]);
 		if (np < 0) crs.push(["By Net loss c/d", -np]);
 		var nrows = Math.max(drs.length, crs.length), h2 = "";
 		for (var i = 0; i < nrows; i++) {
@@ -1458,28 +1601,52 @@ function renderBSStmt() {
 	var rnd = tot(APP, idx) - tot(SRC, idx);
 	var rndC = cmpIdx !== null ? tot(APP, cmpIdx) - tot(SRC, cmpIdx) : 0;
 	if (bsView === "v") {
-		document.getElementById("bs-stmt-title").textContent = "Balance Sheet as at " + dot(idx) + " (vertical form)";
-		var cmp = cmpIdx !== null;
-		head.innerHTML = '<tr><th class="lbl">Particulars</th><th>' + dot(idx) + "</th>" +
-			(cmp ? "<th>" + dot(cmpIdx) + "</th><th>Δ</th>" : "") + "</tr>";
-		function cols(bkt) {
-			var v = bsSeg(bkt, idx);
-			return cmp ? [v, bsSeg(bkt, cmpIdx), v - bsSeg(bkt, cmpIdx)] : [v];
+		var bcols = null;
+		if (bsColsMode !== "range") {
+			var ps = periodsFor(bsColsMode, 0, idx) || [];
+			bcols = ps.map(function (p) { return { z: p.z, label: p.label.replace("*", "") }; });
+			if (!bcols.length || bcols[bcols.length - 1].z !== idx) bcols.push({ z: idx, label: dot(idx) });
 		}
-		var h = stmtRow("I. SOURCES OF FUNDS", cmp ? [null, null, null] : [null], { section: true });
-		SRC.forEach(function (p) {
-			var lab = BS_ROOTS[p[1]] ? grpLink(p[0], { page: "bs", roots: BS_ROOTS[p[1]] }) : p[0];
-			h += stmtRow(lab, cols(p[1]), { indent: true });
-		});
-		if (Math.abs(rnd) > 0.5 || Math.abs(rndC) > 0.5)
-			h += stmtRow("Rounding adjustment", cmp ? [rnd, rndC, rnd - rndC] : [rnd], { indent: true });
-		h += stmtRow("Total sources", cmp ? [tot(SRC, idx) + rnd, tot(SRC, cmpIdx) + rndC, tot(SRC, idx) + rnd - tot(SRC, cmpIdx) - rndC] : [tot(SRC, idx) + rnd], { strong: true });
-		h += stmtRow("II. APPLICATION OF FUNDS", cmp ? [null, null, null] : [null], { section: true });
-		APP.forEach(function (p) {
-			var lab = BS_ROOTS[p[1]] ? grpLink(p[0], { page: "bs", roots: BS_ROOTS[p[1]] }) : p[0];
-			h += stmtRow(lab, cols(p[1]), { indent: true });
-		});
-		h += stmtRow("Total applications", cmp ? [tot(APP, idx), tot(APP, cmpIdx), tot(APP, idx) - tot(APP, cmpIdx)] : [tot(APP, idx)], { strong: true });
+		document.getElementById("bs-stmt-title").textContent = "Balance Sheet as at " + dot(idx) +
+			(bcols ? " · balances at each " + (bsColsMode === "year" ? "fiscal year-end" : bsColsMode + "-end") : " (vertical form)");
+		var cmp = cmpIdx !== null && !bcols;
+		head.innerHTML = '<tr><th class="lbl">Particulars</th>' +
+			(bcols ? bcols.map(function (c) { return "<th>" + c.label + "</th>"; }).join("")
+				: "<th>" + dot(idx) + "</th>" + (cmp ? "<th>" + dot(cmpIdx) + "</th><th>Δ</th>" : "")) + "</tr>";
+		function rowCells(fn) {
+			if (bcols) return bcols.map(function (c) {
+				var v = fn(c.z);
+				return '<td class="' + (v < 0 ? "neg" : "") + '">' + fmtIN(v) + "</td>";
+			}).join("");
+			var v = fn(idx);
+			return stmtCells(cmp ? [v, fn(cmpIdx), v - fn(cmpIdx)] : [v]);
+		}
+		var blanks = "", nblank = bcols ? bcols.length : (cmp ? 3 : 1);
+		for (var bi = 0; bi < nblank; bi++) blanks += "<td></td>";
+		function rndAt(i2) { return tot(APP, i2) - tot(SRC, i2); }
+		var h = '<tr><td class="lbl" style="padding-top:14px; color:var(--muted); font-weight:600">' +
+			caret("bs", "src") + "I. SOURCES OF FUNDS</td>" + blanks + "</tr>";
+		if (secOpen("bs", "src")) {
+			SRC.forEach(function (p) {
+				var lab = BS_ROOTS[p[1]] ? grpLink(p[0], { page: "bs", roots: BS_ROOTS[p[1]] }) : p[0];
+				h += '<tr><td class="lbl" style="padding-left:26px">' + lab + "</td>" +
+					rowCells(function (i2) { return bsSeg(p[1], i2); }) + "</tr>";
+			});
+			h += '<tr><td class="lbl" style="padding-left:26px">Rounding adjustment</td>' + rowCells(rndAt) + "</tr>";
+		}
+		h += '<tr class="totrow"><td class="lbl">Total sources</td>' +
+			rowCells(function (i2) { return tot(SRC, i2) + rndAt(i2); }) + "</tr>";
+		h += '<tr><td class="lbl" style="padding-top:14px; color:var(--muted); font-weight:600">' +
+			caret("bs", "app") + "II. APPLICATION OF FUNDS</td>" + blanks + "</tr>";
+		if (secOpen("bs", "app")) {
+			APP.forEach(function (p) {
+				var lab = BS_ROOTS[p[1]] ? grpLink(p[0], { page: "bs", roots: BS_ROOTS[p[1]] }) : p[0];
+				h += '<tr><td class="lbl" style="padding-left:26px">' + lab + "</td>" +
+					rowCells(function (i2) { return bsSeg(p[1], i2); }) + "</tr>";
+			});
+		}
+		h += '<tr class="totrow"><td class="lbl">Total applications</td>' +
+			rowCells(function (i2) { return tot(APP, i2); }) + "</tr>";
 		body.innerHTML = h;
 	} else {
 		document.getElementById("bs-stmt-title").textContent = "Balance Sheet as at " + dot(idx) + " (T-form)";
@@ -1638,22 +1805,63 @@ function renderCFStmt() {
 		o.fin = o.dc - o.ops - o.inv;
 		return o;
 	}
+	var pcols = periodsFor(cfColsMode, a, b);
+	if (pcols) {
+		cmp = false;
+		head.innerHTML = '<tr><th class="lbl">Particulars</th>' +
+			pcols.map(function (p) { return "<th>" + p.label + "</th>"; }).join("") + "<th>Total</th></tr>";
+	}
+	var blanks = "", nblank = pcols ? pcols.length + 1 : (cmp ? 2 : 1);
+	for (var bi = 0; bi < nblank; bi++) blanks += "<td></td>";
 	var T = block(a, b), C = cmp ? block(cr[0], cr[1]) : null;
-	function cols(k) { return cmp ? [T[k], C[k]] : [T[k]]; }
-	var h = stmtRow("A. OPERATING ACTIVITIES", cmp ? [null, null] : [null], { section: true });
-	h += stmtRow("Net profit for the period", cols("prof"), { indent: true });
-	h += stmtRow("Suppliers, GST & goods-recd credit", cols("sup"), { indent: true });
-	h += stmtRow("(Increase) / decrease in stock", cols("stk"), { indent: true });
-	h += stmtRow("(Increase) / decrease in receivables", cols("ar"), { indent: true });
-	h += stmtRow("Deposits, tax assets & other", cols("oth"), { indent: true });
-	h += stmtRow("Net cash from operations", cols("ops"), { strong: true });
-	h += stmtRow("B. INVESTING", cmp ? [null, null] : [null], { section: true });
-	h += stmtRow("Fixed asset purchases (net)", cols("inv"), { indent: true });
-	h += stmtRow("C. FINANCING / CAPITAL", cmp ? [null, null] : [null], { section: true });
-	h += stmtRow("Capital introduced / adjustments", cols("fin"), { indent: true });
-	h += stmtRow("NET CHANGE IN CASH", cols("dc"), { strong: true });
-	h += stmtRow("Opening cash & bank (" + dot(a) + ")", cmp ? [BAL("cash", a - 1), BAL("cash", cr[0] - 1)] : [BAL("cash", a - 1)]);
-	h += stmtRow("Closing cash & bank (" + dot(b) + ")", cmp ? [BAL("cash", b), BAL("cash", cr[1])] : [BAL("cash", b)], { strong: true });
+	function flowCells(k) {
+		if (!pcols) return stmtCells(cmp ? [T[k], C[k]] : [T[k]]);
+		var tot = 0;
+		var tds = pcols.map(function (p) {
+			var v = block(p.a, p.z)[k];
+			tot += v;
+			return '<td class="' + (v < 0 ? "neg" : "") + '">' + fmtIN(v) + "</td>";
+		}).join("");
+		return tds + '<td class="' + (tot < 0 ? "neg" : "") + '"><b>' + fmtIN(tot) + "</b></td>";
+	}
+	function pointCells(atEnd) {
+		if (!pcols) {
+			var v0 = atEnd ? BAL("cash", b) : BAL("cash", a - 1);
+			return stmtCells(cmp ? [v0, atEnd ? BAL("cash", cr[1]) : BAL("cash", cr[0] - 1)] : [v0]);
+		}
+		var tds = pcols.map(function (p) {
+			var v = atEnd ? BAL("cash", p.z) : BAL("cash", p.a - 1);
+			return '<td class="' + (v < 0 ? "neg" : "") + '">' + fmtIN(v) + "</td>";
+		}).join("");
+		var ov = atEnd ? BAL("cash", b) : BAL("cash", a - 1);
+		return tds + '<td class="' + (ov < 0 ? "neg" : "") + '"><b>' + fmtIN(ov) + "</b></td>";
+	}
+	function sec(key, label) {
+		return '<tr><td class="lbl" style="padding-top:14px; color:var(--muted); font-weight:600">' +
+			caret("cf", key) + label + "</td>" + blanks + "</tr>";
+	}
+	function row(label, cells) {
+		return '<tr><td class="lbl" style="padding-left:26px">' + label + "</td>" + cells + "</tr>";
+	}
+	function tot(label, cells) {
+		return '<tr class="totrow"><td class="lbl">' + label + "</td>" + cells + "</tr>";
+	}
+	var h = sec("a", "A. OPERATING ACTIVITIES");
+	if (secOpen("cf", "a")) {
+		h += row("Net profit for the period", flowCells("prof"));
+		h += row("Suppliers, GST & goods-recd credit", flowCells("sup"));
+		h += row("(Increase) / decrease in stock", flowCells("stk"));
+		h += row("(Increase) / decrease in receivables", flowCells("ar"));
+		h += row("Deposits, tax assets & other", flowCells("oth"));
+	}
+	h += tot("Net cash from operations", flowCells("ops"));
+	h += sec("b", "B. INVESTING");
+	if (secOpen("cf", "b")) h += row("Fixed asset purchases (net)", flowCells("inv"));
+	h += sec("c", "C. FINANCING / CAPITAL");
+	if (secOpen("cf", "c")) h += row("Capital introduced / adjustments", flowCells("fin"));
+	h += tot("NET CHANGE IN CASH", flowCells("dc"));
+	h += row("Opening cash & bank" + (pcols ? "" : " (" + dot(a) + ")"), pointCells(false)).replace('padding-left:26px', '');
+	h += tot("Closing cash & bank" + (pcols ? "" : " (" + dot(b) + ")"), pointCells(true));
 	body.innerHTML = h;
 }
 
@@ -1661,6 +1869,7 @@ function renderCFStmt() {
 var glState = { kind: "account", name: "", from: "", to: "", sum: "rows", vt: "", start: 0,
 	cols: { vt: true, party: false, acct: false } };
 var glLast = null;
+var glSeq = 0;   // stale-response guard: only the latest request may render
 function renderGLFetch(append) {
 	if (!glState.name) {
 		document.getElementById("gl-title").textContent = "Pick a" +
@@ -1668,12 +1877,14 @@ function renderGLFetch(append) {
 		return;
 	}
 	if (!append) glState.start = 0;
+	var seq = ++glSeq;
 	document.getElementById("gl-capnote").textContent = "Loading…";
 	var qs = "kind=" + glState.kind + "&name=" + encodeURIComponent(glState.name) +
 		"&from_date=" + glState.from + "&to_date=" + glState.to +
 		"&mode=" + glState.sum + "&start=" + glState.start +
 		(glState.vt ? "&vtype=" + encodeURIComponent(glState.vt) : "");
 	fetchJSON(API + "ledger?" + qs).then(function (res) {
+		if (seq !== glSeq) return;
 		glLast = res;
 		renderGLTable(res, append);
 	}).catch(function (e) {
@@ -1709,13 +1920,17 @@ function renderGLTable(res, append) {
 		if (res.mode !== "vtype")
 			h += '<tr class="totrow"><td class="lbl">' + dot(f) + '</td><td class="lbl">Opening balance</td><td></td><td></td><td>' + drcr(res.opening) + "</td></tr>";
 		res.groups.forEach(function (g) {
-			var lab = res.mode === "day" ? dotISO(g[0]) : res.mode === "month" ? g[0] : g[0];
+			var lab = res.mode === "day" ? dotISO(g[0]) : g[0];
+			var carHTML = '<a class="grplink" data-car style="border-bottom:0; margin-right:5px">▸</a>';
 			if (res.mode === "vtype") {
-				h += '<tr><td class="lbl">' + lab + '</td><td class="lbl">' + g[1] + "</td><td>" + fmtIN(g[2]) +
+				h += '<tr data-exp="vtype|' + g[0] + '|0" style="cursor:pointer"><td class="lbl">' + carHTML + lab +
+					'</td><td class="lbl">' + g[1] + "</td><td>" + fmtIN(g[2]) +
 					"</td><td>" + fmtIN(g[3]) + "</td><td>" + drcr(g[2] - g[3]) + "</td></tr>";
 			} else {
+				var base = bal;
 				bal += g[2] - g[3];
-				h += '<tr><td class="lbl">' + lab + '</td><td class="lbl">' + g[1] + "</td><td>" + fmtIN(g[2]) +
+				h += '<tr data-exp="' + res.mode + "|" + g[0] + "|" + base + '" style="cursor:pointer"><td class="lbl">' +
+					carHTML + lab + '</td><td class="lbl">' + g[1] + "</td><td>" + fmtIN(g[2]) +
 					"</td><td>" + fmtIN(g[3]) + "</td><td>" + drcr(bal) + "</td></tr>";
 			}
 		});
@@ -1755,6 +1970,53 @@ function renderGLTable(res, append) {
 	document.getElementById("gl-more").style.display = res.has_more ? "" : "none";
 	document.getElementById("gl-capnote").textContent = res.has_more
 		? "Showing " + (res.page_start + res.rows.length) + " of " + res.count + " rows." : "";
+}
+function expandLedgerGroup(tr) {
+	var parts = tr.getAttribute("data-exp").split("|");
+	var mode = parts[0], key = parts[1], base = +parts[2];
+	var f2 = glState.from, t2 = glState.to, vt2 = glState.vt;
+	if (mode === "day") { f2 = key; t2 = key; }
+	else if (mode === "month") {
+		f2 = key + "-01";
+		var y = +key.slice(0, 4), m = +key.slice(5, 7);
+		var lastD = new Date(Date.UTC(y, m, 0)).getUTCDate();
+		t2 = key + "-" + (lastD < 10 ? "0" : "") + lastD;
+		if (t2 > glState.to) t2 = glState.to;
+		if (f2 < glState.from) f2 = glState.from;
+	} else vt2 = key;
+	tr.querySelector("[data-car]").textContent = "▾";
+	var load = document.createElement("tr");
+	load.className = "subwrap";
+	load.innerHTML = '<td class="lbl" colspan="5" style="padding-left:34px; color:var(--muted)">Loading…</td>';
+	tr.parentNode.insertBefore(load, tr.nextSibling);
+	var qs = "kind=" + glState.kind + "&name=" + encodeURIComponent(glState.name) +
+		"&from_date=" + f2 + "&to_date=" + t2 + "&mode=rows&start=0" +
+		(vt2 ? "&vtype=" + encodeURIComponent(vt2) : "");
+	fetchJSON(API + "ledger?" + qs).then(function (res) {
+		load.remove();
+		var runBal = mode === "vtype" ? null : base;
+		var frag = document.createDocumentFragment();
+		res.rows.forEach(function (r) {
+			if (runBal !== null) runBal += r[5] - r[6];
+			var sub = document.createElement("tr");
+			sub.className = "subwrap";
+			sub.innerHTML = '<td class="lbl" style="padding-left:34px">' + dotISO(r[0]) +
+				'</td><td class="lbl">' + r[1] + " · " + r[2] + "</td><td>" + (r[5] ? fmtIN(r[5]) : "") +
+				"</td><td>" + (r[6] ? fmtIN(r[6]) : "") + "</td><td>" +
+				(runBal !== null ? drcr(runBal) : "") + "</td></tr>";
+			frag.appendChild(sub);
+		});
+		if (res.has_more) {
+			var mo = document.createElement("tr");
+			mo.className = "subwrap";
+			mo.innerHTML = '<td class="lbl" colspan="5" style="padding-left:34px; color:var(--muted)">Showing first 500 of ' +
+				res.count + " — narrow the dates for the rest.</td>";
+			frag.appendChild(mo);
+		}
+		tr.parentNode.insertBefore(frag, tr.nextSibling);
+	}).catch(function (e) {
+		load.innerHTML = '<td class="lbl neg" colspan="5" style="padding-left:34px">' + (e.message || e) + "</td>";
+	});
 }
 function openAccountLedger(nm) {
 	glState.kind = "account"; glState.name = nm;
@@ -2034,7 +2296,7 @@ function renderAC() {
 	var pp = clear("ac-proposed");
 	A.proposed.forEach(function (p, i) {
 		var d = document.createElement("div"); d.style.margin = "0 0 12px";
-		d.innerHTML = '<b style="font-size:13px">' + (i + 1) + ". " + p.action + "</b>" +
+		d.innerHTML = '<b style="font-size:0.929em">' + (i + 1) + ". " + p.action + "</b>" +
 			'<div class="cnote" style="margin:2px 0 0">' + p.detail + "</div>";
 		pp.appendChild(d);
 	});
@@ -2063,10 +2325,43 @@ function wire() {
 	window.addEventListener("hashchange", fromHash);
 	fromHash();
 	document.addEventListener("click", function (ev) {
+		var sec = ev.target.closest ? ev.target.closest("[data-sec]") : null;
+		if (sec) {
+			ev.preventDefault();
+			var pk = sec.getAttribute("data-sec").split(":");
+			STMT_COLLAPSE[pk[0]][pk[1]] = !STMT_COLLAPSE[pk[0]][pk[1]];
+			if (pk[0] === "pl") renderPLStmt();
+			else if (pk[0] === "bs") renderBSStmt();
+			else renderCFStmt();
+			return;
+		}
 		var g = ev.target.closest ? ev.target.closest("[data-g]") : null;
 		if (g) { ev.preventDefault(); showGroup(GSPECS[+g.getAttribute("data-g")]); return; }
 		var l = ev.target.closest ? ev.target.closest("[data-l]") : null;
 		if (l) { ev.preventDefault(); openAccountLedger(l.getAttribute("data-l")); }
+	});
+	document.getElementById("gl-body").addEventListener("click", function (ev) {
+		var tr = ev.target.closest ? ev.target.closest("tr[data-exp]") : null;
+		if (!tr) return;
+		var nxt = tr.nextElementSibling;
+		if (nxt && nxt.classList.contains("subwrap")) {
+			var n2;
+			while ((n2 = tr.nextElementSibling) && n2.classList.contains("subwrap")) n2.remove();
+			tr.querySelector("[data-car]").textContent = "▸";
+			return;
+		}
+		expandLedgerGroup(tr);
+	});
+	document.getElementById("fs-minus").addEventListener("click", function () { bumpFont(-1); });
+	document.getElementById("fs-plus").addEventListener("click", function () { bumpFont(1); });
+	document.getElementById("pl-colsel").addEventListener("change", function () {
+		plColsMode = this.value; applyPLView();
+	});
+	document.getElementById("bs-colsel").addEventListener("change", function () {
+		bsColsMode = this.value; applyBSView();
+	});
+	document.getElementById("cf-colsel").addEventListener("change", function () {
+		cfColsMode = this.value; applyCFView();
 	});
 	["pl", "bs"].forEach(function (pg) {
 		document.getElementById(pg + "-group-close").addEventListener("click", function () {
@@ -2257,6 +2552,7 @@ Promise.all([
 	document.getElementById("foot").textContent = "Snapshot " + D.generated +
 		" · read-only · every figure is a live sum over the general ledger.";
 	document.getElementById("app").style.display = "";
+	applyFont();
 	wire();
 	renderPL(); renderBS(); renderCF(); renderAC();
 	if ("serviceWorker" in navigator)
