@@ -10022,7 +10022,7 @@
     "button_color": "",
     "collapsible": 0,
     "columns": 0,
-    "default": "1 MAIN STORE - VAC",
+    "default": "Main Store - VAC",
     "description": "Which VAC warehouse the invoice moves stock in/out of. Office-only; the driver app never sets this.",
     "fetch_if_empty": 0,
     "fieldname": "warehouse",

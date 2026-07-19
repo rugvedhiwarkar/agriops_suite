@@ -599,7 +599,7 @@ def item_ledger(item, from_date, to_date):
 	)
 	return {"item": item, "rows": [
 		[str(r[0]), float(r[1] or 0), float(r[2] or 0), int(r[3] or 0), r[4], r[5],
-			"" if (r[6] or "").startswith("1 MAIN STORE") else (r[6] or "").replace(f" - {_abbr()}", "")]
+			"" if (r[6] or "").startswith("Main Store") else (r[6] or "").replace(f" - {_abbr()}", "")]
 		for r in rows]}
 
 
