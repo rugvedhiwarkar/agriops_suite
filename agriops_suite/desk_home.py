@@ -1,6 +1,6 @@
 import frappe
 from frappe.utils import get_url_to_workspace
-from frappe.utils.response import build_response
+from frappe.website.utils import build_response
 
 
 class WorkspaceHomeRedirect:
