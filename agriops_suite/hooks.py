@@ -150,6 +150,12 @@ fixtures = [
                     "Crop",
                     "Weed",
                     "Grain Type",
+                    # Seed crop family master (2026-07-24): English names,
+                    # Marathi + alias spellings as search_fields so link
+                    # search matches "dodka" -> Ridge Gourd. Definition only —
+                    # the 32 crop RECORDS are seeded by
+                    # custom_doctypes/itemintel/ci_install_crop_family.py.
+                    "Crop Family",
                     "Product Detail Template",
                     "Product Detail Parameter",
                     "CD Scheme",
@@ -222,6 +228,7 @@ fixtures = [
                     "Item-pd_seed_grain_type",
                     "Item-pd_seed_days_till_maturity",
                     "Item-pd_seed_plant_breed",
+                    "Item-pd_seed_crop_family",
                     "Item-pd_pesticide_technical_name",
                     "Item-pd_tn_pesticide_type",
                     "Item-pd_tn_dosage_per_acre",
