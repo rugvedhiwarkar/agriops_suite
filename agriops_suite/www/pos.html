@@ -234,6 +234,18 @@ input, select { font: inherit; color: inherit; }
 .newform input { width: 100%; border: 2px solid var(--line); border-radius: 11px; padding: 10px 12px; background: #fff; margin-bottom: 9px; }
 .newform input:focus { outline: none; border-color: var(--primary); }
 
+/* numeric pad (rate / qty entry — native-POS style, replaces prompt()) */
+.numsheet { background: var(--card); border-radius: 20px 20px 0 0; width: 100%; max-width: 640px; padding: 14px 14px calc(14px + env(safe-area-inset-bottom)); }
+.numsheet .nt { font-weight: 800; font-size: 1rem; }
+.numsheet .ns { font-size: .8rem; color: var(--muted); margin-top: 2px; }
+.numsheet .nd { text-align: right; font-size: 1.9rem; font-weight: 800; padding: 10px 8px; border-bottom: 2px solid var(--line); margin: 8px 0 12px; min-height: 2.2em; }
+.numpad { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+.numpad button { border: 1px solid var(--line); border-radius: 10px; background: #fff; padding: 15px 0; font-size: 1.25rem; font-weight: 700; }
+.numpad button:active { background: var(--soft); }
+.numpad .nfn { background: var(--soft); }
+.numpad .nok { grid-row: span 2; background: var(--primary); color: #fff; border-color: var(--primary); font-size: 1.5rem; }
+.numpad .nok:active { background: #000; }
+
 /* login */
 .pairwrap { padding: 44px 26px; text-align: center; }
 .pairwrap .logo { width: 84px; height: 84px; border-radius: 22px; background: var(--primary); color: #fff; font-size: 2.5rem; font-weight: 800; display: flex; align-items: center; justify-content: center; margin: 0 auto 18px; }
@@ -259,6 +271,7 @@ input, select { font: inherit; color: inherit; }
 	.grid { grid-template-columns: repeat(auto-fill, minmax(126px, 1fr)); gap: 10px; }
 	.ovl { align-items: center; }
 	.sheet { border-radius: 16px; max-height: 82vh; max-width: 560px; }
+	.numsheet { border-radius: 16px; max-width: 400px; }
 }
 
 /* toast */
@@ -295,7 +308,7 @@ input, select { font: inherit; color: inherit; }
 {% raw %}
 <script>
 "use strict";
-var POSV = "pos-pwa 0.1.0";
+var POSV = "pos-pwa 0.2.0";
 var LS = window.localStorage;
 var CSRF = (document.querySelector('meta[name="vac-csrf"]') || {}).content || "";
 if (CSRF.indexOf("{") !== -1) CSRF = "";  /* raw-served copy: unrendered Jinja */
@@ -658,15 +671,18 @@ function findItem(code) {
 function addItem(code) {
 	var it = findItem(code);
 	if (!it) return;
-	var rate = PRICES[code];
-	if (rate == null) {
-		var v = prompt(T("rate_p"), "");
-		if (v == null) return;
-		rate = parseFloat(String(v).replace(/[^\d.]/g, ""));
-		if (!(rate > 0)) { toast(T("bad_num")); return; }
-	}
 	for (var i = 0; i < cart.length; i++) {
 		if (cart[i].code === code) { cart[i].qty += 1; render(); return; }
+	}
+	var rate = PRICES[code];
+	if (rate == null) {
+		/* no selling price on file: numpad sheet asks the rate (this cart
+		   line only — the price list itself is never written from here) */
+		openNum(it.item_name, T("rate_p"), "", function (r) {
+			cart.push({ code: code, name: it.item_name, uom: it.stock_uom || "", qty: 1, rate: r });
+			render();
+		});
+		return;
 	}
 	cart.push({ code: code, name: it.item_name, uom: it.stock_uom || "", qty: 1, rate: rate });
 	render();
@@ -719,18 +735,50 @@ function qUp(i) { cart[i].qty += 1; render(); }
 function qDown(i) { cart[i].qty -= 1; if (cart[i].qty <= 0) cart.splice(i, 1); render(); }
 function delLine(i) { cart.splice(i, 1); render(); }
 function editQty(i) {
-	var v = prompt(T("qty_p"), qtyfmt(cart[i].qty));
-	if (v == null) return;
-	var q = parseFloat(String(v).replace(/[^\d.]/g, ""));
-	if (!(q > 0)) { toast(T("bad_num")); return; }
-	cart[i].qty = q; render();
+	openNum(cart[i].name, T("qty_p"), qtyfmt(cart[i].qty), function (q) { cart[i].qty = q; render(); });
 }
 function editRate(i) {
-	var v = prompt(T("rate_p"), String(cart[i].rate));
-	if (v == null) return;
-	var r = parseFloat(String(v).replace(/[^\d.]/g, ""));
-	if (!(r > 0)) { toast(T("bad_num")); return; }
-	cart[i].rate = r; render();
+	openNum(cart[i].name, T("rate_p"), String(cart[i].rate), function (r) { cart[i].rate = r; render(); });
+}
+
+/* ---------- numeric pad sheet ---------- */
+var NUM = null;
+function openNum(title, sub, initial, cb) {
+	NUM = { title: title, sub: sub, val: initial == null ? "" : String(initial), cb: cb };
+	renderNum();
+	$id("numovl").classList.add("show");
+}
+function closeNum() { NUM = null; var o = $id("numovl"); if (o) o.classList.remove("show"); }
+function renderNum() {
+	if (!NUM) return;
+	var keys =
+		'<button onclick="numKey(\'7\')">7</button><button onclick="numKey(\'8\')">8</button><button onclick="numKey(\'9\')">9</button><button class="nfn" onclick="numKey(\'b\')">&#9003;</button>' +
+		'<button onclick="numKey(\'4\')">4</button><button onclick="numKey(\'5\')">5</button><button onclick="numKey(\'6\')">6</button><button class="nfn" onclick="numKey(\'c\')">C</button>' +
+		'<button onclick="numKey(\'1\')">1</button><button onclick="numKey(\'2\')">2</button><button onclick="numKey(\'3\')">3</button><button class="nok" onclick="numOk()">&#10003;</button>' +
+		'<button onclick="numKey(\'.\')">.</button><button onclick="numKey(\'0\')">0</button><button onclick="numKey(\'0\');numKey(\'0\')">00</button>';
+	$id("numovl").innerHTML =
+		'<div class="numsheet" onclick="event.stopPropagation()">' +
+		'<div class="nt">' + esc(NUM.title) + "</div>" +
+		(NUM.sub ? '<div class="ns">' + esc(NUM.sub) + "</div>" : "") +
+		'<div class="nd">' + esc(NUM.val || "0") + "</div>" +
+		'<div class="numpad">' + keys + "</div></div>";
+}
+function numKey(k) {
+	if (!NUM) return;
+	if (k === "b") NUM.val = NUM.val.slice(0, -1);
+	else if (k === "c") NUM.val = "";
+	else if (k === ".") { if (NUM.val.indexOf(".") === -1) NUM.val = (NUM.val || "0") + "."; }
+	else { NUM.val = (NUM.val === "0" ? "" : NUM.val) + k; }
+	if (NUM.val.length > 9) NUM.val = NUM.val.slice(0, 9);
+	renderNum();
+}
+function numOk() {
+	if (!NUM) return;
+	var v = parseFloat(NUM.val);
+	if (!(v > 0)) { toast(T("bad_num")); return; }
+	var cb = NUM.cb;
+	closeNum();
+	cb(v);
 }
 function loadKhata() {
 	if (!CUST || KHATA != null || !navigator.onLine) return;
@@ -1145,8 +1193,11 @@ function updateNet() {
 function boot() {
 	applyLangChrome();
 	document.body.insertAdjacentHTML("beforeend", '<div class="ovl" id="custovl" onclick="closeCust()"></div>');
-	var old = document.querySelectorAll("#custovl");
-	for (var i = 0; i < old.length - 1; i++) old[i].parentNode.removeChild(old[i]);
+	document.body.insertAdjacentHTML("beforeend", '<div class="ovl" id="numovl" onclick="closeNum()"></div>');
+	["custovl", "numovl"].forEach(function (id) {
+		var old = document.querySelectorAll("#" + id);
+		for (var i = 0; i < old.length - 1; i++) old[i].parentNode.removeChild(old[i]);
+	});
 	loadDone();
 	ensureAuth().then(function (authed) {
 		if (DISABLED) { renderDisabled(); return; }
