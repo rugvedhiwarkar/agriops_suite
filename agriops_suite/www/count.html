@@ -282,6 +282,7 @@ var STR = {
 		locked_1: "This item was counted as {0} and sent to the office.",
 		locked_2: "To change it, tell the office — they will correct the count record. The same item cannot be counted twice in one run.",
 		t_sent: "Sent ✓", t_saved: "Saved ✓", t_paired: "Linked ✓",
+		t_refreshing: "Getting the latest list…", t_refreshed: "List updated ✓",
 		t_checknum: "Check the number",
 		t_offline_q: "Offline — it will send when the network is back",
 		e_network: "No network", e_auth: "Please sign in again",
@@ -316,6 +317,7 @@ var STR = {
 		locked_1: "इस चीज़ की गिनती {0} ऑफ़िस को भेज दी गई है।",
 		locked_2: "बदलना हो तो ऑफ़िस को बताएं — वे गिनती के रिकॉर्ड में सुधार करेंगे। एक ही चीज़ दो बार दर्ज नहीं हो सकती।",
 		t_sent: "भेज दिया ✓", t_saved: "दर्ज हुआ ✓", t_paired: "जुड़ गया ✓",
+		t_refreshing: "नई सूची ला रहे हैं…", t_refreshed: "सूची अपडेट हुई ✓",
 		t_checknum: "संख्या जाँचें",
 		t_offline_q: "ऑफ़लाइन — नेटवर्क आने पर भेज दिया जाएगा",
 		e_network: "नेटवर्क नहीं", e_auth: "कृपया फिर से साइन इन करें",
@@ -350,6 +352,7 @@ var STR = {
 		locked_1: "या वस्तूची मोजणी {0} ऑफिसला पाठवली आहे.",
 		locked_2: "बदल करायचा असेल तर ऑफिसला सांगा — ते मोजणीच्या नोंदीत दुरुस्ती करतील. एकाच वस्तूची एका फेरीत दोनदा नोंद होत नाही.",
 		t_sent: "पाठवले ✓", t_saved: "नोंद झाली ✓", t_paired: "जोडणी झाली ✓",
+		t_refreshing: "नवीन यादी आणत आहे…", t_refreshed: "यादी अपडेट झाली ✓",
 		t_checknum: "संख्या तपासा",
 		t_offline_q: "ऑफलाइन — नेटवर्क आल्यावर जाईल",
 		e_network: "नेटवर्क नाही", e_auth: "कृपया पुन्हा साइन इन करा",
@@ -860,7 +863,34 @@ function renderListOnly() {
 }
 
 function setTab(t) { TAB = t; SEARCH = ""; render(); }
-function onSync() { syncNow(false).then(function () { toast(T("t_sent")); }); }
+/* Header ⟳ = a true two-way refresh: push any counts I've made, THEN pull the
+   current list of items to reconcile from the server (force, bypassing the 6h
+   cache). This is how a counter picks up items that became due, or a list the
+   office regenerated, without closing the app. Counts already made this session
+   stay marked done — loadQueue re-maps them onto the fresh list. */
+var refreshing = false;
+function onSync() {
+	if (refreshing) return;
+	if (!navigator.onLine) { toast(T("e_network")); return; }
+	refreshing = true;
+	var btn = document.querySelector(".hdr .sync");
+	if (btn) btn.classList.add("spin");
+	toast(T("t_refreshing"));
+	syncNow(false).then(function () {
+		return refreshBoot(true);          /* force a fresh pull of the due list */
+	}).then(function () {
+		return loadQueue();                /* re-map which items are already counted */
+	}).then(function () {
+		refreshing = false;
+		render();                          /* rebuilds the header (clears the spin) */
+		toast(T("t_refreshed"));
+	}).catch(function (e) {
+		refreshing = false;
+		render();
+		if (e && e.auth) { needLogin(); return; }
+		toast((e && e.message) || T("e_network"));
+	});
+}
 
 /* ---------- count sheet ---------- */
 var SHEET = { item: null, label: "", uom: "", val: "", note: "" };
