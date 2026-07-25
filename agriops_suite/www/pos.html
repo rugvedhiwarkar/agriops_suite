@@ -268,6 +268,14 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--green); out
 .prow .pp { border-color: var(--line); color: var(--muted); }
 .psec { font-size: .8rem; font-weight: 800; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; margin: 16px 14px 2px; }
 .pnote { font-size: .8rem; color: var(--muted); margin: 8px 14px 20px; line-height: 1.45; }
+/* recent tab */
+.rechead { display: flex; align-items: center; justify-content: space-between; }
+.recref { width: 40px; height: 40px; border-radius: 10px; background: var(--soft); color: var(--ink); font-size: 1.1rem; margin: 12px 14px 0; flex: none; }
+.recref:active { background: var(--line); }
+/* print-format picker */
+.prlist { display: flex; flex-direction: column; gap: 8px; margin-top: 4px; }
+.prbtn { padding: 13px; border-radius: 12px; border: 1.6px solid var(--line-2); background: var(--card); font-weight: 800; font-size: .96rem; color: var(--ink); }
+.prbtn:active { background: var(--soft); }
 
 /* settings */
 .setrow { margin-bottom: 12px; }
@@ -440,7 +448,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--green); out
 {% raw %}
 <script>
 "use strict";
-var POSV = "pos-pwa 0.8.0";
+var POSV = "pos-pwa 0.9.0";
 var LS = window.localStorage;
 var CSRF = (document.querySelector('meta[name="vac-csrf"]') || {}).content || "";
 if (CSRF.indexOf("{") !== -1) CSRF = "";  /* raw-served copy: unrendered Jinja */
@@ -463,6 +471,7 @@ var STR = {
 		empty: "Cart is empty — tap items to add", confirm: "Confirm Bill",
 		need_cust: "Pick the customer for udhaar", queued: "Queued", billno: "Bill",
 		qty_p: "Quantity", rate_p: "Rate (₹)", bad_num: "Enter a valid number", num_hint: "Type or tap · Enter to confirm", btn_cancel: "Cancel", btn_ok: "OK", hint_items: "Add items to the bill",
+		recent: "Recent", recent_sales: "Bills", recent_pay: "Payments & receipts", recent_jrnl: "Journal entries", print: "Print", printing: "Preparing print…", print_fail: "Could not print", none_recent: "Nothing yet", loading_r: "Loading…",
 		st_pend: "Waiting", st_send: "Sending…", st_fail: "Failed", st_done: "Sent",
 		retry: "Retry", discard: "Delete", reprint: "Print", print: "Print",
 		discard_q: "Delete this bill forever? It has NOT reached ERPNext.",
@@ -505,6 +514,7 @@ var STR = {
 		empty: "बिल खाली है — सामान पर टैप करें", confirm: "पक्का बिल करें",
 		need_cust: "उधार के लिए ग्राहक चुनें", queued: "कतार में", billno: "बिल",
 		qty_p: "मात्रा", rate_p: "दाम (₹)", bad_num: "सही संख्या डालें", num_hint: "टाइप करें या टैप करें · Enter से पक्का", btn_cancel: "रद्द करें", btn_ok: "ठीक है", hint_items: "बिल में सामान जोड़ें",
+		recent: "हाल का", recent_sales: "बिल", recent_pay: "भुगतान व जमा", recent_jrnl: "जर्नल एंट्री", print: "प्रिंट", printing: "प्रिंट तैयार हो रहा…", print_fail: "प्रिंट नहीं हुआ", none_recent: "अभी कुछ नहीं", loading_r: "लोड हो रहा…",
 		st_pend: "प्रतीक्षा में", st_send: "भेज रहे हैं…", st_fail: "असफल", st_done: "भेज दिया",
 		retry: "फिर भेजें", discard: "हटाएँ", reprint: "प्रिंट", print: "प्रिंट",
 		discard_q: "यह बिल हमेशा के लिए हटाएँ? यह ERPNext नहीं पहुँचा है।",
@@ -547,6 +557,7 @@ var STR = {
 		empty: "बिल रिकामे आहे — वस्तूवर टॅप करा", confirm: "पक्के बिल करा",
 		need_cust: "उधारीसाठी ग्राहक निवडा", queued: "रांगेत", billno: "बिल",
 		qty_p: "नग / प्रमाण", rate_p: "दर (₹)", bad_num: "बरोबर आकडा टाका", num_hint: "टाइप करा किंवा टॅप करा · Enter ने पक्के", btn_cancel: "रद्द करा", btn_ok: "ठीक", hint_items: "बिलात वस्तू जोडा",
+		recent: "अलीकडील", recent_sales: "बिले", recent_pay: "पेमेंट व जमा", recent_jrnl: "जर्नल नोंदी", print: "प्रिंट", printing: "प्रिंट तयार होत आहे…", print_fail: "प्रिंट झाले नाही", none_recent: "अजून काही नाही", loading_r: "लोड होत आहे…",
 		st_pend: "प्रतीक्षेत", st_send: "पाठवत आहे…", st_fail: "अयशस्वी", st_done: "पाठवले",
 		retry: "पुन्हा पाठवा", discard: "हटवा", reprint: "प्रिंट", print: "प्रिंट",
 		discard_q: "हे बिल कायमचे हटवायचे? हे ERPNext मध्ये गेलेले नाही.",
@@ -801,17 +812,19 @@ function render() {
 		'<button class="' + (VIEW === "sell" || VIEW === "cart" ? "on" : "") + '" onclick="go(\'sell\')">' + esc(T("sell")) + "</button>" +
 		'<button class="' + (VIEW === "pending" ? "on" : "") + '" onclick="go(\'pending\')">' + esc(T("pending")) +
 		(pendCount() ? '<span class="bub">' + pendCount() + "</span>" : "") + "</button>" +
+		'<button class="' + (VIEW === "recent" ? "on" : "") + '" onclick="go(\'recent\')">' + esc(T("recent")) + "</button>" +
 		"</div>";
 	if (two) h += '<div class="cols"><div class="colL">' + renderSell() + '</div><div class="colR">' + renderCart() + "</div></div>";
 	else if (VIEW === "sell") h += renderSell();
 	else if (VIEW === "cart") h += renderCart();
 	else if (VIEW === "pending") h += renderPending();
+	else if (VIEW === "recent") h += renderRecent();
 	else if (VIEW === "settings") h += renderSettings();
 	$id("app").innerHTML = h;
 	if (VIEW === "sell" || two) { var q = $id("q"); if (q && searchQ) { q.focus(); q.setSelectionRange(q.value.length, q.value.length); } }
 	if (VIEW === "cart" || two) loadKhata();
 }
-function go(v) { VIEW = v; render(); }
+function go(v) { VIEW = v; render(); if (v === "recent") loadRecent(); }
 function renderHdr() {
 	var who = AUTH && AUTH.full_name ? AUTH.full_name : "";
 	return '<div class="hdr">' +
@@ -1260,6 +1273,104 @@ function renderPending() {
 	}
 	h += '<div class="pnote">' + esc(T("pnote")) + "</div>";
 	return h;
+}
+
+/* ---------- recent (server) + print formats ----------
+   The pending tab is the LOCAL outbox; this "Recent" tab pulls what actually
+   landed in ERPNext — POS bills for everyone, plus Fast Journal money vouchers
+   for staff who may post them — each with the VAC print formats. */
+var RECENT = null, RECENT_LOADING = false;
+var PRINT_FORMATS = {
+	"Sales Invoice": [
+		{ fmt: "VAC Tax Invoice A4", lbl: "A4 Bill" },
+		{ fmt: "VAC Tax Invoice A5", lbl: "A5 Bill" },
+		{ fmt: "VAC Delivery Slip", lbl: "Delivery Slip" }
+	],
+	"Payment Entry": [
+		{ fmt: "VAC Deposit Slip PE", lbl: "Deposit Slip" },
+		{ fmt: "VAC RTGS NEFT Request", lbl: "RTGS / NEFT" },
+		{ fmt: "Standard", lbl: "Voucher" }
+	],
+	"Journal Entry": [
+		{ fmt: "Standard", lbl: "Voucher" }
+	]
+};
+function loadRecent() {
+	if (RECENT_LOADING || !navigator.onLine) return;
+	RECENT_LOADING = true;
+	api("/api/method/vac_pos_recent", { method: "POST", json: {} }).then(function (d) {
+		RECENT = d.message || null; RECENT_LOADING = false;
+		if (VIEW === "recent") render();
+	}).catch(function (e) {
+		RECENT_LOADING = false;
+		if (e && e.auth) needLogin();
+	});
+}
+function renderRecent() {
+	var h = '<div class="rechead"><div class="psec" style="margin:14px 14px 2px">' + esc(T("recent")) + '</div>' +
+		'<button class="recref" onclick="RECENT=null;loadRecent();render()">&#10227;</button></div>';
+	if (!RECENT) { h += '<div class="nores">' + esc(RECENT_LOADING || navigator.onLine ? T("loading_r") : T("offline")) + "</div>"; return h; }
+	h += '<div class="psec">' + esc(T("recent_sales")) + "</div>";
+	if (!RECENT.sales.length) h += '<div class="nores">' + esc(T("none_recent")) + "</div>";
+	for (var i = 0; i < RECENT.sales.length; i++) {
+		var s = RECENT.sales[i];
+		h += recCard("Sales Invoice", s.name, s.customer_name || s.customer, s.rounded_total || s.grand_total, s.status, s.posting_date, s.outstanding_amount > 0.5 ? T("khata") + " " + fmt(s.outstanding_amount) : "");
+	}
+	if (RECENT.can_journal) {
+		if (RECENT.payments.length) {
+			h += '<div class="psec">' + esc(T("recent_pay")) + "</div>";
+			for (var p = 0; p < RECENT.payments.length; p++) {
+				var pe = RECENT.payments[p];
+				h += recCard("Payment Entry", pe.name, pe.party, pe.amount, pe.kind === "Receive" ? T("recv") : T("fj_payment"), pe.date, "");
+			}
+		}
+		if (RECENT.journals.length) {
+			h += '<div class="psec">' + esc(T("recent_jrnl")) + "</div>";
+			for (var j = 0; j < RECENT.journals.length; j++) {
+				var je = RECENT.journals[j];
+				h += recCard("Journal Entry", je.name, je.remark || je.kind, je.amount, "", je.date, "");
+			}
+		}
+	}
+	return h;
+}
+function recCard(doctype, name, who, amount, status, date, sub) {
+	return '<div class="pcard"><div class="pr"><div class="pref">' + esc(name) + "</div>" +
+		'<div class="pamt">' + fmt(amount) + "</div></div>" +
+		'<div class="pc">' + esc(who || "") + (status ? " • " + esc(status) : "") + " • " + esc(date) + "</div>" +
+		(sub ? '<span class="st pend">' + esc(sub) + "</span>" : "") +
+		'<div class="prow"><button class="pp" data-dt="' + esc(doctype) + '" data-nm="' + esc(name) + '" onclick="printMenu(this.dataset.dt, this.dataset.nm)">&#128424; ' + esc(T("print")) + "</button></div></div>";
+}
+/* print-format picker (reuses the ask overlay as a generic sheet) */
+function printMenu(doctype, name) {
+	var fmts = PRINT_FORMATS[doctype] || [{ fmt: "Standard", lbl: T("print") }];
+	var body = "";
+	for (var i = 0; i < fmts.length; i++)
+		body += '<button class="prbtn" data-dt="' + esc(doctype) + '" data-nm="' + esc(name) + '" data-fmt="' + esc(fmts[i].fmt) + '" onclick="printDoc(this.dataset.dt, this.dataset.nm, this.dataset.fmt)">' + esc(fmts[i].lbl) + "</button>";
+	ASK = { print: true };
+	$id("askovl").innerHTML = '<div class="askbox" onclick="event.stopPropagation()">' +
+		'<div class="askt">' + esc(name) + "</div>" +
+		'<div class="prlist">' + body + "</div>" +
+		'<button class="askno" style="width:100%;margin-top:10px" onclick="closeAsk()">' + esc(T("btn_cancel")) + "</button></div>";
+	$id("askovl").classList.add("show");
+}
+/* fetch the PDF with the app's own auth (token or session) and open it to print
+   — window.open alone would drop the token header on kiosk devices */
+function printDoc(doctype, name, fmt) {
+	toast(T("printing"));
+	closeAsk();
+	var url = "/api/method/frappe.utils.print_format.download_pdf?doctype=" + encodeURIComponent(doctype) +
+		"&name=" + encodeURIComponent(name) + "&format=" + encodeURIComponent(fmt) + "&no_letterhead=0";
+	var headers = {};
+	if (TOKEN) headers["Authorization"] = "token " + TOKEN;
+	fetch(url, { headers: headers, credentials: "same-origin" })
+		.then(function (r) { if (!r.ok) throw 0; return r.blob(); })
+		.then(function (b) {
+			var u = URL.createObjectURL(b);
+			window.open(u, "_blank");
+			setTimeout(function () { URL.revokeObjectURL(u); }, 60000);
+		})
+		.catch(function () { toast(T("print_fail")); });
 }
 function payLabel(s) {
 	if (s.mode === "Udhaar") return T("udhaar");
