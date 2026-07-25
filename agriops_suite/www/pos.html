@@ -151,9 +151,23 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--green); out
 .tile.c-pest .mono { background: linear-gradient(150deg, #d97706, #b04305); }
 .tile.c-fert .thumb { background: radial-gradient(92px 62px at 50% 32%, var(--blue-soft), transparent 76%); }
 .tile.c-fert .mono { background: linear-gradient(150deg, #0e7490, #0b5563); }
+.tile.c-growth .thumb { background: radial-gradient(92px 62px at 50% 32%, #efe6fb, transparent 76%); }
+.tile.c-growth .mono { background: linear-gradient(150deg, #7c3aed, #5b21b6); }
+.tile.c-irrig .thumb { background: radial-gradient(92px 62px at 50% 32%, #e2ecfd, transparent 76%); }
+.tile.c-irrig .mono { background: linear-gradient(150deg, #2563eb, #1d4ed8); }
+.tile.c-hardware .thumb { background: radial-gradient(92px 62px at 50% 32%, #eaeef2, transparent 76%); }
+.tile.c-hardware .mono { background: linear-gradient(150deg, #64748b, #475569); }
 .tile.c-other .thumb { background: radial-gradient(92px 62px at 50% 32%, var(--soft), transparent 76%); }
 .tile.c-other .mono { background: linear-gradient(150deg, #5b6b63, #3c4a43); }
 .more { margin: 2px 12px 14px; padding: 12px; width: calc(100% - 24px); border: 2px dashed var(--line); border-radius: 12px; color: var(--muted); font-weight: 700; }
+/* loading skeleton (first catalog fetch) */
+.skel { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow-sm); }
+.skel .sk-th { height: 80px; }
+.skel .sk-b { padding: 10px; border-top: 1px solid var(--line); }
+.skel .sk-l { height: 10px; border-radius: 5px; margin-bottom: 7px; }
+.skel .sk-l.short { width: 55%; margin-bottom: 0; }
+.skel .sk-th, .skel .sk-l { background: linear-gradient(90deg, var(--soft) 25%, #e7ece9 37%, var(--soft) 63%); background-size: 300% 100%; animation: shimmer 1.3s ease-in-out infinite; }
+@keyframes shimmer { 0% { background-position: 150% 0; } 100% { background-position: -150% 0; } }
 .nores { text-align: center; color: var(--muted); padding: 34px 20px; font-size: .95rem; }
 
 /* cart bar */
@@ -186,6 +200,11 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--green); out
 .cline .lt { font-size: .92rem; font-weight: 600; line-height: 1.25; }
 .cline .lr { font-size: .8rem; color: var(--muted); margin-top: 2px; }
 .cline .lr b { color: var(--ink); }
+.cline .lr.editing { margin-top: 4px; }
+/* inline PC editor (desktop): type the qty/rate directly, Enter commits */
+.editin { width: 84px; border: 2px solid var(--green); border-radius: 8px; padding: 5px 8px; font-size: .9rem; font-weight: 800; color: var(--ink); background: #fff; font-variant-numeric: tabular-nums; }
+.editin:focus { outline: none; }
+.editin.qedit { width: 52px; text-align: center; border-radius: 0; border-top: 0; border-bottom: 0; }
 .qbox { display: flex; align-items: center; gap: 0; border: 1.6px solid var(--line); border-radius: 11px; overflow: hidden; flex: none; }
 .qbox button { width: 40px; height: 40px; font-size: 1.25rem; font-weight: 800; color: var(--green-dark); background: var(--green-soft); }
 .qbox .qv { min-width: 44px; text-align: center; font-weight: 800; font-size: 1rem; padding: 0 2px; }
@@ -316,6 +335,17 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--green); out
 .numpad .nok { grid-row: span 2; background: linear-gradient(150deg, var(--green), var(--green-dark)); color: #fff; border-color: transparent; font-size: 1.5rem; }
 .numpad .nok:active { transform: translateY(1px); }
 
+/* in-app confirm sheet (replaces browser confirm()) */
+#askovl { z-index: 90; align-items: center; }
+.askbox { background: var(--card); border-radius: 18px; width: 100%; max-width: 340px; padding: 20px 18px 16px; box-shadow: var(--shadow-lg); }
+.askbox .askt { font-weight: 800; font-size: 1.05rem; margin-bottom: 6px; }
+.askbox .askm { color: var(--muted); font-size: .93rem; line-height: 1.45; margin-bottom: 17px; }
+.askrow { display: flex; gap: 9px; }
+.askrow button { flex: 1; padding: 13px; border-radius: 12px; font-weight: 800; font-size: .96rem; }
+.askrow .askno { border: 1.6px solid var(--line-2); background: #fff; color: var(--ink); }
+.askrow .askyes { background: var(--green-dark); color: #fff; }
+.askrow .askyes.danger { background: var(--red); }
+
 /* held bills (parked mid-conversation; amber = someone waiting) */
 .holdstrip { display: flex; gap: 7px; overflow-x: auto; padding: 9px 12px 0; scrollbar-width: none; }
 .holdstrip::-webkit-scrollbar { display: none; }
@@ -326,6 +356,12 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--green); out
 .holdchip .hx:active { background: rgba(0,0,0,.08); }
 .holdbtn { width: 100%; border: 2px solid var(--amber); color: var(--amber-dark); background: #fff; border-radius: 12px; padding: 13px; font-weight: 800; margin-top: 9px; }
 .holdbtn:active { background: var(--amber-soft); }
+/* why the confirm button can't fire yet */
+.gohint { text-align: center; font-size: .8rem; font-weight: 600; color: var(--amber-dark); margin-top: 7px; }
+/* floating "+1" when a tile is tapped */
+.plusone { position: fixed; z-index: 95; transform: translate(-50%, -50%); color: var(--green-dark); font-weight: 800; font-size: 1.3rem; pointer-events: none; text-shadow: 0 1px 3px rgba(255,255,255,.9); animation: flyup .7s ease-out forwards; }
+@keyframes flyup { 0% { opacity: 0; transform: translate(-50%, -50%) scale(.5); } 18% { opacity: 1; transform: translate(-50%, -70%) scale(1.1); } 100% { opacity: 0; transform: translate(-50%, -175%) scale(1); } }
+@media (prefers-reduced-motion: reduce) { .plusone, .skel .sk-th, .skel .sk-l, .numsheet .nd::after, .live { animation: none !important; } }
 
 /* fast journal (receive payment) sheet */
 .fjsheet { padding: 0 14px 14px; }
@@ -404,7 +440,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--green); out
 {% raw %}
 <script>
 "use strict";
-var POSV = "pos-pwa 0.7.0";
+var POSV = "pos-pwa 0.8.0";
 var LS = window.localStorage;
 var CSRF = (document.querySelector('meta[name="vac-csrf"]') || {}).content || "";
 if (CSRF.indexOf("{") !== -1) CSRF = "";  /* raw-served copy: unrendered Jinja */
@@ -420,12 +456,13 @@ var LANGS = [{ code: "mr", label: "मराठी" }, { code: "hi", label: "ह
 var STR = {
 	en: {
 		sell: "Sell", pending: "Pending", search_ph: "Search item…", all: "All",
+		cat_seed: "Seeds", cat_fert: "Fertilizer", cat_pest: "Pesticide", cat_growth: "Growth", cat_irrig: "Irrigation", cat_hardware: "Hardware", cat_other: "Other",
 		more: "Show more", nores: "No items match", noprice: "Rate?", uom: "",
 		cust: "Customer", walkin: "Cash Customer", change: "Change", khata: "Due",
 		cash: "Cash", upi: "UPI", udhaar: "Udhaar", to_cart: "Bill", items_n: "items",
 		empty: "Cart is empty — tap items to add", confirm: "Confirm Bill",
 		need_cust: "Pick the customer for udhaar", queued: "Queued", billno: "Bill",
-		qty_p: "Quantity", rate_p: "Rate (₹)", bad_num: "Enter a valid number", num_hint: "Type or tap · Enter to confirm",
+		qty_p: "Quantity", rate_p: "Rate (₹)", bad_num: "Enter a valid number", num_hint: "Type or tap · Enter to confirm", btn_cancel: "Cancel", btn_ok: "OK", hint_items: "Add items to the bill",
 		st_pend: "Waiting", st_send: "Sending…", st_fail: "Failed", st_done: "Sent",
 		retry: "Retry", discard: "Delete", reprint: "Print", print: "Print",
 		discard_q: "Delete this bill forever? It has NOT reached ERPNext.",
@@ -461,12 +498,13 @@ var STR = {
 	},
 	hi: {
 		sell: "बिक्री", pending: "बाकी", search_ph: "सामान खोजें…", all: "सभी",
+		cat_seed: "बीज", cat_fert: "खाद", cat_pest: "दवा", cat_growth: "टॉनिक", cat_irrig: "सिंचाई", cat_hardware: "हार्डवेयर", cat_other: "अन्य",
 		more: "और दिखाएँ", nores: "ऐसा सामान नहीं मिला", noprice: "दाम?", uom: "",
 		cust: "ग्राहक", walkin: "नकद ग्राहक", change: "बदलें", khata: "बकाया",
 		cash: "नकद", upi: "UPI", udhaar: "उधार", to_cart: "बिल", items_n: "सामान",
 		empty: "बिल खाली है — सामान पर टैप करें", confirm: "पक्का बिल करें",
 		need_cust: "उधार के लिए ग्राहक चुनें", queued: "कतार में", billno: "बिल",
-		qty_p: "मात्रा", rate_p: "दाम (₹)", bad_num: "सही संख्या डालें", num_hint: "टाइप करें या टैप करें · Enter से पक्का",
+		qty_p: "मात्रा", rate_p: "दाम (₹)", bad_num: "सही संख्या डालें", num_hint: "टाइप करें या टैप करें · Enter से पक्का", btn_cancel: "रद्द करें", btn_ok: "ठीक है", hint_items: "बिल में सामान जोड़ें",
 		st_pend: "प्रतीक्षा में", st_send: "भेज रहे हैं…", st_fail: "असफल", st_done: "भेज दिया",
 		retry: "फिर भेजें", discard: "हटाएँ", reprint: "प्रिंट", print: "प्रिंट",
 		discard_q: "यह बिल हमेशा के लिए हटाएँ? यह ERPNext नहीं पहुँचा है।",
@@ -502,12 +540,13 @@ var STR = {
 	},
 	mr: {
 		sell: "विक्री", pending: "प्रलंबित", search_ph: "वस्तू शोधा…", all: "सर्व",
+		cat_seed: "बियाणे", cat_fert: "खत", cat_pest: "औषध", cat_growth: "टॉनिक", cat_irrig: "सिंचन", cat_hardware: "हार्डवेअर", cat_other: "इतर",
 		more: "आणखी दाखवा", nores: "अशी वस्तू सापडली नाही", noprice: "दर?", uom: "",
 		cust: "ग्राहक", walkin: "रोख ग्राहक", change: "बदला", khata: "थकबाकी",
 		cash: "रोख", upi: "UPI", udhaar: "उधार", to_cart: "बिल", items_n: "वस्तू",
 		empty: "बिल रिकामे आहे — वस्तूवर टॅप करा", confirm: "पक्के बिल करा",
 		need_cust: "उधारीसाठी ग्राहक निवडा", queued: "रांगेत", billno: "बिल",
-		qty_p: "नग / प्रमाण", rate_p: "दर (₹)", bad_num: "बरोबर आकडा टाका", num_hint: "टाइप करा किंवा टॅप करा · Enter ने पक्के",
+		qty_p: "नग / प्रमाण", rate_p: "दर (₹)", bad_num: "बरोबर आकडा टाका", num_hint: "टाइप करा किंवा टॅप करा · Enter ने पक्के", btn_cancel: "रद्द करा", btn_ok: "ठीक", hint_items: "बिलात वस्तू जोडा",
 		st_pend: "प्रतीक्षेत", st_send: "पाठवत आहे…", st_fail: "अयशस्वी", st_done: "पाठवले",
 		retry: "पुन्हा पाठवा", discard: "हटवा", reprint: "प्रिंट", print: "प्रिंट",
 		discard_q: "हे बिल कायमचे हटवायचे? हे ERPNext मध्ये गेलेले नाही.",
@@ -651,7 +690,7 @@ function toast(msg) {
 }
 
 /* ---------- catalog ---------- */
-var CATALOG = null, ITEMS = [], PRICES = {}, CUSTOMERS = [], PROFILE = {}, GROUPS = [];
+var CATALOG = null, ITEMS = [], PRICES = {}, CUSTOMERS = [], PROFILE = {}, CATS = [];
 function adoptCatalog(c) {
 	CATALOG = c || null;
 	ITEMS = (c && c.items) || [];
@@ -660,9 +699,10 @@ function adoptCatalog(c) {
 	PRICES = {};
 	var pr = (c && c.prices) || [];
 	for (var i = 0; i < pr.length; i++) PRICES[pr[i].item_code] = pr[i].price_list_rate;
-	var gc = {};
-	for (var j = 0; j < ITEMS.length; j++) { var g = ITEMS[j].item_group || ""; gc[g] = (gc[g] || 0) + 1; }
-	GROUPS = Object.keys(gc).sort(function (a, b) { return gc[b] - gc[a]; }).slice(0, 8);
+	/* which high-level categories actually have items, in CATDEFS order */
+	var present = {};
+	for (var j = 0; j < ITEMS.length; j++) present[groupCategory(ITEMS[j].item_group)] = true;
+	CATS = CATDEFS.filter(function (d) { return present[d.key]; });
 }
 function walkinName() { return PROFILE.customer || "Cash Customer"; }
 var CAT_TTL = 6 * 60 * 60 * 1000;
@@ -722,9 +762,10 @@ function resumeHold(id) {
 	render();
 }
 function dropHold(id) {
-	if (!confirm(T("hold_drop_q"))) return;
-	HOLDS = HOLDS.filter(function (x) { return x.id !== id; });
-	saveHolds(); render();
+	askConfirm({ msg: T("hold_drop_q"), yes: T("discard"), danger: true, onYes: function () {
+		HOLDS = HOLDS.filter(function (x) { return x.id !== id; });
+		saveHolds(); render();
+	} });
 }
 function holdAge(ts) {
 	var m = Math.max(0, Math.round((Date.now() - ts) / 60000));
@@ -793,7 +834,7 @@ function matchItems() {
 	var q = norm(searchQ), out = [];
 	for (var i = 0; i < ITEMS.length; i++) {
 		var it = ITEMS[i];
-		if (groupF && it.item_group !== groupF) continue;
+		if (groupF && groupCategory(it.item_group) !== groupF) continue;
 		if (q && norm(it.item_name).indexOf(q) === -1 && norm(it.name).indexOf(q) === -1) continue;
 		out.push(it);
 	}
@@ -803,15 +844,20 @@ function renderSell() {
 	var h = '<div class="qwrap"><input id="q" type="search" placeholder="' + esc(T("search_ph")) + '" value="' + esc(searchQ) + '" oninput="onQ(this.value)" onkeydown="qKey(event)"></div>';
 	h += holdsStrip();
 	h += '<div class="chips"><button class="' + (groupF ? "" : "on") + '" onclick="setGroup(\'\')">' + esc(T("all")) + "</button>";
-	for (var i = 0; i < GROUPS.length; i++) {
-		var g = GROUPS[i];
-		/* data attribute, not an inline JS string — names may contain quotes */
-		h += '<button class="' + (groupF === g ? "on" : "") + '" data-g="' + esc(g) + '" onclick="setGroup(this.dataset.g)">' + esc(g) + "</button>";
+	for (var i = 0; i < CATS.length; i++) {
+		var d = CATS[i];
+		h += '<button class="' + (groupF === d.key ? "on" : "") + '" data-g="' + d.key + '" onclick="setGroup(this.dataset.g)">' + esc(T(d.lk)) + "</button>";
 	}
 	h += "</div>";
 	var m = matchItems();
-	if (!m.length) h += '<div class="nores">' + esc(T("nores")) + "</div>";
-	else {
+	if (!ITEMS.length && !CATALOG && navigator.onLine) {
+		/* first load in progress — shimmer skeleton beats a blank grid */
+		h += '<div class="grid">';
+		for (var s = 0; s < 12; s++) h += '<div class="skel"><div class="sk-th"></div><div class="sk-b"><div class="sk-l"></div><div class="sk-l short"></div></div></div>';
+		h += "</div>";
+	} else if (!m.length) {
+		h += '<div class="nores">' + esc(T("nores")) + "</div>";
+	} else {
 		h += '<div class="grid" id="grid">';
 		var cap = Math.min(m.length, gridCap);
 		for (var j = 0; j < cap; j++) h += tileHtml(m[j]);
@@ -825,22 +871,38 @@ function renderSell() {
 	}
 	return h;
 }
-/* map item group -> tile category colour (seed green / pesticide amber /
-   fertilizer teal / other neutral). Plant Protection dominates the catalogue */
-function catClass(g) {
+/* High-level category for an item group. The catalogue uses fine-grained
+   groups (Insecticides, Paddy Seeds, Micronutrients, NPK Complex…), so we
+   bucket them by keyword into shelf categories the counter thinks in. This
+   drives BOTH the filter chips and the tile colour, so every category always
+   has a chip (fertilizers were invisible before — 5 small groups, none top-8). */
+function groupCategory(g) {
 	g = String(g || "").toLowerCase();
-	if (g.indexOf("seed") >= 0) return "c-seed";
-	if (g.indexOf("fertil") >= 0 || g.indexOf("manure") >= 0 || g.indexOf("nutri") >= 0) return "c-fert";
-	if (g.indexOf("pest") >= 0 || g.indexOf("plant protection") >= 0 || g.indexOf("insectic") >= 0 ||
-		g.indexOf("fungic") >= 0 || g.indexOf("herbic") >= 0 || g.indexOf("weedic") >= 0) return "c-pest";
-	return "c-other";
+	if (/seed/.test(g)) return "seed";
+	if (/fertil|manure|nutrient|nutri|npk|urea|potash|phosph|compost|gypsum/.test(g)) return "fert";
+	if (/insectic|pestic|herbic|fungic|weedic|acaric|rodentic|nematic|plant protection/.test(g)) return "pest";
+	if (/biostim|growth regulat|\bpgr\b|tonic|hormone/.test(g)) return "growth";
+	if (/irrigat|drip|sprink|spray|\bpipe|pump|nozzle|hose/.test(g)) return "irrig";
+	if (/hardware|solar|fencing|\btool|equipment/.test(g)) return "hardware";
+	return "other";
 }
+/* ordered category defs: filter key, i18n label key, tile colour class */
+var CATDEFS = [
+	{ key: "seed", lk: "cat_seed", cls: "c-seed" },
+	{ key: "fert", lk: "cat_fert", cls: "c-fert" },
+	{ key: "pest", lk: "cat_pest", cls: "c-pest" },
+	{ key: "growth", lk: "cat_growth", cls: "c-growth" },
+	{ key: "irrig", lk: "cat_irrig", cls: "c-irrig" },
+	{ key: "hardware", lk: "cat_hardware", cls: "c-hardware" },
+	{ key: "other", lk: "cat_other", cls: "c-other" },
+];
+function catClass(g) { return "c-" + groupCategory(g); }
 function tileHtml(it) {
 	var price = PRICES[it.name];
 	var inner = it.image ?
 		'<img loading="lazy" src="' + esc(it.image) + '" alt="" onerror="this.outerHTML=\'<div class=mono>' + initials(it.item_name) + "</div>'\">" :
 		'<div class="mono">' + initials(it.item_name) + "</div>";
-	return '<button class="tile ' + catClass(it.item_group) + '" data-c="' + esc(it.name) + '" onclick="addItem(this.dataset.c)">' +
+	return '<button class="tile ' + catClass(it.item_group) + '" data-c="' + esc(it.name) + '" onclick="addItem(this.dataset.c, event)">' +
 		'<div class="thumb">' + inner + "</div>" +
 		'<div class="tb"><div class="tn">' + esc(it.item_name) + "</div>" +
 		'<div class="trow"><div class="tp">' + (price != null ? fmt(price) : esc(T("noprice"))) +
@@ -866,9 +928,19 @@ function findItem(code) {
 	for (var i = 0; i < ITEMS.length; i++) if (ITEMS[i].name === code) return ITEMS[i];
 	return null;
 }
-function addItem(code) {
+/* floating "+1" at the tap point — confirms the add survived the grid re-render */
+function flashPlusOne(ev) {
+	if (!ev || ev.clientX == null) return;
+	var el = document.createElement("div");
+	el.className = "plusone"; el.textContent = "+1";
+	el.style.left = ev.clientX + "px"; el.style.top = ev.clientY + "px";
+	document.body.appendChild(el);
+	setTimeout(function () { if (el.parentNode) el.parentNode.removeChild(el); }, 700);
+}
+function addItem(code, ev) {
 	var it = findItem(code);
 	if (!it) return;
+	flashPlusOne(ev);
 	for (var i = 0; i < cart.length; i++) {
 		if (cart[i].code === code) { cart[i].qty += 1; render(); return; }
 	}
@@ -904,11 +976,18 @@ function renderCart() {
 		var tot = 0;
 		for (var i = 0; i < cart.length; i++) {
 			var l = cart[i]; var amt = round2(l.qty * l.rate); tot += amt;
+			var edR = EDIT && EDIT.i === i && EDIT.field === "rate";
+			var edQ = EDIT && EDIT.i === i && EDIT.field === "qty";
+			var rateCell = edR
+				? '<div class="lr editing"><input id="editin" class="editin" type="text" inputmode="decimal" value="' + esc(String(l.rate)) + '" onblur="commitEdit(this.value)" onkeydown="editKey(event)"></div>'
+				: '<div class="lr" onclick="editRate(' + i + ')"><b>' + fmt(l.rate) + "</b>" + (l.uom ? " / " + esc(l.uom) : "") + " &#9998;</div>";
+			var qvCell = edQ
+				? '<input id="editin" class="editin qedit" type="text" inputmode="decimal" value="' + esc(qtyfmt(l.qty)) + '" onblur="commitEdit(this.value)" onkeydown="editKey(event)">'
+				: '<div class="qv" onclick="editQty(' + i + ')">' + qtyfmt(l.qty) + "</div>";
 			h += '<div class="cline">' +
-				'<div class="ln"><div class="lt">' + esc(l.name) + "</div>" +
-				'<div class="lr" onclick="editRate(' + i + ')"><b>' + fmt(l.rate) + "</b>" + (l.uom ? " / " + esc(l.uom) : "") + " &#9998;</div></div>" +
+				'<div class="ln"><div class="lt">' + esc(l.name) + "</div>" + rateCell + "</div>" +
 				'<div class="qbox"><button aria-label="minus one" onclick="qDown(' + i + ')">&minus;</button>' +
-				'<div class="qv" onclick="editQty(' + i + ')">' + qtyfmt(l.qty) + "</div>" +
+				qvCell +
 				'<button aria-label="plus one" onclick="qUp(' + i + ')">+</button></div>' +
 				'<div class="amt">' + fmt(amt) + "</div>" +
 				'<button class="del" onclick="delLine(' + i + ')">&#10005;</button></div>';
@@ -944,9 +1023,13 @@ function renderPaySection() {
 		else h += '<div class="splithint">' + esc(T("split_hint")) + "</div>";
 	}
 	var udh = (payMode === "Udhaar") || (payMode === "Split" && splitCredit() > 0.005);
+	var needCust = udh && !CUST;
 	h += '<button class="gobtn' + (udh ? " udh" : "") + '" id="gobtn" onclick="checkout()"' + (cart.length && !BUSY && !blocked ? "" : " disabled") + ">" +
-		esc(T("confirm")) + (cart.length ? " — " + fmt(cartTotal()) : "") + "</button>" +
-		(cart.length ? '<button class="holdbtn" onclick="holdBill()">&#9208; ' + esc(T("hold")) + "</button>" : "") +
+		esc(T("confirm")) + (cart.length ? " — " + fmt(cartTotal()) : "") + "</button>";
+	/* say WHY the sale can't complete yet, instead of a silently dead button */
+	var hint = !cart.length ? T("hint_items") : blocked ? T("overpaid") : needCust ? T("need_cust") : "";
+	if (hint) h += '<div class="gohint">' + esc(hint) + "</div>";
+	h += (cart.length ? '<button class="holdbtn" onclick="holdBill()">&#9208; ' + esc(T("hold")) + "</button>" : "") +
 		"</div>";
 	return h;
 }
@@ -966,11 +1049,25 @@ function setPay(m) {
 function qUp(i) { cart[i].qty += 1; render(); }
 function qDown(i) { cart[i].qty -= 1; if (cart[i].qty <= 0) cart.splice(i, 1); render(); }
 function delLine(i) { cart.splice(i, 1); render(); }
+/* On the counter PC, editing qty/rate happens INLINE (click → focused input,
+   type, Enter) — no modal. Touch devices keep the numpad sheet. */
+var EDIT = null;
 function editQty(i) {
-	openNum(cart[i].name, T("qty_p"), qtyfmt(cart[i].qty), function (q) { cart[i].qty = q; render(); });
+	if (isWide()) { EDIT = { i: i, field: "qty" }; render(); focusEdit(); }
+	else openNum(cart[i].name, T("qty_p"), qtyfmt(cart[i].qty), function (q) { cart[i].qty = q; render(); });
 }
 function editRate(i) {
-	openNum(cart[i].name, T("rate_p"), String(cart[i].rate), function (r) { cart[i].rate = r; render(); });
+	if (isWide()) { EDIT = { i: i, field: "rate" }; render(); focusEdit(); }
+	else openNum(cart[i].name, T("rate_p"), String(cart[i].rate), function (r) { cart[i].rate = r; render(); });
+}
+function focusEdit() { setTimeout(function () { var el = $id("editin"); if (el) { el.focus(); el.select(); } }, 0); }
+function editKey(e) { if (e.key === "Enter") { e.preventDefault(); commitEdit(e.target.value); } else if (e.key === "Escape") { e.preventDefault(); EDIT = null; render(); } }
+function commitEdit(val) {
+	if (!EDIT) return;
+	var v = parseFloat(String(val).replace(/[^\d.]/g, ""));
+	var e = EDIT; EDIT = null;
+	if (v > 0 && cart[e.i]) cart[e.i][e.field] = e.field === "rate" ? round2(v) : v;
+	render();
 }
 
 /* ---------- numeric pad sheet ---------- */
@@ -988,6 +1085,25 @@ function openNum(title, sub, initial, cb, allowZero) {
 	$id("numovl").classList.add("show");
 }
 function closeNum() { NUM = null; var o = $id("numovl"); if (o) o.classList.remove("show"); }
+
+/* ---------- in-app confirm (replaces the browser confirm() dialog) ----------
+   opts: { title?, msg, yes?, no?, danger?, onYes } — styled like the rest of
+   the app, translated, and it never blocks the thread. */
+var ASK = null;
+function askConfirm(o) { ASK = o; renderAsk(); $id("askovl").classList.add("show"); }
+function closeAsk() { ASK = null; var el = $id("askovl"); if (el) el.classList.remove("show"); }
+function askYes() { var fn = ASK && ASK.onYes; closeAsk(); if (fn) fn(); }
+function renderAsk() {
+	if (!ASK) return;
+	$id("askovl").innerHTML =
+		'<div class="askbox" onclick="event.stopPropagation()">' +
+		(ASK.title ? '<div class="askt">' + esc(ASK.title) + "</div>" : "") +
+		'<div class="askm">' + esc(ASK.msg) + "</div>" +
+		'<div class="askrow">' +
+		'<button class="askno" onclick="closeAsk()">' + esc(ASK.no || T("btn_cancel")) + "</button>" +
+		'<button class="askyes' + (ASK.danger ? " danger" : "") + '" onclick="askYes()">' + esc(ASK.yes || T("btn_ok")) + "</button>" +
+		"</div></div>";
+}
 function renderNum() {
 	if (!NUM) return;
 	var keys =
@@ -1175,10 +1291,11 @@ function retrySale(uid) {
 	render(); syncNow(true);
 }
 function discardSale(uid) {
-	if (!confirm(T("discard_q"))) return;
-	for (var i = 0; i < queue.length; i++) if (queue[i].uid === uid) { queue.splice(i, 1); break; }
-	idbQDel(uid).catch(function () { });
-	render();
+	askConfirm({ msg: T("discard_q"), yes: T("discard"), danger: true, onYes: function () {
+		for (var i = 0; i < queue.length; i++) if (queue[i].uid === uid) { queue.splice(i, 1); break; }
+		idbQDel(uid).catch(function () { });
+		render();
+	} });
 }
 function reprint(uid, isDone) {
 	var list = isDone ? done : queue;
@@ -1446,7 +1563,14 @@ function fjGo() {
 	if (!FJ || FJ.sending) return;
 	if (!fjReady()) { toast(T("fj_need")); return; }
 	var thr = (FJCFG && FJCFG.amount_confirm_threshold) || 0;
-	if (thr && FJ.amount >= thr && !confirm(T("fj_big") + " " + fmt(FJ.amount) + "?")) return;
+	if (thr && FJ.amount >= thr) {
+		askConfirm({ msg: T("fj_big") + " " + fmt(FJ.amount) + "?", yes: T("fj_go"), onYes: fjPost });
+		return;
+	}
+	fjPost();
+}
+function fjPost() {
+	if (!FJ || FJ.sending) return;
 	var p = { amount: FJ.amount, remark: FJ.remark || ("POS PWA " + FJ.type), posting_date: today() };
 	if (FJ.type === "receipt") { p.vtype = "receipt"; p.party_type = "Customer"; p.party = FJ.cust.name; p.to_account = FJ.drawer; }
 	else if (FJ.type === "payment") { p.vtype = "payment"; p.party_type = "Supplier"; p.party = FJ.cust.name; p.from_account = FJ.drawer; }
@@ -1592,14 +1716,15 @@ function doLogin() {
 	});
 }
 function doLogout() {
-	if (!confirm(T("logout_q"))) return;
-	fetch("/api/method/logout", { credentials: "same-origin" })
-		.catch(function () { }).then(function () {
-			CSRF = ""; AUTHED = false; AUTH = null; TOKEN = "";
-			LS.removeItem("vacpos_authed"); LS.removeItem("vacpos_token");
-			toast(T("bye"));
-			renderLogin("");
-		});
+	askConfirm({ msg: T("logout_q"), yes: T("set_logout"), danger: true, onYes: function () {
+		fetch("/api/method/logout", { credentials: "same-origin" })
+			.catch(function () { }).then(function () {
+				CSRF = ""; AUTHED = false; AUTH = null; TOKEN = "";
+				LS.removeItem("vacpos_authed"); LS.removeItem("vacpos_token");
+				toast(T("bye"));
+				renderLogin("");
+			});
+	} });
 }
 
 /* ---------- net ---------- */
@@ -1616,7 +1741,8 @@ function boot() {
 	document.body.insertAdjacentHTML("beforeend", '<div class="ovl" id="custovl" onclick="closeCust()"></div>');
 	document.body.insertAdjacentHTML("beforeend", '<div class="ovl" id="fjovl" onclick="closeFJ()"></div>');
 	document.body.insertAdjacentHTML("beforeend", '<div class="ovl" id="numovl" onclick="closeNum()"></div>');
-	["custovl", "fjovl", "numovl"].forEach(function (id) {
+	document.body.insertAdjacentHTML("beforeend", '<div class="ovl" id="askovl" onclick="closeAsk()"></div>');
+	["custovl", "fjovl", "numovl", "askovl"].forEach(function (id) {
 		var old = document.querySelectorAll("#" + id);
 		for (var i = 0; i < old.length - 1; i++) old[i].parentNode.removeChild(old[i]);
 	});
