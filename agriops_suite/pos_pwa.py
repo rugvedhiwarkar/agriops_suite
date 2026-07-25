@@ -33,11 +33,19 @@ def csrf():
 	screen (same contract as agriops_suite.count.csrf).
 	"""
 	user = frappe.session.user
+	roles = frappe.get_roles(user)
+	# can_journal shows/hides the Fast Journal ⚡; the real gate is fast_voucher_post
+	# itself (insert/submit enforce actual perms). Roles that grant PE/JE create:
+	# the standalone POS Journal role or a standard Accounts profile (so Nikita on
+	# the Accounts profile sees it) — never a billing-only cashier. Kept in sync
+	# with the vac_pos_ping server script's list.
+	journal_roles = {"POS Journal", "Accounts User", "Accounts Manager", "System Manager", "Administrator"}
 	return {
 		"csrf_token": frappe.sessions.get_csrf_token(),
 		"user": user,
 		"full_name": frappe.db.get_value("User", user, "full_name") or user,
-		"is_cashier": "POS Cashier" in frappe.get_roles(user),
+		"is_cashier": "POS Cashier" in roles,
+		"can_journal": 1 if journal_roles.intersection(roles) else 0,
 	}
 
 

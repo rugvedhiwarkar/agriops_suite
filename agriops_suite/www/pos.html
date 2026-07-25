@@ -252,6 +252,11 @@ input, select { font: inherit; color: inherit; }
 /* customer modal */
 .ovl { position: fixed; inset: 0; background: rgba(20,18,14,.5); z-index: 60; display: none; align-items: flex-end; justify-content: center; }
 .ovl.show { display: flex; }
+/* stacking tiers: the FJ sheet is the base (60); the party picker opens FROM
+   it so it must sit ABOVE (70); the numpad opens from either, so it is highest
+   (80). Fixes the customer window appearing behind the Fast Journal form. */
+#custovl { z-index: 70; }
+#numovl { z-index: 80; }
 .sheet {
 	background: var(--ivory); border-radius: 20px 20px 0 0; width: 100%; max-width: 640px;
 	max-height: 86vh; display: flex; flex-direction: column; padding-bottom: env(safe-area-inset-bottom);
@@ -300,13 +305,17 @@ input, select { font: inherit; color: inherit; }
 
 /* fast journal (receive payment) sheet */
 .fjsheet { padding: 0 14px 14px; }
+.fjtypes { display: flex; gap: 6px; background: var(--soft); border-radius: 12px; padding: 4px; margin-top: 10px; }
+.fjtypes button { flex: 1; border-radius: 9px; padding: 9px 4px; font-size: .82rem; font-weight: 800; color: var(--muted); background: transparent; transition: all .13s; }
+.fjtypes button.on { background: var(--card); color: var(--ink); box-shadow: var(--shadow-sm); }
+.fjlbl { font-size: .72rem; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; color: var(--faint); margin: 12px 2px 0; }
 .fjrow { display: flex; align-items: center; gap: 9px; background: #fff; border: 2px solid var(--line); border-radius: 12px; padding: 12px 13px; margin-top: 9px; }
-.fjrow:active { border-color: var(--primary); }
+.fjrow:active { border-color: var(--green); }
 .fjrow .fl { font-size: .78rem; font-weight: 700; color: var(--muted); flex: none; }
 .fjrow .fv { flex: 1; text-align: right; font-weight: 800; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.fjdraw { display: flex; gap: 7px; flex-wrap: wrap; margin-top: 9px; }
-.fjdraw button { border: 2px solid var(--line); border-radius: 10px; background: #fff; padding: 9px 12px; font-size: .84rem; font-weight: 700; color: var(--muted); }
-.fjdraw button.on { border-color: var(--primary); background: var(--soft); color: var(--ink); }
+.fjdraw { display: flex; gap: 7px; flex-wrap: wrap; margin-top: 8px; }
+.fjdraw button { border: 1.6px solid var(--line-2); border-radius: 10px; background: #fff; padding: 9px 12px; font-size: .84rem; font-weight: 700; color: var(--muted); }
+.fjdraw button.on { border-color: var(--green); background: var(--green-soft); color: var(--green-dark); }
 .fjsheet input.fr { width: 100%; border: 2px solid var(--line); border-radius: 12px; padding: 11px 13px; background: #fff; margin-top: 9px; }
 
 /* login */
@@ -371,12 +380,16 @@ input, select { font: inherit; color: inherit; }
 {% raw %}
 <script>
 "use strict";
-var POSV = "pos-pwa 0.5.0";
+var POSV = "pos-pwa 0.6.1";
 var LS = window.localStorage;
 var CSRF = (document.querySelector('meta[name="vac-csrf"]') || {}).content || "";
 if (CSRF.indexOf("{") !== -1) CSRF = "";  /* raw-served copy: unrendered Jinja */
 var TOKEN = LS.vacpos_token || "";
 var AUTH = null, AUTHED = false, DISABLED = false;
+/* only holders of the POS Journal role may post Fast Journal vouchers
+   (owner decision 2026-07-25). Set from the ping / csrf identity response;
+   the ⚡ button + FJ sheet stay hidden for everyone else. */
+var CANJOURNAL = false;
 
 /* ---------- i18n (Marathi first) ---------- */
 var LANGS = [{ code: "mr", label: "मराठी" }, { code: "hi", label: "हिंदी" }, { code: "en", label: "English" }];
@@ -415,9 +428,12 @@ var STR = {
 		bal_khata: "Balance to khata", split_hint: "Enter cash / UPI — the rest goes on khata",
 		hold: "Hold bill", held: "Bill held", held_swap: "Current bill parked too",
 		hold_drop_q: "Remove this held bill? It was never sent.",
-		fj_title: "Receive payment", fj_pick: "Pick customer", fj_amt: "Amount (₹)",
-		fj_remark: "Remark (optional)", fj_go: "Receive", fj_done: "Received — ",
-		fj_need: "Customer and amount are required", fj_perm: "This login cannot post receipts — use the owner's login"
+		fj_title: "Fast Journal", fj_pick: "Choose", fj_amt: "Amount (₹)",
+		fj_remark: "Remark (optional)", fj_go: "Post", fj_done: "Posted — ",
+		fj_need: "Fill in all the fields", fj_perm: "This login cannot post — use the owner's login",
+		fj_receipt: "Receipt", fj_payment: "Payment", fj_expense: "Expense", fj_advance: "Advance",
+		fj_supplier: "Supplier", fj_employee: "Employee", fj_exp_head: "Expense head",
+		fj_deposit_to: "Deposit to", fj_paid_from: "Paid from", fj_big: "Post this large amount?"
 	},
 	hi: {
 		sell: "बिक्री", pending: "बाकी", search_ph: "सामान खोजें…", all: "सभी",
@@ -453,9 +469,12 @@ var STR = {
 		bal_khata: "बाकी खाते में", split_hint: "नकद / UPI डालें — बाकी खाते में जाएगा",
 		hold: "बिल होल्ड करें", held: "बिल होल्ड हुआ", held_swap: "चालू बिल भी होल्ड में गया",
 		hold_drop_q: "यह होल्ड बिल हटाएँ? यह भेजा नहीं गया था।",
-		fj_title: "उधारी जमा", fj_pick: "ग्राहक चुनें", fj_amt: "रक़म (₹)",
-		fj_remark: "रिमार्क (वैकल्पिक)", fj_go: "जमा करें", fj_done: "जमा हुआ — ",
-		fj_need: "ग्राहक और रक़म ज़रूरी", fj_perm: "इस लॉगिन से जमा नहीं हो सकता — मालिक के लॉगिन से करें"
+		fj_title: "फास्ट जर्नल", fj_pick: "चुनें", fj_amt: "रक़म (₹)",
+		fj_remark: "रिमार्क (वैकल्पिक)", fj_go: "पोस्ट करें", fj_done: "पोस्ट हुआ — ",
+		fj_need: "सभी जानकारी भरें", fj_perm: "इस लॉगिन से पोस्ट नहीं हो सकता — मालिक के लॉगिन से करें",
+		fj_receipt: "जमा", fj_payment: "भुगतान", fj_expense: "खर्च", fj_advance: "एडवांस",
+		fj_supplier: "सप्लायर", fj_employee: "कर्मचारी", fj_exp_head: "खर्च खाता",
+		fj_deposit_to: "जमा किधर", fj_paid_from: "किधर से", fj_big: "इतनी बड़ी रक़म पोस्ट करें?"
 	},
 	mr: {
 		sell: "विक्री", pending: "प्रलंबित", search_ph: "वस्तू शोधा…", all: "सर्व",
@@ -491,9 +510,12 @@ var STR = {
 		bal_khata: "बाकी खात्यावर", split_hint: "रोख / UPI टाका — उरलेले खात्यावर जाईल",
 		hold: "बिल होल्ड करा", held: "बिल होल्ड झाले", held_swap: "चालू बिलही होल्डला गेले",
 		hold_drop_q: "हे होल्ड बिल काढायचे? हे पाठवले गेले नव्हते.",
-		fj_title: "उधारी जमा", fj_pick: "ग्राहक निवडा", fj_amt: "रक्कम (₹)",
-		fj_remark: "शेरा (ऐच्छिक)", fj_go: "जमा करा", fj_done: "जमा झाले — ",
-		fj_need: "ग्राहक व रक्कम आवश्यक", fj_perm: "या लॉगिनने जमा होत नाही — मालकांच्या लॉगिनने करा"
+		fj_title: "फास्ट जर्नल", fj_pick: "निवडा", fj_amt: "रक्कम (₹)",
+		fj_remark: "शेरा (ऐच्छिक)", fj_go: "पोस्ट करा", fj_done: "पोस्ट झाले — ",
+		fj_need: "सर्व माहिती भरा", fj_perm: "या लॉगिनने पोस्ट होत नाही — मालकांच्या लॉगिनने करा",
+		fj_receipt: "जमा", fj_payment: "पेमेंट", fj_expense: "खर्च", fj_advance: "अ‍ॅडव्हान्स",
+		fj_supplier: "सप्लायर", fj_employee: "कर्मचारी", fj_exp_head: "खर्च खाते",
+		fj_deposit_to: "कुठे जमा", fj_paid_from: "कुठून", fj_big: "एवढी मोठी रक्कम पोस्ट करायची?"
 	}
 };
 var LANG = LS.vacpos_lang || "mr";
@@ -732,7 +754,7 @@ function renderHdr() {
 		'<div class="grow"><div class="ttl">VAC POS</div><div class="who">' + esc(who) + " • " + esc(S.device) + "</div></div>" +
 		'<div class="netdot' + (navigator.onLine ? "" : " off") + '" id="netdot"></div>' +
 		(pendCount() ? '<span class="pendbadge">' + pendCount() + "</span>" : "") +
-		(FJCFG ? '<button class="hbtn zap" onclick="openFJ()" title="fast journal">&#9889;</button>' : "") +
+		(FJCFG && CANJOURNAL ? '<button class="hbtn zap" onclick="openFJ()" title="fast journal">&#9889;</button>' : "") +
 		'<button class="hbtn" id="syncbtn" onclick="syncNow(true)" title="sync">&#10227;</button>' +
 		'<button class="hbtn" onclick="go(\'settings\')" title="settings">&#9881;</button>' +
 		"</div>";
@@ -1184,13 +1206,25 @@ function openCust(mode) {
 	var q = $id("cq"); if (q) q.focus();
 }
 function closeCust() { var o = $id("custovl"); if (o) o.classList.remove("show"); }
+/* which party list the sheet is picking from. In cart mode it is always the
+   Customer list; in FJ mode it follows the FJ voucher type (receipt=Customer,
+   payment=Supplier, employee advance=Employee). */
+function partySource() {
+	if (CUSTMODE === "fj") {
+		var pt = fjPartyType();
+		if (pt === "Supplier") return { list: (CATALOG && CATALOG.suppliers) || [], label: "supplier_name", pt: "Supplier" };
+		if (pt === "Employee") return { list: (CATALOG && CATALOG.employees) || [], label: "employee_name", pt: "Employee" };
+	}
+	return { list: CUSTOMERS, label: "customer_name", pt: "Customer" };
+}
+function partyLabelOf(c, src) { return c[src.label] || c.customer_name || c.name; }
 function matchCust() {
-	var q = norm(custQ), out = [], w = walkinName();
-	for (var i = 0; i < CUSTOMERS.length; i++) {
-		var c = CUSTOMERS[i];
-		if (c.name === w) continue;
+	var src = partySource(), q = norm(custQ), out = [], w = walkinName();
+	for (var i = 0; i < src.list.length; i++) {
+		var c = src.list[i];
+		if (src.pt === "Customer" && c.name === w) continue;
 		if (q) {
-			var hay = norm(c.customer_name) + " " + norm(c.name) + " " + norm(c.mobile_no) + " " + norm(c.custom_village) + " " + norm(c.custom_alias);
+			var hay = norm(partyLabelOf(c, src)) + " " + norm(c.name) + " " + norm(c.mobile_no) + " " + norm(c.custom_village) + " " + norm(c.custom_alias);
 			if (hay.indexOf(q) === -1) continue;
 		}
 		out.push(c);
@@ -1198,15 +1232,23 @@ function matchCust() {
 	}
 	return out;
 }
+function partyHeading() {
+	if (CUSTMODE !== "fj") return T("cust");
+	var pt = fjPartyType();
+	return pt === "Supplier" ? T("fj_supplier") : pt === "Employee" ? T("fj_employee") : T("cust");
+}
 function renderCustSheet() {
+	var src = partySource();
+	/* quick-add is Customer-only (cart, or an FJ receipt) — never for suppliers/employees */
+	var canAdd = src.pt === "Customer";
 	var h = '<div class="sheet" onclick="event.stopPropagation()">' +
-		'<div class="shh"><div class="t">' + esc(T("cust")) + '</div><button class="x" onclick="closeCust()">&#10005;</button></div>' +
+		'<div class="shh"><div class="t">' + esc(partyHeading()) + '</div><button class="x" onclick="closeCust()">&#10005;</button></div>' +
 		'<div class="sq"><input id="cq" placeholder="' + esc(T("search_ph")) + '" value="' + esc(custQ) + '" oninput="onCQ(this.value)"></div>';
 	h += '<div class="clist" id="clist">' + custListHtml() + "</div>";
 	h += '<div class="newc">';
-	if (!showNew) h += '<button class="setbtn act" onclick="toggleNew()">' + esc(T("cust_new")) + "</button>";
+	if (canAdd && !showNew) h += '<button class="setbtn act" onclick="toggleNew()">' + esc(T("cust_new")) + "</button>";
 	h += "</div>";
-	if (showNew) {
+	if (canAdd && showNew) {
 		h += '<div class="newform">' +
 			'<input id="ncn" placeholder="' + esc(T("cust_name")) + ' *" value="">' +
 			'<input id="ncm" inputmode="tel" placeholder="' + esc(T("cust_mob")) + '" value="">' +
@@ -1217,17 +1259,17 @@ function renderCustSheet() {
 	$id("custovl").innerHTML = h;
 }
 function custListHtml() {
-	var rows = matchCust(), h = "";
+	var src = partySource(), rows = matchCust(), h = "";
 	var w = walkinName();
+	/* walk-in row only for a cart sale — a khata receipt or any FJ party needs a real party */
 	if (CUSTMODE !== "fj") {
-		/* a khata receipt needs a real customer — no walk-in row in fj mode */
 		h += '<div class="crow" onclick="pickWalkin()"><div class="ci2">₹</div><div class="cm"><div class="cn2">' + esc(w) + '</div><div class="cd2">' + esc(T("walkin")) + "</div></div></div>";
 	}
 	for (var i = 0; i < rows.length; i++) {
-		var c = rows[i];
+		var c = rows[i], lbl = partyLabelOf(c, src);
 		var d = [c.custom_village, c.mobile_no].filter(function (x) { return x; }).join(" • ");
-		h += '<div class="crow" onclick="pickCust(' + i + ')"><div class="ci2">' + initials(c.customer_name) + "</div>" +
-			'<div class="cm"><div class="cn2">' + esc(c.customer_name) + "</div>" +
+		h += '<div class="crow" onclick="pickCust(' + i + ')"><div class="ci2">' + initials(lbl) + "</div>" +
+			'<div class="cm"><div class="cn2">' + esc(lbl) + "</div>" +
 			'<div class="cd2">' + esc(d || c.name) + "</div></div></div>";
 	}
 	return h;
@@ -1236,11 +1278,12 @@ var _lastMatch = [];
 function onCQ(v) { custQ = v; _lastMatch = matchCust(); var el = $id("clist"); if (el) el.innerHTML = custListHtml(); }
 function pickWalkin() { CUST = null; KHATA = null; closeCust(); render(); }
 function pickCust(i) {
-	var rows = matchCust();
+	var src = partySource(), rows = matchCust();
 	var c = rows[i];
 	if (!c) return;
 	if (CUSTMODE === "fj") {
-		if (FJ) { FJ.cust = c; renderFJ(); }
+		/* store a normalized {name, label} so FJ display + posting work for any party type */
+		if (FJ) { FJ.cust = { name: c.name, label: partyLabelOf(c, src) }; renderFJ(); }
 		closeCust();
 		return;
 	}
@@ -1278,12 +1321,17 @@ function createCust() {
 	});
 }
 
-/* ---------- fast journal: receive khata payment (⚡) ----------
+/* ---------- fast journal (⚡) ----------
    Rides the existing fast_voucher Server Scripts (staging-only today; the
    header button appears only where fast_voucher_config answers enabled=1 —
-   the same absence-gate the desk Cash Desk button uses). v1 posts RECEIPTS
-   only (vtype=receipt → native Payment Entry); payment/contra/expense stay
-   on the desk dialog. Postings run with the signed-in user's permissions. */
+   the same absence-gate the desk Cash Desk button uses). Mirrors the desk
+   Fast Journal's voucher types, gated on what the site's config advertises:
+     receipt   -> money IN from a Customer (khata collection)  [to_account]
+     payment   -> money OUT to a Supplier                      [from_account]
+     expense   -> shop expense paid from a drawer              [from/head]
+     advance   -> cash advance to an Employee                  [from_account]
+   Every post is a native, cancellable Payment Entry / Journal Entry built
+   server-side; postings run with the signed-in user's permissions. */
 var FJCFG = null, FJ = null;
 function probeFJ() {
 	api("/api/method/fast_voucher_config", { method: "POST", json: {} }).then(function (d) {
@@ -1292,47 +1340,91 @@ function probeFJ() {
 		if (FJCFG) render();
 	}).catch(function () { FJCFG = null; });
 }
+/* voucher types this site supports, in counter order */
+function fjTypes() {
+	var t = [{ k: "receipt", label: T("fj_receipt") }, { k: "payment", label: T("fj_payment") }];
+	var ex = (FJCFG && FJCFG.extra_types) || [];
+	if (ex.indexOf("Expense") >= 0 && FJCFG.expense_quick_heads && FJCFG.expense_quick_heads.length)
+		t.push({ k: "expense", label: T("fj_expense") });
+	if (FJCFG && FJCFG.employee_advance_account) t.push({ k: "employee_advance", label: T("fj_advance") });
+	return t;
+}
+/* which party list the sheet's party row draws from for this voucher type */
+function fjPartyType() {
+	if (!FJ) return "Customer";
+	if (FJ.type === "payment") return "Supplier";
+	if (FJ.type === "employee_advance") return "Employee";
+	return "Customer";
+}
 function openFJ() {
 	if (!FJCFG) return;
-	FJ = { cust: null, amount: 0, remark: "", sending: 0, drawer: FJCFG.drawers[0].account };
+	var cash = null;
+	for (var i = 0; i < FJCFG.drawers.length; i++) { if (FJCFG.drawers[i].type === "Cash") { cash = FJCFG.drawers[i].account; break; } }
+	FJ = { type: "receipt", cust: null, amount: 0, remark: "", sending: 0, drawer: cash || FJCFG.drawers[0].account, expHead: null };
+	/* suppliers/employees may be missing from an older cached catalog — pull once */
+	if (!(CATALOG && CATALOG.suppliers)) refreshCatalog(true).then(function () { if (FJ) renderFJ(); }).catch(function () { });
 	renderFJ();
 	$id("fjovl").classList.add("show");
 }
 function closeFJ() { FJ = null; var o = $id("fjovl"); if (o) o.classList.remove("show"); }
+function fjReady() {
+	if (!FJ || !(FJ.amount > 0) || !FJ.drawer) return false;
+	if (FJ.type === "expense") return !!FJ.expHead;
+	return !!FJ.cust;
+}
 function renderFJ() {
 	if (!FJ) return;
+	var types = fjTypes();
 	var h = '<div class="sheet fjsheet" onclick="event.stopPropagation()">' +
 		'<div class="shh"><div class="t">&#9889; ' + esc(T("fj_title")) + '</div><button class="x" onclick="closeFJ()">&#10005;</button></div>' +
-		'<div class="fjrow" onclick="openCust(\'fj\')"><span class="fl">' + esc(T("cust")) + '</span><span class="fv">' + esc(FJ.cust ? FJ.cust.customer_name : T("fj_pick")) + "</span></div>" +
-		'<div class="fjrow" onclick="fjAmt()"><span class="fl">' + esc(T("fj_amt")) + '</span><span class="fv">' + (FJ.amount ? fmt(FJ.amount) : "—") + "</span></div>" +
-		'<div class="fjdraw">';
-	for (var i = 0; i < FJCFG.drawers.length; i++) {
-		var d = FJCFG.drawers[i];
-		h += '<button class="' + (FJ.drawer === d.account ? "on" : "") + '" data-a="' + esc(d.account) + '" onclick="fjDrawer(this.dataset.a)">' + esc(d.account.replace(" - VAC", "")) + "</button>";
+		'<div class="fjtypes">';
+	for (var i = 0; i < types.length; i++)
+		h += '<button class="' + (FJ.type === types[i].k ? "on" : "") + '" data-k="' + types[i].k + '" onclick="fjSetType(this.dataset.k)">' + esc(types[i].label) + "</button>";
+	h += "</div>";
+	if (FJ.type === "expense") {
+		h += '<div class="fjlbl">' + esc(T("fj_exp_head")) + '</div><div class="fjdraw">';
+		var heads = FJCFG.expense_quick_heads || [];
+		for (var e = 0; e < heads.length; e++)
+			h += '<button class="' + (FJ.expHead === heads[e] ? "on" : "") + '" data-a="' + esc(heads[e]) + '" onclick="fjExpHead(this.dataset.a)">' + esc(heads[e].replace(" - VAC", "")) + "</button>";
+		h += "</div>";
+	} else {
+		var plabel = FJ.type === "payment" ? T("fj_supplier") : FJ.type === "employee_advance" ? T("fj_employee") : T("cust");
+		h += '<div class="fjrow" onclick="openCust(\'fj\')"><span class="fl">' + esc(plabel) + '</span><span class="fv">' + esc(FJ.cust ? FJ.cust.label : T("fj_pick")) + "</span></div>";
+	}
+	h += '<div class="fjrow" onclick="fjAmt()"><span class="fl">' + esc(T("fj_amt")) + '</span><span class="fv">' + (FJ.amount ? fmt(FJ.amount) : "—") + "</span></div>";
+	h += '<div class="fjlbl">' + esc(FJ.type === "receipt" ? T("fj_deposit_to") : T("fj_paid_from")) + '</div><div class="fjdraw">';
+	for (var d = 0; d < FJCFG.drawers.length; d++) {
+		var dr = FJCFG.drawers[d];
+		h += '<button class="' + (FJ.drawer === dr.account ? "on" : "") + '" data-a="' + esc(dr.account) + '" onclick="fjDrawer(this.dataset.a)">' + esc(dr.account.replace(" - VAC", "")) + "</button>";
 	}
 	h += "</div>" +
 		'<input class="fr" id="fjrm" placeholder="' + esc(T("fj_remark")) + '" value="' + esc(FJ.remark) + '" onchange="if(FJ)FJ.remark=this.value">' +
-		'<button class="gobtn" onclick="fjGo()"' + (FJ.cust && FJ.amount > 0 && !FJ.sending ? "" : " disabled") + ">" +
+		'<button class="gobtn" onclick="fjGo()"' + (fjReady() && !FJ.sending ? "" : " disabled") + ">" +
 		esc(T("fj_go")) + (FJ.amount ? " " + fmt(FJ.amount) : "") + "</button></div>";
 	$id("fjovl").innerHTML = h;
 }
+function fjSetType(k) { if (!FJ) return; FJ.type = k; FJ.cust = null; FJ.expHead = null; renderFJ(); }
 function fjDrawer(a) { if (FJ) { FJ.drawer = a; renderFJ(); } }
+function fjExpHead(a) { if (FJ) { FJ.expHead = a; renderFJ(); } }
 function fjAmt() { openNum(T("fj_title"), T("fj_amt"), FJ.amount || "", function (v) { if (FJ) { FJ.amount = v; renderFJ(); } }); }
 function fjGo() {
 	if (!FJ || FJ.sending) return;
-	if (!FJ.cust || !(FJ.amount > 0)) { toast(T("fj_need")); return; }
+	if (!fjReady()) { toast(T("fj_need")); return; }
+	var thr = (FJCFG && FJCFG.amount_confirm_threshold) || 0;
+	if (thr && FJ.amount >= thr && !confirm(T("fj_big") + " " + fmt(FJ.amount) + "?")) return;
+	var p = { amount: FJ.amount, remark: FJ.remark || ("POS PWA " + FJ.type), posting_date: today() };
+	if (FJ.type === "receipt") { p.vtype = "receipt"; p.party_type = "Customer"; p.party = FJ.cust.name; p.to_account = FJ.drawer; }
+	else if (FJ.type === "payment") { p.vtype = "payment"; p.party_type = "Supplier"; p.party = FJ.cust.name; p.from_account = FJ.drawer; }
+	else if (FJ.type === "employee_advance") { p.vtype = "employee_advance"; p.party = FJ.cust.name; p.from_account = FJ.drawer; }
+	else if (FJ.type === "expense") { p.vtype = "expense"; p.from_account = FJ.drawer; p.to_account = FJ.expHead; }
+	else { toast("?"); return; }
+	var wasCust = (FJ.type === "receipt" && FJ.cust) ? FJ.cust.name : null;
 	FJ.sending = 1; renderFJ();
-	api("/api/method/fast_voucher_post", {
-		method: "POST",
-		json: {
-			vtype: "receipt", party_type: "Customer", party: FJ.cust.name,
-			amount: FJ.amount, remark: FJ.remark || "POS PWA receipt",
-			posting_date: today(), to_account: FJ.drawer
-		}
-	}).then(function (d) {
+	api("/api/method/fast_voucher_post", { method: "POST", json: p }).then(function (d) {
 		var m = d.message || {};
 		toast(T("fj_done") + (m.name || ""));
-		if (CUST && FJ && FJ.cust && CUST.name === FJ.cust.name) { KHATA = null; loadKhata(); }
+		/* a khata receipt for the customer on screen -> refresh their balance */
+		if (wasCust && CUST && CUST.name === wasCust) { KHATA = null; loadKhata(); }
 		closeFJ();
 	}).catch(function (e) {
 		if (FJ) { FJ.sending = 0; renderFJ(); }
@@ -1389,13 +1481,15 @@ function ensureAuth() {
 	if (!navigator.onLine) {
 		AUTHED = LS.vacpos_authed === "1";
 		if (AUTHED && !AUTH) { try { AUTH = JSON.parse(LS.vacpos_auth || "null"); } catch (e) { } }
+		if (AUTH && AUTH.can_journal) CANJOURNAL = true;
 		return Promise.resolve(AUTHED);
 	}
 	if (TOKEN) {
 		return api("/api/method/vac_pos_ping").then(function (d) {
 			var m = d.message || {};
 			AUTH = { user: m.user, full_name: m.user }; AUTHED = true;
-			LS.vacpos_authed = "1"; LS.vacpos_auth = JSON.stringify(AUTH);
+			CANJOURNAL = !!m.can_journal;
+			LS.vacpos_authed = "1"; LS.vacpos_auth = JSON.stringify({ user: m.user, full_name: m.user, can_journal: CANJOURNAL });
 			return true;
 		}).catch(function (e) {
 			if (e && e.notfound) { DISABLED = true; return false; }
@@ -1409,7 +1503,8 @@ function ensureAuth() {
 			var m = j && j.message;
 			if (m && m.csrf_token) {
 				CSRF = m.csrf_token; AUTH = m; AUTHED = true;
-				LS.vacpos_authed = "1"; LS.vacpos_auth = JSON.stringify({ user: m.user, full_name: m.full_name });
+				CANJOURNAL = !!m.can_journal;
+				LS.vacpos_authed = "1"; LS.vacpos_auth = JSON.stringify({ user: m.user, full_name: m.full_name, can_journal: CANJOURNAL });
 				return true;
 			}
 			AUTHED = false; LS.removeItem("vacpos_authed");
