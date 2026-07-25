@@ -95,6 +95,15 @@
 :root[data-theme="dark"] .pairwrap .logo,
 :root[data-theme="dark"] .pairwrap .go { background: linear-gradient(150deg, var(--green), var(--green-dark)); }
 :root[data-theme="dark"] .skel .sk-th, :root[data-theme="dark"] .skel .sk-l { background: linear-gradient(90deg, var(--soft) 25%, #2c3830 37%, var(--soft) 63%); background-size: 300% 100%; }
+/* tile "glow": the light-mode radial tints (some hardcoded light) read as a
+   harsh bright halo on a dark tile — swap for a faint category-hued glow */
+:root[data-theme="dark"] .tile.c-seed .thumb { background: radial-gradient(92px 62px at 50% 34%, rgba(55,196,125,.12), transparent 74%); }
+:root[data-theme="dark"] .tile.c-pest .thumb { background: radial-gradient(92px 62px at 50% 34%, rgba(217,131,52,.12), transparent 74%); }
+:root[data-theme="dark"] .tile.c-fert .thumb { background: radial-gradient(92px 62px at 50% 34%, rgba(43,182,208,.12), transparent 74%); }
+:root[data-theme="dark"] .tile.c-growth .thumb { background: radial-gradient(92px 62px at 50% 34%, rgba(139,92,246,.15), transparent 74%); }
+:root[data-theme="dark"] .tile.c-irrig .thumb { background: radial-gradient(92px 62px at 50% 34%, rgba(59,130,246,.14), transparent 74%); }
+:root[data-theme="dark"] .tile.c-hardware .thumb { background: radial-gradient(92px 62px at 50% 34%, rgba(148,163,184,.12), transparent 74%); }
+:root[data-theme="dark"] .tile.c-other .thumb { background: radial-gradient(92px 62px at 50% 34%, rgba(255,255,255,.05), transparent 74%); }
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 html { font-size: 17px; }
 body {
@@ -501,7 +510,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--green); out
 {% raw %}
 <script>
 "use strict";
-var POSV = "pos-pwa 0.10.0";
+var POSV = "pos-pwa 0.10.1";
 var LS = window.localStorage;
 var CSRF = (document.querySelector('meta[name="vac-csrf"]') || {}).content || "";
 if (CSRF.indexOf("{") !== -1) CSRF = "";  /* raw-served copy: unrendered Jinja */
