@@ -153,11 +153,27 @@ input, select { font: inherit; color: inherit; }
 .totrow { display: flex; justify-content: space-between; align-items: baseline; padding: 4px 0 0; }
 .totrow .tl { font-size: .95rem; font-weight: 700; color: var(--muted); }
 .totrow .tv { font-size: 1.45rem; font-weight: 800; color: var(--ink); }
-.paybtns { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 9px; }
+.paybtns { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; }
 .paybtns button { border: 2px solid var(--line); border-radius: 13px; background: #fff; padding: 13px 6px; font-weight: 800; font-size: .98rem; color: var(--muted); }
 .paybtns button.cash.on { border-color: var(--primary); background: var(--soft); color: var(--ink); }
 .paybtns button.upi.on { border-color: var(--primary); background: var(--soft); color: var(--ink); }
 .paybtns button.udh.on { border-color: var(--amber); background: var(--amber-soft); color: var(--amber-dark); }
+.paybtns button.spl.on { border-color: var(--primary); background: var(--primary); color: #fff; }
+
+/* split breakdown editor */
+.splitbox { margin-top: 11px; border: 1.6px solid var(--line); border-radius: 12px; overflow: hidden; }
+.splitrow { display: flex; align-items: center; justify-content: space-between; padding: 12px 13px; border-bottom: 1px solid var(--line); background: #fff; }
+.splitrow:last-child { border-bottom: 0; }
+.splitrow .sl { font-weight: 700; font-size: .95rem; }
+.splitrow .sv { font-weight: 800; font-size: 1.05rem; }
+.splitrow.editable:active { background: var(--soft); }
+.splitrow.editable .sv::after { content: " ✎"; color: var(--muted); font-weight: 400; font-size: .8rem; }
+.splitrow.credit { background: var(--amber-soft); }
+.splitrow.credit .sl, .splitrow.credit .sv { color: var(--amber-dark); }
+.splitrow.credit.zero { background: var(--green-soft); }
+.splitrow.credit.zero .sl, .splitrow.credit.zero .sv { color: var(--green-dark); }
+.splitwarn { color: var(--red); font-size: .84rem; font-weight: 700; text-align: center; padding: 8px 4px 0; }
+.splithint { color: var(--muted); font-size: .8rem; text-align: center; padding: 8px 4px 0; }
 .gobtn {
 	width: 100%; background: var(--primary); color: #fff; border-radius: 12px;
 	padding: 16px; font-size: 1.12rem; font-weight: 800; margin-top: 11px;
@@ -330,7 +346,7 @@ input, select { font: inherit; color: inherit; }
 {% raw %}
 <script>
 "use strict";
-var POSV = "pos-pwa 0.3.0";
+var POSV = "pos-pwa 0.4.0";
 var LS = window.localStorage;
 var CSRF = (document.querySelector('meta[name="vac-csrf"]') || {}).content || "";
 if (CSRF.indexOf("{") !== -1) CSRF = "";  /* raw-served copy: unrendered Jinja */
@@ -370,6 +386,8 @@ var STR = {
 		prov_note: "Provisional slip — final GST bill no. after sync", thanks: "Thank you! Visit again.",
 		final_note: "GST bill", cust_new: "+ New customer", cust_name: "Name", cust_mob: "Mobile", cust_vil: "Village",
 		cust_make: "Create", cust_made: "Customer created", need_name: "Name is required",
+		split: "Split", khata_bal: "Khata (balance)", overpaid: "More than the bill total",
+		bal_khata: "Balance to khata", split_hint: "Enter cash / UPI — the rest goes on khata",
 		hold: "Hold bill", held: "Bill held", held_swap: "Current bill parked too",
 		hold_drop_q: "Remove this held bill? It was never sent.",
 		fj_title: "Receive payment", fj_pick: "Pick customer", fj_amt: "Amount (₹)",
@@ -406,6 +424,8 @@ var STR = {
 		prov_note: "अस्थायी रसीद — अंतिम GST बिल नं. सिंक के बाद", thanks: "धन्यवाद! फिर आइए।",
 		final_note: "GST बिल", cust_new: "+ नया ग्राहक", cust_name: "नाम", cust_mob: "मोबाइल", cust_vil: "गाँव",
 		cust_make: "बनाएँ", cust_made: "ग्राहक बन गया", need_name: "नाम ज़रूरी है",
+		split: "बाँटें", khata_bal: "खाता (बाकी)", overpaid: "बिल से ज़्यादा",
+		bal_khata: "बाकी खाते में", split_hint: "नकद / UPI डालें — बाकी खाते में जाएगा",
 		hold: "बिल होल्ड करें", held: "बिल होल्ड हुआ", held_swap: "चालू बिल भी होल्ड में गया",
 		hold_drop_q: "यह होल्ड बिल हटाएँ? यह भेजा नहीं गया था।",
 		fj_title: "उधारी जमा", fj_pick: "ग्राहक चुनें", fj_amt: "रक़म (₹)",
@@ -442,6 +462,8 @@ var STR = {
 		prov_note: "तात्पुरती पावती — अंतिम GST बिल क्र. सिंकनंतर", thanks: "धन्यवाद! पुन्हा या.",
 		final_note: "GST बिल", cust_new: "+ नवीन ग्राहक", cust_name: "नाव", cust_mob: "मोबाईल", cust_vil: "गाव",
 		cust_make: "तयार करा", cust_made: "ग्राहक तयार झाला", need_name: "नाव आवश्यक आहे",
+		split: "विभागून", khata_bal: "खाते (बाकी)", overpaid: "बिलापेक्षा जास्त",
+		bal_khata: "बाकी खात्यावर", split_hint: "रोख / UPI टाका — उरलेले खात्यावर जाईल",
 		hold: "बिल होल्ड करा", held: "बिल होल्ड झाले", held_swap: "चालू बिलही होल्डला गेले",
 		hold_drop_q: "हे होल्ड बिल काढायचे? हे पाठवले गेले नव्हते.",
 		fj_title: "उधारी जमा", fj_pick: "ग्राहक निवडा", fj_amt: "रक्कम (₹)",
@@ -604,10 +626,10 @@ function parkCurrent() {
 	HOLDS.unshift({
 		id: uidNew(), ts: Date.now(),
 		cust: CUST, customer_name: CUST ? CUST.customer_name : walkinName(),
-		payMode: payMode, cart: cart, total: cartTotal()
+		payMode: payMode, split: { cash: split.cash, upi: split.upi }, cart: cart, total: cartTotal()
 	});
 	saveHolds();
-	cart = []; CUST = null; KHATA = null; payMode = "Cash";
+	cart = []; CUST = null; KHATA = null; payMode = "Cash"; split = { cash: 0, upi: 0 };
 }
 function holdBill() {
 	if (!cart.length) return;
@@ -623,6 +645,7 @@ function resumeHold(id) {
 	HOLDS = rest;
 	if (cart.length) { parkCurrent(); toast(T("held_swap")); }
 	cart = h.cart || []; CUST = h.cust || null; KHATA = null; payMode = h.payMode || "Cash";
+	split = h.split ? { cash: h.split.cash || 0, upi: h.split.upi || 0 } : { cash: 0, upi: 0 };
 	saveHolds();
 	if (!isWide()) VIEW = "cart";
 	render();
@@ -650,6 +673,7 @@ function holdsStrip() {
 /* ---------- state ---------- */
 var VIEW = "sell", searchQ = "", groupF = "", gridCap = 60;
 var cart = [], CUST = null, KHATA = null, payMode = "Cash", BUSY = false, SYNCING = false;
+var split = { cash: 0, upi: 0 };
 
 /* ---------- render root ---------- */
 function isWide() { return window.innerWidth >= 1000; }
@@ -809,20 +833,52 @@ function renderCart() {
 	}
 	h += "</div>";
 
-	h += '<div class="sec"><div class="sh">' + esc(T("cash")) + " / UPI / " + esc(T("udhaar")) + "</div>" +
+	h += renderPaySection();
+	return h;
+}
+/* payment section: three one-tap modes + Split (part cash / part UPI / rest
+   on khata). Split amounts are fixed rupees the cashier types; the credit row
+   is the live remainder and is what lands as the invoice's outstanding. */
+function renderPaySection() {
+	var h = '<div class="sec"><div class="sh">' + esc(T("cash")) + " / UPI / " + esc(T("udhaar")) + " / " + esc(T("split")) + "</div>" +
 		'<div class="paybtns">' +
 		'<button class="cash ' + (payMode === "Cash" ? "on" : "") + '" onclick="setPay(\'Cash\')">' + esc(T("cash")) + "</button>" +
 		'<button class="upi ' + (payMode === "UPI" ? "on" : "") + '" onclick="setPay(\'UPI\')">' + esc(T("upi")) + "</button>" +
 		'<button class="udh ' + (payMode === "Udhaar" ? "on" : "") + '" onclick="setPay(\'Udhaar\')">' + esc(T("udhaar")) + "</button>" +
-		"</div>" +
-		'<button class="gobtn' + (payMode === "Udhaar" ? " udh" : "") + '" id="gobtn" onclick="checkout()"' + (cart.length && !BUSY ? "" : " disabled") + ">" +
+		'<button class="spl ' + (payMode === "Split" ? "on" : "") + '" onclick="setPay(\'Split\')">' + esc(T("split")) + "</button>" +
+		"</div>";
+	var blocked = false;
+	if (payMode === "Split") {
+		var credit = splitCredit();
+		var over = credit < -0.005;
+		h += '<div class="splitbox">' +
+			'<div class="splitrow editable" onclick="splitEdit(\'cash\')"><span class="sl">' + esc(T("cash")) + '</span><span class="sv">' + fmt(split.cash || 0) + "</span></div>" +
+			'<div class="splitrow editable" onclick="splitEdit(\'upi\')"><span class="sl">' + esc(T("upi")) + '</span><span class="sv">' + fmt(split.upi || 0) + "</span></div>" +
+			'<div class="splitrow credit ' + (credit <= 0.005 ? "zero" : "") + '"><span class="sl">' + esc(T("khata_bal")) + '</span><span class="sv">' + fmt(Math.max(0, credit)) + "</span></div>" +
+			"</div>";
+		if (over) { h += '<div class="splitwarn">' + esc(T("overpaid")) + "</div>"; blocked = true; }
+		else h += '<div class="splithint">' + esc(T("split_hint")) + "</div>";
+	}
+	var udh = (payMode === "Udhaar") || (payMode === "Split" && splitCredit() > 0.005);
+	h += '<button class="gobtn' + (udh ? " udh" : "") + '" id="gobtn" onclick="checkout()"' + (cart.length && !BUSY && !blocked ? "" : " disabled") + ">" +
 		esc(T("confirm")) + (cart.length ? " — " + fmt(cartTotal()) : "") + "</button>" +
 		(cart.length ? '<button class="holdbtn" onclick="holdBill()">&#9208; ' + esc(T("hold")) + "</button>" : "") +
 		"</div>";
 	return h;
 }
 function cartTotal() { var t = 0; for (var i = 0; i < cart.length; i++) t += cart[i].qty * cart[i].rate; return round2(t); }
-function setPay(m) { payMode = m; render(); if (m === "Udhaar" && !CUST) { toast(T("need_cust")); openCust(); } }
+function splitCredit() { return round2(cartTotal() - (split.cash || 0) - (split.upi || 0)); }
+function splitEdit(field) {
+	openNum(field === "cash" ? T("cash") : T("upi"), T("split"), split[field] || "", function (v) {
+		split[field] = round2(v); render();
+	}, true);
+}
+function setPay(m) {
+	payMode = m; render();
+	/* Udhaar needs a real customer up front; Split only if a credit remainder
+	   survives to checkout, so it does not nag when the split fully pays */
+	if (m === "Udhaar" && !CUST) { toast(T("need_cust")); openCust(); }
+}
 function qUp(i) { cart[i].qty += 1; render(); }
 function qDown(i) { cart[i].qty -= 1; if (cart[i].qty <= 0) cart.splice(i, 1); render(); }
 function delLine(i) { cart.splice(i, 1); render(); }
@@ -835,8 +891,8 @@ function editRate(i) {
 
 /* ---------- numeric pad sheet ---------- */
 var NUM = null;
-function openNum(title, sub, initial, cb) {
-	NUM = { title: title, sub: sub, val: initial == null ? "" : String(initial), cb: cb };
+function openNum(title, sub, initial, cb, allowZero) {
+	NUM = { title: title, sub: sub, val: initial == null ? "" : String(initial), cb: cb, allowZero: !!allowZero };
 	renderNum();
 	$id("numovl").classList.add("show");
 }
@@ -867,7 +923,9 @@ function numKey(k) {
 function numOk() {
 	if (!NUM) return;
 	var v = parseFloat(NUM.val);
-	if (!(v > 0)) { toast(T("bad_num")); return; }
+	if (isNaN(v)) v = 0;
+	/* allowZero: split fields may be cleared to 0; elsewhere a positive number is required */
+	if (v < 0 || (!NUM.allowZero && !(v > 0))) { toast(T("bad_num")); return; }
 	var cb = NUM.cb;
 	closeNum();
 	cb(v);
@@ -879,12 +937,28 @@ function loadKhata() {
 	}).catch(function () { });
 }
 
-/* ---------- checkout ---------- */
+/* ---------- checkout ----------
+   Builds the payment rows + the credit (khata) remainder from the chosen
+   mode. The server posts whatever payments we send and leaves the rest as
+   outstanding, so a Split with a remainder becomes a "Partly Paid" invoice
+   (verified on staging: cash+upi rows, credit = outstanding). */
 function checkout() {
 	if (!cart.length || BUSY) return;
-	if (payMode === "Udhaar" && !CUST) { toast(T("need_cust")); openCust(); return; }
-	BUSY = true; render();
 	var total = cartTotal();
+	var pays, credit;
+	if (payMode === "Udhaar") { pays = []; credit = total; }
+	else if (payMode === "Split") {
+		credit = splitCredit();
+		if (credit < -0.005) { toast(T("overpaid")); return; }
+		pays = [];
+		if ((split.cash || 0) > 0.005) pays.push({ mode_of_payment: "Cash", amount: round2(split.cash) });
+		if ((split.upi || 0) > 0.005) pays.push({ mode_of_payment: "UPI", amount: round2(split.upi) });
+		if (credit < 0.005) credit = 0;
+		if (!pays.length) { payMode = "Udhaar"; }  /* nothing entered -> plain udhaar */
+	} else { pays = [{ mode_of_payment: payMode, amount: total }]; credit = 0; }
+	/* any credit portion accrues receivable -> must be a named customer */
+	if (credit > 0.005 && !CUST) { toast(T("need_cust")); openCust(); return; }
+	BUSY = true; render();
 	var sale = {
 		uid: uidNew(),
 		ref: nextRef(),
@@ -892,15 +966,16 @@ function checkout() {
 		date: today(),
 		customer: CUST ? CUST.name : walkinName(),
 		customer_name: CUST ? CUST.customer_name : walkinName(),
-		mode: payMode,
+		mode: pays.length && credit > 0.005 ? "Split" : (pays.length ? payMode : "Udhaar"),
 		total: total,
+		credit: round2(credit),
 		items: cart.map(function (l) { return { item_code: l.code, item_name: l.name, uom: l.uom, qty: l.qty, rate: l.rate }; }),
-		payments: payMode === "Udhaar" ? [] : [{ mode_of_payment: payMode, amount: total }],
+		payments: pays,
 		status: "pending", err: "", result: null
 	};
 	queue.push(sale);
 	idbQPut(sale).catch(function () { toast("storage!"); });
-	cart = []; CUST = null; KHATA = null; payMode = "Cash"; BUSY = false; VIEW = "sell";
+	cart = []; CUST = null; KHATA = null; payMode = "Cash"; split = { cash: 0, upi: 0 }; BUSY = false; VIEW = "sell";
 	render();
 	toast(T("queued") + " " + sale.ref);
 	if (S.autoprint) printSale(sale);
@@ -975,6 +1050,11 @@ function renderPending() {
 	h += '<div class="pnote">' + esc(T("pnote")) + "</div>";
 	return h;
 }
+function payLabel(s) {
+	if (s.mode === "Udhaar") return T("udhaar");
+	if (s.mode === "Split") return T("split") + (s.credit > 0.005 ? " • " + T("khata_bal") + " " + fmt(s.credit) : "");
+	return s.mode;
+}
 function pcardHtml(s, isDone) {
 	var st, cls;
 	if (isDone) { st = T("st_done"); cls = "done"; }
@@ -984,7 +1064,7 @@ function pcardHtml(s, isDone) {
 	var billno = s.result && s.result.name ? s.result.name : "";
 	var h = '<div class="pcard"><div class="pr"><div class="pref">' + esc(s.ref) + (billno ? " &rarr; " + esc(billno) : "") + "</div>" +
 		'<div class="pamt">' + fmt(s.result && s.result.rounded_total ? s.result.rounded_total : s.total) + "</div></div>" +
-		'<div class="pc">' + esc(s.customer_name) + " • " + esc(s.mode === "Udhaar" ? T("udhaar") : s.mode) + " • " + esc(s.ts) + "</div>" +
+		'<div class="pc">' + esc(s.customer_name) + " • " + esc(payLabel(s)) + " • " + esc(s.ts) + "</div>" +
 		'<span class="st ' + cls + '">' + esc(st) + "</span>";
 	if (s.err) h += '<div class="perr">' + esc(s.err) + "</div>";
 	h += '<div class="prow">';
@@ -1037,8 +1117,16 @@ function printSale(sale) {
 		}
 	}
 	h += "</table>";
-	if (sale.mode === "Udhaar") h += '<div class="rb">' + esc(T("udh_note")) + "</div>";
-	else h += "<div>" + esc(sale.mode) + " " + esc(T("recv")) + ": " + fmt(showTotal) + "</div>";
+	/* payment breakdown: each tendered mode, then the khata balance (if any) */
+	if (sale.payments && sale.payments.length) {
+		for (var pi = 0; pi < sale.payments.length; pi++) {
+			var pp = sale.payments[pi];
+			h += "<div>" + esc(pp.mode_of_payment) + " " + esc(T("recv")) + ": " + fmt(pp.amount) + "</div>";
+		}
+	}
+	var creditShown = (sale.credit != null) ? sale.credit :
+		(sale.result ? sale.result.outstanding_amount : (sale.payments && sale.payments.length ? 0 : sale.total));
+	if (creditShown > 0.005) h += '<div class="rb">' + esc(T("bal_khata")) + ": " + fmt(creditShown) + "</div>";
 	h += '<div class="sm">' + esc(T("tax_note")) + "</div>";
 	h += "<hr>";
 	if (!r || !r.name) h += '<div class="rc sm rb">' + esc(T("prov_note")) + "</div>";
