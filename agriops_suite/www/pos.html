@@ -73,6 +73,9 @@
 :root[data-theme="dark"] .st.done,
 :root[data-theme="dark"] .fjdraw button.on,
 :root[data-theme="dark"] .plusone,
+:root[data-theme="dark"] .rec-pill.ok,
+:root[data-theme="dark"] .recseg button.on b,
+:root[data-theme="dark"] .recrow:hover .rec-pr,
 :root[data-theme="dark"] .splitrow.credit.zero .sl,
 :root[data-theme="dark"] .splitrow.credit.zero .sv { color: var(--accent-green); }
 :root[data-theme="dark"] .plusone { text-shadow: 0 1px 4px rgba(0,0,0,.6); }
@@ -332,8 +335,32 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--green); out
 .pnote { font-size: .8rem; color: var(--muted); margin: 8px 14px 20px; line-height: 1.45; }
 /* recent tab */
 .rechead { display: flex; align-items: center; justify-content: space-between; }
+.rectitle { font-size: .8rem; font-weight: 800; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; margin: 16px 14px 2px; }
 .recref { width: 40px; height: 40px; border-radius: 10px; background: var(--soft); color: var(--ink); font-size: 1.1rem; margin: 12px 14px 0; flex: none; }
 .recref:active { background: var(--line); }
+/* segmented control: view one document type at a time */
+.recseg { display: flex; gap: 6px; background: var(--soft); border-radius: 12px; padding: 4px; margin: 8px 12px; }
+.recseg button { flex: 1; border-radius: 9px; padding: 9px 4px; font-size: .84rem; font-weight: 800; color: var(--muted); transition: all .13s; }
+.recseg button b { opacity: .6; margin-left: 2px; }
+.recseg button.on { background: var(--card); color: var(--ink); box-shadow: var(--shadow-sm); }
+.recseg button.on b { opacity: 1; color: var(--green-dark); }
+/* compact rows */
+.reclist { display: flex; flex-direction: column; gap: 8px; padding: 2px 12px 22px; }
+.recrow { display: flex; align-items: center; gap: 11px; background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 11px 12px; box-shadow: var(--shadow-sm); }
+.recrow:active { background: var(--soft); }
+.rec-main { flex: 1; min-width: 0; }
+.rec-ref { font-weight: 800; font-size: .9rem; display: flex; align-items: center; gap: 7px; }
+.rec-sub { font-size: .78rem; color: var(--muted); margin-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rec-r { text-align: right; flex: none; }
+.rec-amt { font-weight: 800; font-size: .95rem; font-variant-numeric: tabular-nums; }
+.rec-date { font-size: .72rem; color: var(--faint); margin-top: 2px; }
+.rec-pr { width: 34px; height: 34px; border-radius: 9px; background: var(--soft); color: var(--muted); display: grid; place-items: center; font-size: 1rem; flex: none; }
+.recrow:hover .rec-pr { background: var(--green-soft); color: var(--green-dark); }
+.rec-pill { font-size: .62rem; font-weight: 800; padding: 2px 7px; border-radius: 999px; text-transform: uppercase; letter-spacing: .3px; }
+.rec-pill.ok { background: var(--green-soft); color: var(--green-dark); }
+.rec-pill.warn { background: var(--amber-soft); color: var(--amber-dark); }
+.rec-pill.due { background: var(--red-soft); color: var(--red); }
+.rec-pill.muted { background: var(--soft); color: var(--muted); }
 /* print-format picker */
 .prlist { display: flex; flex-direction: column; gap: 8px; margin-top: 4px; }
 .prbtn { padding: 13px; border-radius: 12px; border: 1.6px solid var(--line-2); background: var(--card); font-weight: 800; font-size: .96rem; color: var(--ink); }
@@ -510,7 +537,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--green); out
 {% raw %}
 <script>
 "use strict";
-var POSV = "pos-pwa 0.10.1";
+var POSV = "pos-pwa 0.11.0";
 var LS = window.localStorage;
 var CSRF = (document.querySelector('meta[name="vac-csrf"]') || {}).content || "";
 if (CSRF.indexOf("{") !== -1) CSRF = "";  /* raw-served copy: unrendered Jinja */
@@ -774,6 +801,7 @@ function uidNew() {
 function fmt(n) { return "₹" + Number(n || 0).toLocaleString("en-IN", { maximumFractionDigits: 2 }); }
 function round2(n) { return Math.round((Number(n) || 0) * 100) / 100; }
 function qtyfmt(q) { q = Number(q) || 0; return (q % 1 === 0) ? String(q) : q.toFixed(3).replace(/0+$/, "").replace(/\.$/, ""); }
+function niceDate(iso) { if (!iso) return ""; var p = String(iso).split("-"); return p.length === 3 ? p[2].slice(0, 2) + "/" + p[1] : String(iso); }
 function norm(s) { return String(s || "").toLowerCase(); }
 function initials(s) { s = String(s || "?").trim(); return esc(s.slice(0, 1).toUpperCase()); }
 var toastTimer = null;
@@ -1278,6 +1306,9 @@ function checkout() {
 		credit: round2(credit),
 		items: cart.map(function (l) { return { item_code: l.code, item_name: l.name, uom: l.uom, qty: l.qty, rate: l.rate }; }),
 		payments: pays,
+		/* prompt the print-format picker once it saves — but only online, so an
+		   offline sale that syncs later (customer long gone) doesn't pop a sheet */
+		wantPrint: navigator.onLine,
 		status: "pending", err: "", result: null
 	};
 	queue.push(sale);
@@ -1328,6 +1359,8 @@ function syncNow(manual) {
 			for (var k = 0; k < queue.length; k++) if (queue[k].uid === sale.uid) { queue.splice(k, 1); break; }
 			idbQDel(sale.uid).catch(function () { });
 			toast(T("billno") + " " + (m.name || ""));
+			/* saved in ERPNext -> ask which invoice format to print (once, fresh sales only) */
+			if (sale.wantPrint && m.name && !m.duplicate) { sale.wantPrint = false; printMenu("Sales Invoice", m.name); }
 			idx += 1; step();
 		}).catch(function (e) {
 			if (e && e.auth) { sale.status = "pending"; idbQPut(sale).catch(function () { }); fin(); needLogin(); return; }
@@ -1367,15 +1400,16 @@ var PRINT_FORMATS = {
 	"Sales Invoice": [
 		{ fmt: "VAC Tax Invoice A4", lbl: "A4 Bill" },
 		{ fmt: "VAC Tax Invoice A5", lbl: "A5 Bill" },
-		{ fmt: "VAC Delivery Slip", lbl: "Delivery Slip" }
+		{ fmt: "VAC Delivery Note A4", lbl: "Delivery Note A4" },
+		{ fmt: "VAC Delivery Note A5", lbl: "Delivery Note A5" }
 	],
 	"Payment Entry": [
+		{ fmt: "VAC Money Receipt", lbl: "Receipt" },
 		{ fmt: "VAC Deposit Slip PE", lbl: "Deposit Slip" },
-		{ fmt: "VAC RTGS NEFT Request", lbl: "RTGS / NEFT" },
-		{ fmt: "Standard", lbl: "Voucher" }
+		{ fmt: "VAC RTGS NEFT Request", lbl: "RTGS / NEFT" }
 	],
 	"Journal Entry": [
-		{ fmt: "Standard", lbl: "Voucher" }
+		{ fmt: "VAC Journal Voucher", lbl: "Journal Voucher" }
 	]
 };
 function loadRecent() {
@@ -1389,40 +1423,50 @@ function loadRecent() {
 		if (e && e.auth) needLogin();
 	});
 }
+var RECTAB = "sales";
+function setRecTab(t) { RECTAB = t; render(); }
 function renderRecent() {
-	var h = '<div class="rechead"><div class="psec" style="margin:14px 14px 2px">' + esc(T("recent")) + '</div>' +
-		'<button class="recref" onclick="RECENT=null;loadRecent();render()">&#10227;</button></div>';
-	if (!RECENT) { h += '<div class="nores">' + esc(RECENT_LOADING || navigator.onLine ? T("loading_r") : T("offline")) + "</div>"; return h; }
-	h += '<div class="psec">' + esc(T("recent_sales")) + "</div>";
-	if (!RECENT.sales.length) h += '<div class="nores">' + esc(T("none_recent")) + "</div>";
-	for (var i = 0; i < RECENT.sales.length; i++) {
-		var s = RECENT.sales[i];
-		h += recCard("Sales Invoice", s.name, s.customer_name || s.customer, s.rounded_total || s.grand_total, s.status, s.posting_date, s.outstanding_amount > 0.5 ? T("khata") + " " + fmt(s.outstanding_amount) : "");
-	}
-	if (RECENT.can_journal) {
-		if (RECENT.payments.length) {
-			h += '<div class="psec">' + esc(T("recent_pay")) + "</div>";
-			for (var p = 0; p < RECENT.payments.length; p++) {
-				var pe = RECENT.payments[p];
-				h += recCard("Payment Entry", pe.name, pe.party, pe.amount, pe.kind === "Receive" ? T("recv") : T("fj_payment"), pe.date, "");
-			}
-		}
-		if (RECENT.journals.length) {
-			h += '<div class="psec">' + esc(T("recent_jrnl")) + "</div>";
-			for (var j = 0; j < RECENT.journals.length; j++) {
-				var je = RECENT.journals[j];
-				h += recCard("Journal Entry", je.name, je.remark || je.kind, je.amount, "", je.date, "");
-			}
+	var h = '<div class="rechead"><div class="rectitle">' + esc(T("recent")) + "</div>" +
+		'<button class="recref" aria-label="refresh" onclick="RECENT=null;loadRecent();render()">&#10227;</button></div>';
+	if (!RECENT) return h + '<div class="nores">' + esc(navigator.onLine ? T("loading_r") : T("offline")) + "</div>";
+	/* one focused list at a time, chosen by the segmented control */
+	if (!RECENT.can_journal) RECTAB = "sales";
+	h += '<div class="recseg">' + recSeg("sales", T("recent_sales"), RECENT.sales.length);
+	if (RECENT.can_journal) h += recSeg("payments", T("recent_pay"), RECENT.payments.length) + recSeg("journals", T("recent_jrnl"), RECENT.journals.length);
+	h += "</div>";
+	var list = RECENT[RECTAB] || [];
+	if (!list.length) return h + '<div class="nores">' + esc(T("none_recent")) + "</div>";
+	h += '<div class="reclist">';
+	for (var i = 0; i < list.length; i++) {
+		var r = list[i];
+		if (RECTAB === "sales") {
+			var out = r.outstanding_amount > 0.5;
+			h += recRow("Sales Invoice", r.name, r.customer_name || r.customer, out ? T("khata") + " " + fmt(r.outstanding_amount) : "", r.rounded_total || r.grand_total, r.posting_date, statusCls(r.status), r.status);
+		} else if (RECTAB === "payments") {
+			h += recRow("Payment Entry", r.name, r.party, r.remark, r.amount, r.date, r.kind === "Receive" ? "ok" : "warn", r.kind === "Receive" ? T("recv") : T("fj_payment"));
+		} else {
+			h += recRow("Journal Entry", r.name, r.remark || r.kind, "", r.amount, r.date, "muted", r.kind);
 		}
 	}
-	return h;
+	return h + "</div>";
 }
-function recCard(doctype, name, who, amount, status, date, sub) {
-	return '<div class="pcard"><div class="pr"><div class="pref">' + esc(name) + "</div>" +
-		'<div class="pamt">' + fmt(amount) + "</div></div>" +
-		'<div class="pc">' + esc(who || "") + (status ? " • " + esc(status) : "") + " • " + esc(date) + "</div>" +
-		(sub ? '<span class="st pend">' + esc(sub) + "</span>" : "") +
-		'<div class="prow"><button class="pp" data-dt="' + esc(doctype) + '" data-nm="' + esc(name) + '" onclick="printMenu(this.dataset.dt, this.dataset.nm)">&#128424; ' + esc(T("print")) + "</button></div></div>";
+function recSeg(k, label, n) {
+	return '<button class="' + (RECTAB === k ? "on" : "") + '" onclick="setRecTab(\'' + k + '\')">' + esc(label) + ' <b>' + n + "</b></button>";
+}
+function statusCls(st) {
+	st = String(st || "").toLowerCase();
+	if (st.indexOf("partly") >= 0) return "warn";
+	if (st.indexOf("unpaid") >= 0 || st.indexOf("overdue") >= 0) return "due";
+	if (st.indexOf("paid") >= 0) return "ok";
+	return "muted";
+}
+/* one compact, tappable row — tap prints (opens the format picker) */
+function recRow(doctype, name, primary, sub, amount, date, pillCls, pillTxt) {
+	return '<div class="recrow" data-dt="' + esc(doctype) + '" data-nm="' + esc(name) + '" onclick="printMenu(this.dataset.dt,this.dataset.nm)">' +
+		'<div class="rec-main"><div class="rec-ref">' + esc(name) + (pillTxt ? ' <span class="rec-pill ' + pillCls + '">' + esc(pillTxt) + "</span>" : "") + "</div>" +
+		'<div class="rec-sub">' + esc(primary || "") + (sub ? " · " + esc(sub) : "") + "</div></div>" +
+		'<div class="rec-r"><div class="rec-amt">' + fmt(amount) + '</div><div class="rec-date">' + esc(niceDate(date)) + "</div></div>" +
+		'<div class="rec-pr">&#128424;</div></div>';
 }
 /* print-format picker (reuses the ask overlay as a generic sheet) */
 function printMenu(doctype, name) {
@@ -1791,6 +1835,8 @@ function fjPost() {
 		/* a khata receipt for the customer on screen -> refresh their balance */
 		if (wasCust && CUST && CUST.name === wasCust) { KHATA = null; loadKhata(); }
 		closeFJ();
+		/* posted -> ask to print the money receipt (PE) or journal voucher (JE) */
+		if (m.doctype && m.name) printMenu(m.doctype, m.name);
 	}).catch(function (e) {
 		if (FJ) { FJ.sending = 0; renderFJ(); }
 		if (e && e.auth) { toast(T("fj_perm")); return; }
