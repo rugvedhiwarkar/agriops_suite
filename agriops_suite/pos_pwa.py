@@ -62,8 +62,8 @@ def manifest():
 		"start_url": SCOPE,
 		"scope": SCOPE,
 		"display": "standalone",
-		"background_color": "#f4f5f6",
-		"theme_color": "#171717",
+		"background_color": "#eaeeec",
+		"theme_color": "#ffffff",
 		"icons": [
 			{
 				"src": "/assets/agriops_suite/images/pos-icon-192.png",
