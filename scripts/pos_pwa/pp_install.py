@@ -47,7 +47,9 @@ PERM_MAP = {
     "Sales Invoice": ["read", "write", "create", "submit", "print"],
     "Customer": ["read", "write", "create"],
     "Item": ["read"],
-    "Item Price": ["read"],
+    # write/create so the POS can save a typed rate back to Standard Selling
+    # (fill-gap for unpriced items; confirmed updates for priced ones)
+    "Item Price": ["read", "write", "create"],
     "Item Group": ["read"],
     "Customer Group": ["read"],
     "Territory": ["read"],
@@ -129,6 +131,24 @@ items = frappe.get_all(
     fields=["name", "item_name", "item_group", "stock_uom", "image", "gst_hsn_code"],
     limit_page_length=0,
 )
+# alternate UOMs the owner has defined per item (real conversion factors),
+# grouped by item. Lets the POS unit-picker offer a proper conversion where one
+# exists, and a factor-1 relabel to any other UOM master where one does not.
+conv = {}
+for r in frappe.get_all(
+    "UOM Conversion Detail",
+    fields=["parent", "uom", "conversion_factor"],
+    limit_page_length=0,
+):
+    conv.setdefault(r.parent, []).append(
+        {"uom": r.uom, "conversion_factor": r.conversion_factor})
+for it in items:
+    rows = conv.get(it["name"], [])
+    if not any(u["uom"] == it["stock_uom"] for u in rows):
+        rows = [{"uom": it["stock_uom"], "conversion_factor": 1}] + rows
+    it["uoms"] = rows
+# every UOM master name, so a line can be relabelled to any real unit offline
+uoms_all = [u.name for u in frappe.get_all("UOM", fields=["name"], limit_page_length=0)]
 prices = frappe.get_all(
     "Item Price",
     filters={"price_list": price_list, "selling": 1},
@@ -187,6 +207,7 @@ frappe.response["message"] = {
     "suppliers": suppliers,
     "employees": employees,
     "modes_of_payment": modes,
+    "uoms": uoms_all,
     "version": latest,
 }
 """
@@ -227,6 +248,17 @@ else:
     posting_date = body.get("posting_date") or frappe.utils.nowdate()
     is_pos = 1 if pays else 0  # no payments -> udhaar as regular SI (house pattern)
 
+    # a line may override its UOM (must be an existing UOM master); a
+    # conversion_factor of 1 is a pure relabel (1 chosen unit = 1 stock unit),
+    # any other factor is a real conversion the owner defined on the item.
+    line_items = []
+    for i in items_in:
+        row = {"item_code": i["item_code"], "qty": i["qty"], "rate": i.get("rate")}
+        if i.get("uom"):
+            row["uom"] = i["uom"]
+            row["conversion_factor"] = i.get("conversion_factor") or 1
+        line_items.append(row)
+
     si = {
         "doctype": "Sales Invoice",
         "company": profile.company,
@@ -240,10 +272,7 @@ else:
         "due_date": posting_date,
         "pwa_client_id": client_id,
         "remarks": body.get("remarks"),
-        "items": [
-            {"item_code": i["item_code"], "qty": i["qty"], "rate": i.get("rate")}
-            for i in items_in
-        ],
+        "items": line_items,
     }
     if is_pos:
         si["pos_profile"] = profile.name
@@ -376,6 +405,36 @@ frappe.response["message"] = {
 }
 """
 
+# Save a POS-typed rate to the selling price list. Client controls WHEN (fill an
+# unpriced item silently; update a priced one only after the cashier confirms) —
+# this endpoint just upserts one Item Price and reports what it did.
+SCRIPT_SET_PRICE = r"""
+item_code = frappe.form_dict.get("item_code")
+rate = frappe.utils.flt(frappe.form_dict.get("rate"))
+price_list = frappe.form_dict.get("price_list") or "Standard Selling"
+if not item_code or rate <= 0:
+    frappe.throw("item_code and a positive rate are required")
+if not frappe.db.exists("Item", item_code):
+    frappe.throw("No such item: " + str(item_code))
+existing = frappe.db.get_value(
+    "Item Price", {"item_code": item_code, "price_list": price_list, "selling": 1},
+    ["name", "price_list_rate"], as_dict=True)
+if existing:
+    if abs((existing.price_list_rate or 0) - rate) > 0.005:
+        doc = frappe.get_doc("Item Price", existing.name)
+        doc.price_list_rate = rate
+        doc.save()
+        frappe.response["message"] = {"action": "updated", "name": existing.name,
+                                      "old": existing.price_list_rate, "rate": rate}
+    else:
+        frappe.response["message"] = {"action": "unchanged", "name": existing.name, "rate": rate}
+else:
+    doc = frappe.get_doc({"doctype": "Item Price", "item_code": item_code,
+                          "price_list": price_list, "selling": 1, "price_list_rate": rate})
+    doc.insert()
+    frappe.response["message"] = {"action": "created", "name": doc.name, "rate": rate}
+"""
+
 SERVER_SCRIPTS = {
     "vac_pos_ping": SCRIPT_PING,
     "vac_pos_catalog": SCRIPT_CATALOG,
@@ -384,6 +443,7 @@ SERVER_SCRIPTS = {
     ),
     "vac_pos_outstanding": SCRIPT_OUTSTANDING,
     "vac_pos_recent": SCRIPT_RECENT,
+    "vac_pos_set_price": SCRIPT_SET_PRICE,
 }
 
 

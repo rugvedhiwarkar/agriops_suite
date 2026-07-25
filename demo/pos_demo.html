@@ -43,6 +43,10 @@
 	--shadow-sm: 0 1px 2px rgba(16,40,28,.06), 0 1px 3px rgba(16,40,28,.05);
 	--shadow-md: 0 6px 16px rgba(16,40,28,.09), 0 2px 6px rgba(16,40,28,.06);
 	--shadow-lg: 0 18px 44px rgba(13,40,26,.16), 0 6px 18px rgba(13,40,26,.10);
+	/* user-adjustable display scales (Settings → Display); JS overrides these
+	   on the root element from saved prefs. 1 = default. */
+	--font-scale: 1;
+	--tile-scale: 1;
 }
 /* ---- dark theme: page/cards/lines go dark; accent hues stay vibrant; the
    *-soft chip backgrounds become dark tints and their TEXT uses the lighter
@@ -108,7 +112,7 @@
 :root[data-theme="dark"] .tile.c-hardware .thumb { background: radial-gradient(92px 62px at 50% 34%, rgba(148,163,184,.12), transparent 74%); }
 :root[data-theme="dark"] .tile.c-other .thumb { background: radial-gradient(92px 62px at 50% 34%, rgba(255,255,255,.05), transparent 74%); }
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-html { font-size: 17px; }
+html { font-size: calc(17px * var(--font-scale)); }
 body {
 	font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans Devanagari", sans-serif;
 	background: var(--ivory); color: var(--ink);
@@ -185,7 +189,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--green); out
 	transition: all .14s;
 }
 .chips button.on { border-color: var(--ink); background: var(--ink); color: #fff; }
-.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(112px, 1fr)); gap: 11px; padding: 6px 12px 14px; }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(calc(112px * var(--tile-scale)), 1fr)); gap: 11px; padding: 6px 12px 14px; }
 /* product card: category-tinted thumb + monogram (or the real photo), name,
    price, quick-add — the concept's tile treatment */
 .tile {
@@ -200,8 +204,8 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--green); out
 }
 .tile:active { transform: translateY(0) scale(.99); border-color: var(--green); }
 .tile:active .add { background: var(--green); color: #fff; }
-.tile .thumb { height: 80px; position: relative; display: grid; place-items: center; }
-.tile img { width: 100%; height: 80px; object-fit: contain; background: transparent; }
+.tile .thumb { height: calc(80px * var(--tile-scale)); position: relative; display: grid; place-items: center; }
+.tile img { width: 100%; height: calc(80px * var(--tile-scale)); object-fit: contain; background: transparent; image-rendering: auto; }
 .tile .mono { width: 44px; height: 44px; border-radius: 12px; display: grid; place-items: center; font-weight: 800; font-size: 1.1rem; color: #fff; box-shadow: inset 0 1px 0 rgba(255,255,255,.3), 0 3px 8px rgba(0,0,0,.13); }
 .tile .tb { padding: 8px 10px 10px; border-top: 1px solid var(--line); flex: 1; display: flex; flex-direction: column; gap: 6px; }
 .tile .tn { font-size: .8rem; font-weight: 600; line-height: 1.25; flex: 1;
@@ -266,6 +270,9 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--green); out
 .cline .lr { font-size: .8rem; color: var(--muted); margin-top: 2px; }
 .cline .lr b { color: var(--ink); }
 .cline .lr.editing { margin-top: 4px; }
+.cline .lmeta { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.uomchip { display: inline-flex; align-items: center; gap: 3px; margin-top: 2px; font-size: .74rem; font-weight: 700; color: var(--green-dark); background: var(--green-soft); border-radius: 999px; padding: 2px 9px; cursor: pointer; white-space: nowrap; }
+.uomchip:active { filter: brightness(.96); }
 /* inline PC editor (desktop): type the qty/rate directly, Enter commits */
 .editin { width: 84px; border: 2px solid var(--green); border-radius: 8px; padding: 5px 8px; font-size: .9rem; font-weight: 800; color: var(--ink); background: var(--card); font-variant-numeric: tabular-nums; }
 .editin:focus { outline: none; }
@@ -383,6 +390,13 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--green); out
 .langrow2 { display: flex; gap: 8px; }
 .langrow2 button { flex: 1; border: 2px solid var(--line); border-radius: 11px; padding: 10px; font-weight: 700; background: var(--card); color: var(--muted); }
 .langrow2 button.on { border-color: var(--primary); background: var(--soft); color: var(--ink); }
+.stepper { display: flex; align-items: center; gap: 12px; }
+.stepper button { width: 38px; height: 38px; border-radius: 11px; border: 2px solid var(--line); background: var(--card); color: var(--ink); font-size: 1.2rem; font-weight: 800; display: grid; place-items: center; flex: none; }
+.stepper button:active { background: var(--soft); }
+.stepper button:disabled { opacity: .38; }
+.steplvl { display: flex; gap: 6px; align-items: center; flex: 1; justify-content: center; }
+.steplvl .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--line-2); transition: background .12s; }
+.steplvl .dot.on { background: var(--green); }
 .vtag { text-align: center; color: var(--muted); font-size: .75rem; margin: 18px 0 8px; }
 
 /* customer modal */
@@ -392,6 +406,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--green); out
    it so it must sit ABOVE (70); the numpad opens from either, so it is highest
    (80). Fixes the customer window appearing behind the Fast Journal form. */
 #custovl { z-index: 70; }
+#uomovl { z-index: 74; }
 #numovl { z-index: 80; }
 .sheet {
 	background: var(--ivory); border-radius: 20px 20px 0 0; width: 100%; max-width: 640px;
@@ -410,6 +425,9 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--green); out
 .crow .cm { flex: 1; min-width: 0; }
 .crow .cn2 { font-weight: 700; font-size: .95rem; }
 .crow .cd2 { font-size: .78rem; color: var(--muted); margin-top: 1px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.crow.on { border-color: var(--green); background: var(--green-soft); }
+.crow .tick { color: var(--green-dark); font-weight: 900; flex: none; font-size: 1.05rem; }
+.ulsep { font-size: .72rem; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); margin: 10px 8px 6px; }
 .newc { margin: 2px 14px 12px; }
 .newc .setbtn { margin-top: 7px; }
 .newform { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 12px; margin: 0 14px 12px; }
@@ -491,13 +509,15 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--green); out
 
 /* desktop / counter PC: native-POS two-pane split (items left, bill right) */
 @media (min-width: 1000px) {
-	html { font-size: 15px; }
-	#app { max-width: 1320px; padding-bottom: 24px; }
+	html { font-size: calc(15px * var(--font-scale)); }
+	/* fill the counter monitor edge-to-edge (no centred gutter); the bill panel
+	   stays a fixed 420px on the right, the item grid takes the rest */
+	#app { max-width: none; padding-bottom: 24px; }
 	.cartbar { display: none; }
 	.cols { display: grid; grid-template-columns: minmax(0, 1fr) 420px; align-items: start; }
 	.colR { position: sticky; top: 63px; max-height: calc(100vh - 67px); min-height: calc(100vh - 67px); overflow-y: auto; border-left: 1px solid var(--line); background: var(--card); }
 	.cols .backrow { display: none; }
-	.grid { grid-template-columns: repeat(auto-fill, minmax(126px, 1fr)); gap: 10px; }
+	.grid { grid-template-columns: repeat(auto-fill, minmax(calc(126px * var(--tile-scale)), 1fr)); gap: 10px; }
 	.ovl { align-items: center; }
 	.sheet { border-radius: 16px; max-height: 82vh; max-width: 560px; }
 	.numsheet { border-radius: 16px; max-width: 400px; }
@@ -572,11 +592,21 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--green); out
     ["Solar Fence Energizer","Solar & Fencing","Nos",null],
     ["Tarpaulin 15x15","General Hardware","Nos",780]
   ];
+  // a couple of items carry owner-defined alternate UOMs (real conversions);
+  // everything else is single-UOM (relabel-only), matching the live data
+  var ALTU = {
+    "18:46:00 DAP 50 KG": [{ uom: "50 KG", conversion_factor: 1 }, { uom: "Bag", conversion_factor: 1 }],
+    "GI Fencing Wire 10 KG": [{ uom: "10 KG", conversion_factor: 1 }, { uom: "Kg", conversion_factor: 0.1 }]
+  };
   var items = [], prices = [];
   ITEMS.forEach(function (r) {
-    items.push({ name: r[0], item_name: r[0], item_group: r[1], stock_uom: r[2], image: null, gst_hsn_code: "" });
+    items.push({ name: r[0], item_name: r[0], item_group: r[1], stock_uom: r[2], image: null, gst_hsn_code: "", uoms: ALTU[r[0]] || [] });
     if (r[3] != null) prices.push({ item_code: r[0], price_list_rate: r[3] });
   });
+  // every UOM master the shop could relabel a line to (factor-1 rename)
+  var UOMS = ["Nos", "Kg", "Bag", "Box", "Packet", "Piece", "Dozen", "Litre", "1 Litre",
+    "500 ML", "30 ML", "200 GM", "500 GM", "10 GM", "36 GM", "60 GM", "2.5 GM",
+    "3 KG", "4 KG", "5 KG", "10 KG", "30 KG", "50 KG", "Roll", "Quintal"];
 
   var CUST = [
     ["Umesh Agashe","Pimpalgaon","9822041xxx"],["Ramesh Patil","Shivani","9860112xxx"],
@@ -599,6 +629,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--green); out
       payments: [{ mode_of_payment: "Cash", default: 1 }, { mode_of_payment: "UPI", default: 0 }, { mode_of_payment: "Cash 2", default: 0 }] },
     items: items, prices: prices, customers: customers, suppliers: suppliers, employees: employees,
     modes_of_payment: [{ name: "Cash", type: "Cash" }, { name: "UPI", type: "Bank" }, { name: "Cash 2", type: "Cash" }],
+    uoms: UOMS,
     version: { Item: "demo", Customer: "demo" }
   };
 
@@ -609,7 +640,14 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--green); out
       { account: "UPI - VAC", type: "Bank" }, { account: "VAC Bank OF India - VAC", type: "Bank" }],
     expense_quick_heads: ["Hamali Charges - VAC", "Customer Refreshments - VAC", "Freight and Forwarding Charges - VAC", "Tata ACE Pickup Expenses - VAC"],
     employee_advance_account: "Employee Advances - VAC",
-    extra_types: ["Expense", "Employee Advance"],
+    interparty_heads: ["Krushiyog Plant - Recoverable Costs - VAC", "KFC - Receivable - VAC", "Farm - Stock Issued - VAC"],
+    interparty_parties: [
+      { party: "Krushiyog Capital Expense", party_type: "Customer", account: "Krushiyog Plant - Recoverable Costs - VAC" },
+      { party: "Krushiyog Labor Kharch", party_type: "Customer", account: "Krushiyog Plant - Recoverable Costs - VAC" },
+      { party: "Shetikarita Main", party_type: "Customer", account: "Farm - Stock Issued - VAC" },
+      { party: "KFC", party_type: "Customer", account: "KFC - Receivable - VAC" }
+    ],
+    extra_types: ["Expense", "Employee Advance", "Interparty Expense"],
     party_types: [{ party_type: "Customer" }, { party_type: "Supplier" }, { party_type: "Employee" }]
   };
 
@@ -642,6 +680,13 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--green); out
     if (url.indexOf("vac_pos_ping") >= 0) return Promise.resolve(J({ message: { pong: true, user: "demo@vac", can_journal: 1 } }));
     if (url.indexOf("vac_pos_catalog") >= 0) return Promise.resolve(J({ message: CATALOG }));
     if (url.indexOf("vac_pos_outstanding") >= 0) return Promise.resolve(J({ message: { outstanding: 1250 } }));
+    if (url.indexOf("vac_pos_set_price") >= 0) {
+      var bp = body();
+      var had = prices.some(function (p) { return p.item_code === bp.item_code; });
+      if (had) prices.forEach(function (p) { if (p.item_code === bp.item_code) p.price_list_rate = bp.rate; });
+      else prices.push({ item_code: bp.item_code, price_list_rate: bp.rate });
+      return Promise.resolve(J({ message: { action: had ? "updated" : "created", name: "IP-DEMO", rate: bp.rate } }));
+    }
     if (url.indexOf("fast_voucher_config") >= 0) return Promise.resolve(J({ message: FJCFG }));
     if (url.indexOf("vac_pos_recent") >= 0) return Promise.resolve(J({ message: RECENT }));
     if (url.indexOf("vac_pos_create_invoice") >= 0) {
@@ -700,6 +745,8 @@ var STR = {
 		empty: "Cart is empty — tap items to add", confirm: "Confirm Bill",
 		need_cust: "Pick the customer for udhaar", queued: "Queued", billno: "Bill",
 		qty_p: "Quantity", rate_p: "Rate (₹)", bad_num: "Enter a valid number", num_hint: "Type or tap · Enter to confirm", btn_cancel: "Cancel", btn_ok: "OK", hint_items: "Add items to the bill",
+		price_saved: "Price list updated", price_upd_q: "Change the saved list price from {old} to {new}?", price_upd_yes: "Update price",
+		uom_p: "Unit", uom_pick: "Choose unit", uom_stock: "stock unit", uom_other: "Other units — rename (1:1)", no_match: "No matches",
 		recent: "Recent", recent_sales: "Bills", recent_pay: "Payments & receipts", recent_jrnl: "Journal entries", print: "Print", printing: "Preparing print…", print_fail: "Could not print", none_recent: "Nothing yet", loading_r: "Loading…",
 		st_pend: "Waiting", st_send: "Sending…", st_fail: "Failed", st_done: "Sent",
 		retry: "Retry", discard: "Delete", reprint: "Print", print: "Print",
@@ -710,6 +757,7 @@ var STR = {
 		set: "Settings", set_dev: "Counter code (on receipt ref)", set_prof: "POS Profile",
 		set_autop: "Print automatically after billing", set_lang: "Language",
 		set_theme: "Theme", theme_light: "Light", theme_dark: "Dark", theme_auto: "Auto",
+		set_tile: "Item tile size", set_font: "Text size",
 		set_refresh: "Refresh catalog", set_logout: "Log out", set_adv: "Advanced (device token)",
 		set_token: "API token (key:secret) — kiosk mode", set_save: "Save",
 		set_shop: "Receipt header", set_sn: "Shop name", set_ss: "Address line", set_sg: "GSTIN", set_sp: "Phone",
@@ -733,6 +781,7 @@ var STR = {
 		fj_need: "Fill in all the fields", fj_perm: "This login cannot post — use the owner's login",
 		fj_receipt: "Receipt", fj_payment: "Payment", fj_expense: "Expense", fj_advance: "Advance",
 		fj_supplier: "Supplier", fj_employee: "Employee", fj_exp_head: "Expense head",
+		fj_interparty: "Interparty", fj_ip_party: "Related party",
 		fj_deposit_to: "Deposit to", fj_paid_from: "Paid from", fj_big: "Post this large amount?"
 	},
 	hi: {
@@ -744,6 +793,8 @@ var STR = {
 		empty: "बिल खाली है — सामान पर टैप करें", confirm: "पक्का बिल करें",
 		need_cust: "उधार के लिए ग्राहक चुनें", queued: "कतार में", billno: "बिल",
 		qty_p: "मात्रा", rate_p: "दाम (₹)", bad_num: "सही संख्या डालें", num_hint: "टाइप करें या टैप करें · Enter से पक्का", btn_cancel: "रद्द करें", btn_ok: "ठीक है", hint_items: "बिल में सामान जोड़ें",
+		price_saved: "मूल्य सूची अपडेट हुई", price_upd_q: "सहेजा हुआ दाम {old} से {new} करें?", price_upd_yes: "दाम अपडेट करें",
+		uom_p: "इकाई", uom_pick: "इकाई चुनें", uom_stock: "स्टॉक इकाई", uom_other: "अन्य इकाइयाँ — नाम बदलें (1:1)", no_match: "कुछ नहीं मिला",
 		recent: "हाल का", recent_sales: "बिल", recent_pay: "भुगतान व जमा", recent_jrnl: "जर्नल एंट्री", print: "प्रिंट", printing: "प्रिंट तैयार हो रहा…", print_fail: "प्रिंट नहीं हुआ", none_recent: "अभी कुछ नहीं", loading_r: "लोड हो रहा…",
 		st_pend: "प्रतीक्षा में", st_send: "भेज रहे हैं…", st_fail: "असफल", st_done: "भेज दिया",
 		retry: "फिर भेजें", discard: "हटाएँ", reprint: "प्रिंट", print: "प्रिंट",
@@ -754,6 +805,7 @@ var STR = {
 		set: "सेटिंग्स", set_dev: "काउंटर कोड (रसीद क्र.)", set_prof: "POS प्रोफ़ाइल",
 		set_autop: "बिल के बाद अपने आप प्रिंट", set_lang: "भाषा",
 		set_theme: "थीम", theme_light: "लाइट", theme_dark: "डार्क", theme_auto: "ऑटो",
+		set_tile: "आइटम टाइल आकार", set_font: "टेक्स्ट आकार",
 		set_refresh: "कैटलॉग रिफ्रेश करें", set_logout: "लॉग आउट", set_adv: "एडवांस (डिवाइस टोकन)",
 		set_token: "API टोकन (key:secret) — कियोस्क मोड", set_save: "सेव करें",
 		set_shop: "रसीद हैडर", set_sn: "दुकान का नाम", set_ss: "पता", set_sg: "GSTIN", set_sp: "फ़ोन",
@@ -777,6 +829,7 @@ var STR = {
 		fj_need: "सभी जानकारी भरें", fj_perm: "इस लॉगिन से पोस्ट नहीं हो सकता — मालिक के लॉगिन से करें",
 		fj_receipt: "जमा", fj_payment: "भुगतान", fj_expense: "खर्च", fj_advance: "एडवांस",
 		fj_supplier: "सप्लायर", fj_employee: "कर्मचारी", fj_exp_head: "खर्च खाता",
+		fj_interparty: "इंटरपार्टी", fj_ip_party: "संबंधित पार्टी",
 		fj_deposit_to: "जमा किधर", fj_paid_from: "किधर से", fj_big: "इतनी बड़ी रक़म पोस्ट करें?"
 	},
 	mr: {
@@ -788,6 +841,8 @@ var STR = {
 		empty: "बिल रिकामे आहे — वस्तूवर टॅप करा", confirm: "पक्के बिल करा",
 		need_cust: "उधारीसाठी ग्राहक निवडा", queued: "रांगेत", billno: "बिल",
 		qty_p: "नग / प्रमाण", rate_p: "दर (₹)", bad_num: "बरोबर आकडा टाका", num_hint: "टाइप करा किंवा टॅप करा · Enter ने पक्के", btn_cancel: "रद्द करा", btn_ok: "ठीक", hint_items: "बिलात वस्तू जोडा",
+		price_saved: "दरसूची अपडेट झाली", price_upd_q: "साठवलेला दर {old} वरून {new} करायचा?", price_upd_yes: "दर अपडेट करा",
+		uom_p: "एकक", uom_pick: "एकक निवडा", uom_stock: "स्टॉक एकक", uom_other: "इतर एकके — नाव बदला (1:1)", no_match: "काही सापडले नाही",
 		recent: "अलीकडील", recent_sales: "बिले", recent_pay: "पेमेंट व जमा", recent_jrnl: "जर्नल नोंदी", print: "प्रिंट", printing: "प्रिंट तयार होत आहे…", print_fail: "प्रिंट झाले नाही", none_recent: "अजून काही नाही", loading_r: "लोड होत आहे…",
 		st_pend: "प्रतीक्षेत", st_send: "पाठवत आहे…", st_fail: "अयशस्वी", st_done: "पाठवले",
 		retry: "पुन्हा पाठवा", discard: "हटवा", reprint: "प्रिंट", print: "प्रिंट",
@@ -798,6 +853,7 @@ var STR = {
 		set: "सेटिंग्ज", set_dev: "काउंटर कोड (पावती क्र.)", set_prof: "POS प्रोफाइल",
 		set_autop: "बिल झाल्यावर आपोआप प्रिंट", set_lang: "भाषा",
 		set_theme: "थीम", theme_light: "लाइट", theme_dark: "डार्क", theme_auto: "ऑटो",
+		set_tile: "आयटम टाइल आकार", set_font: "मजकूर आकार",
 		set_refresh: "कॅटलॉग रिफ्रेश करा", set_logout: "लॉग आउट", set_adv: "ॲडव्हान्स (डिव्हाइस टोकन)",
 		set_token: "API टोकन (key:secret) — किऑस्क मोड", set_save: "जतन करा",
 		set_shop: "पावती शीर्षक", set_sn: "दुकानाचे नाव", set_ss: "पत्ता", set_sg: "GSTIN", set_sp: "फोन",
@@ -821,6 +877,7 @@ var STR = {
 		fj_need: "सर्व माहिती भरा", fj_perm: "या लॉगिनने पोस्ट होत नाही — मालकांच्या लॉगिनने करा",
 		fj_receipt: "जमा", fj_payment: "पेमेंट", fj_expense: "खर्च", fj_advance: "अ‍ॅडव्हान्स",
 		fj_supplier: "सप्लायर", fj_employee: "कर्मचारी", fj_exp_head: "खर्च खाते",
+		fj_interparty: "इंटरपार्टी", fj_ip_party: "संबंधित पक्ष",
 		fj_deposit_to: "कुठे जमा", fj_paid_from: "कुठून", fj_big: "एवढी मोठी रक्कम पोस्ट करायची?"
 	}
 };
@@ -850,7 +907,7 @@ if (window.matchMedia) {
 /* ---------- settings ---------- */
 function loadS() {
 	var d = {
-		device: "C1", profile: "Main", autoprint: 1,
+		device: "C1", profile: "Main", autoprint: 1, tileStep: 1, fontStep: 1,
 		shop_name: "Vijay Agro Centre", shop_sub: "", shop_gstin: "27ABCPH6300F1Z7", shop_phone: ""
 	};
 	try { var s = JSON.parse(LS.vacpos_settings || "{}"); for (var k in s) d[k] = s[k]; } catch (e) { }
@@ -858,6 +915,27 @@ function loadS() {
 }
 var S = loadS();
 function saveS() { LS.vacpos_settings = JSON.stringify(S); }
+
+/* ---------- display scales (Settings → Display) ----------
+   Item tile size and text size, each a discrete level applied as a multiplier
+   on the CSS --tile-scale / --font-scale vars. Persisted in S, set on the root
+   so it survives every render. Bigger tiles also enlarge the image area, which
+   shows more of the (512px) product photos — sharper, not just bigger. */
+var TILE_STEPS = [0.8, 1.0, 1.2, 1.45, 1.7];
+var FONT_STEPS = [0.9, 1.0, 1.12, 1.26, 1.42];
+function scaleIdx(v, arr) { v = (v == null) ? 1 : v; return Math.max(0, Math.min(arr.length - 1, v)); }
+function applyScale() {
+	var r = document.documentElement;
+	r.style.setProperty("--tile-scale", String(TILE_STEPS[scaleIdx(S.tileStep, TILE_STEPS)]));
+	r.style.setProperty("--font-scale", String(FONT_STEPS[scaleIdx(S.fontStep, FONT_STEPS)]));
+}
+function bumpScale(which, d) {
+	var isTile = which === "tile";
+	var key = isTile ? "tileStep" : "fontStep", arr = isTile ? TILE_STEPS : FONT_STEPS;
+	S[key] = scaleIdx((S[key] == null ? 1 : S[key]) + d, arr);
+	saveS(); applyScale(); render();
+}
+applyScale();  /* apply immediately, before first paint */
 
 /* ---------- IndexedDB (kv + outbox queue) ---------- */
 var _db = null, _dbFailed = false, STORAGE_OK = true;
@@ -949,6 +1027,38 @@ function toast(msg) {
 	var t = $id("toast"); t.textContent = msg; t.classList.add("show");
 	clearTimeout(toastTimer);
 	toastTimer = setTimeout(function () { t.classList.remove("show"); }, 2600);
+}
+
+/* ---------- price write-back ----------
+   Keep the price list current from the counter: an unpriced item's typed rate
+   is saved silently (fill the gap); changing a rate that already has a saved
+   price asks first (never rewrite a real price by accident). Failures are
+   swallowed — the cart-line rate always stands regardless. */
+function ppList() { return (PROFILE && PROFILE.selling_price_list) || "Standard Selling"; }
+function setPrice(code, rate, quiet) {
+	rate = round2(rate);
+	return api("/api/method/vac_pos_set_price", { method: "POST", json: { item_code: code, rate: rate, price_list: ppList() } })
+		.then(function (d) {
+			var m = (d && d.message) || {};
+			PRICES[code] = rate;
+			if (!quiet && (m.action === "created" || m.action === "updated")) toast(T("price_saved"));
+			return m;
+		})
+		.catch(function () { /* offline or no Item Price perm — line rate still applies */ });
+}
+function priceWriteback(code, name, rate) {
+	if (!code) return;
+	rate = round2(rate);
+	if (!(rate > 0)) return;
+	var cur = PRICES[code];
+	if (cur == null) { setPrice(code, rate, true); return; }        /* fill the gap, silently */
+	if (Math.abs(round2(cur) - rate) < 0.005) return;               /* unchanged */
+	askConfirm({
+		title: name,
+		msg: T("price_upd_q").replace("{old}", fmt(cur)).replace("{new}", fmt(rate)),
+		yes: T("price_upd_yes"),
+		onYes: function () { setPrice(code, rate); }
+	});
 }
 
 /* ---------- catalog ---------- */
@@ -1113,21 +1223,9 @@ function renderSell() {
 		h += '<button class="' + (groupF === d.key ? "on" : "") + '" data-g="' + d.key + '" onclick="setGroup(this.dataset.g)">' + esc(T(d.lk)) + "</button>";
 	}
 	h += "</div>";
-	var m = matchItems();
-	if (!ITEMS.length && !CATALOG && navigator.onLine) {
-		/* first load in progress — shimmer skeleton beats a blank grid */
-		h += '<div class="grid">';
-		for (var s = 0; s < 12; s++) h += '<div class="skel"><div class="sk-th"></div><div class="sk-b"><div class="sk-l"></div><div class="sk-l short"></div></div></div>';
-		h += "</div>";
-	} else if (!m.length) {
-		h += '<div class="nores">' + esc(T("nores")) + "</div>";
-	} else {
-		h += '<div class="grid" id="grid">';
-		var cap = Math.min(m.length, gridCap);
-		for (var j = 0; j < cap; j++) h += tileHtml(m[j]);
-		h += "</div>";
-		if (m.length > cap) h += '<button class="more" onclick="moreTiles()">' + esc(T("more")) + " (" + (m.length - cap) + ")</button>";
-	}
+	/* results live in a stable wrapper so a keystroke refreshes only this and
+	   never the focused search input (see renderSellGridOnly / sellGridHtml) */
+	h += '<div id="gridwrap">' + sellGridHtml() + "</div>";
 	if (cart.length) {
 		var n = 0, tot = 0;
 		for (var k = 0; k < cart.length; k++) { n += cart[k].qty; tot += cart[k].qty * cart[k].rate; }
@@ -1173,6 +1271,26 @@ function tileHtml(it) {
 		(it.stock_uom ? ' <small>/' + esc(it.stock_uom) + "</small>" : "") + "</div>" +
 		'<div class="add">+</div></div></div></button>';
 }
+/* the search-results area only (grid / no-results / first-load skeleton) so a
+   keystroke can refresh JUST this, never the focused #q input — otherwise the
+   input element gets replaced and mobile soft keyboards close on every letter */
+function sellGridHtml() {
+	var m = matchItems(), h = "";
+	if (!ITEMS.length && !CATALOG && navigator.onLine) {
+		h += '<div class="grid">';
+		for (var s = 0; s < 12; s++) h += '<div class="skel"><div class="sk-th"></div><div class="sk-b"><div class="sk-l"></div><div class="sk-l short"></div></div></div>';
+		h += "</div>";
+	} else if (!m.length) {
+		h += '<div class="nores">' + esc(T("nores")) + "</div>";
+	} else {
+		h += '<div class="grid" id="grid">';
+		var cap = Math.min(m.length, gridCap);
+		for (var j = 0; j < cap; j++) h += tileHtml(m[j]);
+		h += "</div>";
+		if (m.length > cap) h += '<button class="more" onclick="moreTiles()">' + esc(T("more")) + " (" + (m.length - cap) + ")</button>";
+	}
+	return h;
+}
 function onQ(v) { searchQ = v; gridCap = 60; renderSellGridOnly(); }
 /* Enter with exactly one match adds it and clears the box — USB barcode
    scanners (keyboard wedge) type the code then send Enter, so a scan
@@ -1185,8 +1303,11 @@ function qKey(e) {
 function setGroup(g) { groupF = g; gridCap = 60; render(); }
 function moreTiles() { gridCap += 60; render(); }
 function renderSellGridOnly() {
-	/* keep the input focused while typing: replace everything under the tabs */
-	render();
+	/* update ONLY the results wrapper — never the focused #q input, or the mobile
+	   soft keyboard closes on every keystroke (input element gets replaced) */
+	var g = $id("gridwrap");
+	if (g) g.innerHTML = sellGridHtml();
+	else render();
 }
 function findItem(code) {
 	for (var i = 0; i < ITEMS.length; i++) if (ITEMS[i].name === code) return ITEMS[i];
@@ -1215,6 +1336,7 @@ function addItem(code, ev) {
 		openNum(it.item_name, T("rate_p"), "", function (r) {
 			cart.push({ code: code, name: it.item_name, uom: it.stock_uom || "", qty: 1, rate: r });
 			render();
+			priceWriteback(code, it.item_name, r);
 		});
 		return;
 	}
@@ -1244,12 +1366,13 @@ function renderCart() {
 			var edQ = EDIT && EDIT.i === i && EDIT.field === "qty";
 			var rateCell = edR
 				? '<div class="lr editing"><input id="editin" class="editin" type="text" inputmode="decimal" value="' + esc(String(l.rate)) + '" onblur="commitEdit(this.value)" onkeydown="editKey(event)"></div>'
-				: '<div class="lr" onclick="editRate(' + i + ')"><b>' + fmt(l.rate) + "</b>" + (l.uom ? " / " + esc(l.uom) : "") + " &#9998;</div>";
+				: '<div class="lr" onclick="editRate(' + i + ')"><b>' + fmt(l.rate) + "</b> &#9998;</div>";
+			var uomCell = '<span class="uomchip" onclick="editUom(' + i + ')">' + esc(l.uom || T("uom_p")) + " &#9662;</span>";
 			var qvCell = edQ
 				? '<input id="editin" class="editin qedit" type="text" inputmode="decimal" value="' + esc(qtyfmt(l.qty)) + '" onblur="commitEdit(this.value)" onkeydown="editKey(event)">'
 				: '<div class="qv" onclick="editQty(' + i + ')">' + qtyfmt(l.qty) + "</div>";
 			h += '<div class="cline">' +
-				'<div class="ln"><div class="lt">' + esc(l.name) + "</div>" + rateCell + "</div>" +
+				'<div class="ln"><div class="lt">' + esc(l.name) + '</div><div class="lmeta">' + rateCell + uomCell + "</div></div>" +
 				'<div class="qbox"><button aria-label="minus one" onclick="qDown(' + i + ')">&minus;</button>' +
 				qvCell +
 				'<button aria-label="plus one" onclick="qUp(' + i + ')">+</button></div>' +
@@ -1322,7 +1445,7 @@ function editQty(i) {
 }
 function editRate(i) {
 	if (isWide()) { EDIT = { i: i, field: "rate" }; render(); focusEdit(); }
-	else openNum(cart[i].name, T("rate_p"), String(cart[i].rate), function (r) { cart[i].rate = r; render(); });
+	else openNum(cart[i].name, T("rate_p"), String(cart[i].rate), function (r) { cart[i].rate = r; render(); priceWriteback(cart[i].code, cart[i].name, r); });
 }
 function focusEdit() { setTimeout(function () { var el = $id("editin"); if (el) { el.focus(); el.select(); } }, 0); }
 function editKey(e) { if (e.key === "Enter") { e.preventDefault(); commitEdit(e.target.value); } else if (e.key === "Escape") { e.preventDefault(); EDIT = null; render(); } }
@@ -1330,7 +1453,86 @@ function commitEdit(val) {
 	if (!EDIT) return;
 	var v = parseFloat(String(val).replace(/[^\d.]/g, ""));
 	var e = EDIT; EDIT = null;
-	if (v > 0 && cart[e.i]) cart[e.i][e.field] = e.field === "rate" ? round2(v) : v;
+	if (v > 0 && cart[e.i]) {
+		cart[e.i][e.field] = e.field === "rate" ? round2(v) : v;
+		if (e.field === "rate") priceWriteback(cart[e.i].code, cart[e.i].name, cart[e.i].rate);
+	}
+	render();
+}
+
+/* ---------- unit (UOM) picker ----------
+   A cart line may be billed in any existing UOM master. Where the owner has
+   defined a real conversion on the item, its factor is used; otherwise it is a
+   factor-1 relabel (1 chosen unit = 1 stock unit — a rename, not a split).
+   Nothing on the item master changes — the choice lives only on this line. */
+var UOMI = null, uomQ = "";
+function itemUomDefs(code) {
+	var it = findItem(code) || {}, out = [], seen = {};
+	(it.uoms || []).forEach(function (u) {
+		if (u && u.uom && !seen[u.uom]) { seen[u.uom] = 1; out.push({ uom: u.uom, factor: Number(u.conversion_factor) || 1 }); }
+	});
+	var su = it.stock_uom || "";
+	if (su && !seen[su]) { seen[su] = 1; out.unshift({ uom: su, factor: 1 }); }
+	return { defined: out, seen: seen, stock: su };
+}
+function editUom(i) {
+	if (!cart[i]) return;
+	UOMI = i; uomQ = "";
+	renderUomSheet();
+	$id("uomovl").classList.add("show");
+	var q = $id("uq"); if (q) q.focus();
+}
+function closeUom() { UOMI = null; var o = $id("uomovl"); if (o) o.classList.remove("show"); }
+function uomOptions() {
+	if (UOMI == null || !cart[UOMI]) return { defined: [], others: [], stock: "" };
+	var defs = itemUomDefs(cart[UOMI].code), q = norm(uomQ);
+	var defined = defs.defined.filter(function (o) { return !q || norm(o.uom).indexOf(q) !== -1; });
+	var all = (CATALOG && CATALOG.uoms) || [], others = [];
+	for (var i = 0; i < all.length; i++) {
+		var u = all[i];
+		if (defs.seen[u]) continue;
+		if (q && norm(u).indexOf(q) === -1) continue;
+		others.push({ uom: u, factor: 1 });
+		if (others.length >= 60) break;
+	}
+	return { defined: defined, others: others, stock: defs.stock };
+}
+function uomRow(o, cur, stock) {
+	var on = o.uom === cur;
+	var sub = (o.factor === 1)
+		? (o.uom === stock ? T("uom_stock") : "1 " + o.uom + " = 1 " + stock)
+		: ("1 " + o.uom + " = " + qtyfmt(o.factor) + " " + stock);
+	return '<div class="crow' + (on ? " on" : "") + '" onclick="pickUom(' + esc(JSON.stringify(o.uom)) + ',' + o.factor + ')">' +
+		'<div class="ci2">' + esc((o.uom || "?").slice(0, 2).toUpperCase()) + "</div>" +
+		'<div class="cm"><div class="cn2">' + esc(o.uom) + '</div><div class="cd2">' + esc(sub) + "</div></div>" +
+		(on ? '<div class="tick">&#10003;</div>' : "") + "</div>";
+}
+function uomListHtml() {
+	if (UOMI == null || !cart[UOMI]) return "";
+	var l = cart[UOMI], o = uomOptions(), cur = l.uom || o.stock, h = "";
+	o.defined.forEach(function (d) { h += uomRow(d, cur, o.stock); });
+	if (o.others.length) {
+		h += '<div class="ulsep">' + esc(T("uom_other")) + "</div>";
+		o.others.forEach(function (d) { h += uomRow(d, cur, o.stock); });
+	}
+	if (!o.defined.length && !o.others.length) h += '<div class="nores">' + esc(T("no_match")) + "</div>";
+	return h;
+}
+function renderUomSheet() {
+	if (UOMI == null || !cart[UOMI]) return;
+	var l = cart[UOMI];
+	$id("uomovl").innerHTML =
+		'<div class="sheet" onclick="event.stopPropagation()">' +
+		'<div class="shh"><div class="t">' + esc(T("uom_pick")) + " — " + esc(l.name) + '</div><button class="x" aria-label="Close" onclick="closeUom()">&#10005;</button></div>' +
+		'<div class="sq"><input id="uq" placeholder="' + esc(T("search_ph")) + '" value="' + esc(uomQ) + '" oninput="onUQ(this.value)"></div>' +
+		'<div class="clist" id="ulist">' + uomListHtml() + "</div></div>";
+}
+function onUQ(v) { uomQ = v; var el = $id("ulist"); if (el) el.innerHTML = uomListHtml(); }
+function pickUom(uom, factor) {
+	if (UOMI == null || !cart[UOMI]) { closeUom(); return; }
+	cart[UOMI].uom = uom;
+	cart[UOMI].conv = Number(factor) || 1;
+	closeUom();
 	render();
 }
 
@@ -1444,7 +1646,7 @@ function checkout() {
 		mode: pays.length && credit > 0.005 ? "Split" : (pays.length ? payMode : "Udhaar"),
 		total: total,
 		credit: round2(credit),
-		items: cart.map(function (l) { return { item_code: l.code, item_name: l.name, uom: l.uom, qty: l.qty, rate: l.rate }; }),
+		items: cart.map(function (l) { return { item_code: l.code, item_name: l.name, uom: l.uom, conversion_factor: l.conv || 1, qty: l.qty, rate: l.rate }; }),
 		payments: pays,
 		/* prompt the print-format picker once it saves — but only online, so an
 		   offline sale that syncs later (customer long gone) doesn't pop a sheet */
@@ -1754,6 +1956,14 @@ function closeCust() { var o = $id("custovl"); if (o) o.classList.remove("show")
 function partySource() {
 	if (CUSTMODE === "fj") {
 		var pt = fjPartyType();
+		/* interparty expense draws from the config's curated related-party list,
+		   NOT the full customer book — each carries its recoverable head */
+		if (FJ && FJ.type === "interparty_expense") {
+			var ipl = ((FJCFG && FJCFG.interparty_parties) || []).map(function (x) {
+				return { name: x.party, customer_name: x.party, custom_village: String(x.account || "").replace(" - VAC", "") };
+			});
+			return { list: ipl, label: "customer_name", pt: "Customer", interparty: true };
+		}
 		if (pt === "Supplier") return { list: (CATALOG && CATALOG.suppliers) || [], label: "supplier_name", pt: "Supplier" };
 		if (pt === "Employee") return { list: (CATALOG && CATALOG.employees) || [], label: "employee_name", pt: "Employee" };
 	}
@@ -1776,13 +1986,15 @@ function matchCust() {
 }
 function partyHeading() {
 	if (CUSTMODE !== "fj") return T("cust");
+	if (FJ && FJ.type === "interparty_expense") return T("fj_ip_party");
 	var pt = fjPartyType();
 	return pt === "Supplier" ? T("fj_supplier") : pt === "Employee" ? T("fj_employee") : T("cust");
 }
 function renderCustSheet() {
 	var src = partySource();
-	/* quick-add is Customer-only (cart, or an FJ receipt) — never for suppliers/employees */
-	var canAdd = src.pt === "Customer";
+	/* quick-add is Customer-only (cart, or an FJ receipt) — never for suppliers/
+	   employees, and never for the curated interparty list */
+	var canAdd = src.pt === "Customer" && !src.interparty;
 	var h = '<div class="sheet" onclick="event.stopPropagation()">' +
 		'<div class="shh"><div class="t">' + esc(partyHeading()) + '</div><button class="x" aria-label="Close" onclick="closeCust()">&#10005;</button></div>' +
 		'<div class="sq"><input id="cq" placeholder="' + esc(T("search_ph")) + '" value="' + esc(custQ) + '" oninput="onCQ(this.value)"></div>';
@@ -1889,6 +2101,11 @@ function fjTypes() {
 	if (ex.indexOf("Expense") >= 0 && FJCFG.expense_quick_heads && FJCFG.expense_quick_heads.length)
 		t.push({ k: "expense", label: T("fj_expense") });
 	if (FJCFG && FJCFG.employee_advance_account) t.push({ k: "employee_advance", label: T("fj_advance") });
+	/* interparty expense: pay a related party's cost from a drawer; the server
+	   books it as a receivable due FROM that party (Dr its recoverable head).
+	   Only offered when the config lists eligible interparty parties. */
+	if (ex.indexOf("Interparty Expense") >= 0 && FJCFG.interparty_parties && FJCFG.interparty_parties.length)
+		t.push({ k: "interparty_expense", label: T("fj_interparty") });
 	return t;
 }
 /* which party list the sheet's party row draws from for this voucher type */
@@ -1930,7 +2147,7 @@ function renderFJ() {
 			h += '<button class="' + (FJ.expHead === heads[e] ? "on" : "") + '" data-a="' + esc(heads[e]) + '" onclick="fjExpHead(this.dataset.a)">' + esc(heads[e].replace(" - VAC", "")) + "</button>";
 		h += "</div>";
 	} else {
-		var plabel = FJ.type === "payment" ? T("fj_supplier") : FJ.type === "employee_advance" ? T("fj_employee") : T("cust");
+		var plabel = FJ.type === "payment" ? T("fj_supplier") : FJ.type === "employee_advance" ? T("fj_employee") : FJ.type === "interparty_expense" ? T("fj_ip_party") : T("cust");
 		h += '<div class="fjrow" onclick="openCust(\'fj\')"><span class="fl">' + esc(plabel) + '</span><span class="fv">' + esc(FJ.cust ? FJ.cust.label : T("fj_pick")) + "</span></div>";
 	}
 	h += '<div class="fjrow" onclick="fjAmt()"><span class="fl">' + esc(T("fj_amt")) + '</span><span class="fv">' + (FJ.amount ? fmt(FJ.amount) : "—") + "</span></div>";
@@ -1965,6 +2182,7 @@ function fjPost() {
 	if (FJ.type === "receipt") { p.vtype = "receipt"; p.party_type = "Customer"; p.party = FJ.cust.name; p.to_account = FJ.drawer; }
 	else if (FJ.type === "payment") { p.vtype = "payment"; p.party_type = "Supplier"; p.party = FJ.cust.name; p.from_account = FJ.drawer; }
 	else if (FJ.type === "employee_advance") { p.vtype = "employee_advance"; p.party = FJ.cust.name; p.from_account = FJ.drawer; }
+	else if (FJ.type === "interparty_expense") { p.vtype = "interparty_expense"; p.party_type = "Customer"; p.party = FJ.cust.name; p.from_account = FJ.drawer; }
 	else if (FJ.type === "expense") { p.vtype = "expense"; p.from_account = FJ.drawer; p.to_account = FJ.expHead; }
 	else { toast("?"); return; }
 	var wasCust = (FJ.type === "receipt" && FJ.cust) ? FJ.cust.name : null;
@@ -1985,6 +2203,17 @@ function fjPost() {
 }
 
 /* ---------- settings ---------- */
+/* a − [level dots] + control for a discrete display scale */
+function stepperRow(label, which, idx, n) {
+	var dots = "";
+	for (var i = 0; i < n; i++) dots += '<span class="dot' + (i <= idx ? " on" : "") + '"></span>';
+	return '<div class="setrow" style="margin-top:12px"><label>' + esc(label) + "</label>" +
+		'<div class="stepper">' +
+		'<button aria-label="smaller" onclick="bumpScale(\'' + which + '\',-1)"' + (idx <= 0 ? " disabled" : "") + ">&minus;</button>" +
+		'<span class="steplvl">' + dots + "</span>" +
+		'<button aria-label="larger" onclick="bumpScale(\'' + which + '\',1)"' + (idx >= n - 1 ? " disabled" : "") + ">+</button>" +
+		"</div></div>";
+}
 function renderSettings() {
 	var h = '<div class="backrow"><button onclick="go(\'sell\')">&larr; ' + esc(T("sell")) + "</button></div>";
 	h += '<div class="sec"><div class="sh">' + esc(T("set")) + "</div>" +
@@ -1998,7 +2227,10 @@ function renderSettings() {
 		[["light", T("theme_light")], ["dark", T("theme_dark")], ["auto", T("theme_auto")]].map(function (t) {
 			return '<button class="' + (t[0] === THEME ? "on" : "") + '" onclick="setTheme(\'' + t[0] + '\')">' + esc(t[1]) + "</button>";
 		}).join("") +
-		"</div></div></div>";
+		"</div></div>" +
+		stepperRow(T("set_tile"), "tile", scaleIdx(S.tileStep, TILE_STEPS), TILE_STEPS.length) +
+		stepperRow(T("set_font"), "font", scaleIdx(S.fontStep, FONT_STEPS), FONT_STEPS.length) +
+		"</div>";
 	h += '<div class="sec"><div class="sh">' + esc(T("set_shop")) + "</div>" +
 		'<div class="setrow"><label>' + esc(T("set_sn")) + '</label><input value="' + esc(S.shop_name) + '" onchange="chS(\'shop_name\',this.value)"></div>' +
 		'<div class="setrow"><label>' + esc(T("set_ss")) + '</label><input value="' + esc(S.shop_sub) + '" onchange="chS(\'shop_sub\',this.value)"></div>' +
@@ -2137,9 +2369,10 @@ function boot() {
 	/* numovl must be inserted LAST: the numpad opens on top of the FJ sheet */
 	document.body.insertAdjacentHTML("beforeend", '<div class="ovl" id="custovl" onclick="closeCust()"></div>');
 	document.body.insertAdjacentHTML("beforeend", '<div class="ovl" id="fjovl" onclick="closeFJ()"></div>');
+	document.body.insertAdjacentHTML("beforeend", '<div class="ovl" id="uomovl" onclick="closeUom()"></div>');
 	document.body.insertAdjacentHTML("beforeend", '<div class="ovl" id="numovl" onclick="closeNum()"></div>');
 	document.body.insertAdjacentHTML("beforeend", '<div class="ovl" id="askovl" onclick="closeAsk()"></div>');
-	["custovl", "fjovl", "numovl", "askovl"].forEach(function (id) {
+	["custovl", "fjovl", "uomovl", "numovl", "askovl"].forEach(function (id) {
 		var old = document.querySelectorAll("#" + id);
 		for (var i = 0; i < old.length - 1; i++) old[i].parentNode.removeChild(old[i]);
 	});
