@@ -246,6 +246,28 @@ input, select { font: inherit; color: inherit; }
 .numpad .nok { grid-row: span 2; background: var(--primary); color: #fff; border-color: var(--primary); font-size: 1.5rem; }
 .numpad .nok:active { background: #000; }
 
+/* held bills (parked mid-conversation; amber = someone waiting) */
+.holdstrip { display: flex; gap: 7px; overflow-x: auto; padding: 9px 12px 0; scrollbar-width: none; }
+.holdstrip::-webkit-scrollbar { display: none; }
+.holdchip { flex: none; display: flex; align-items: center; gap: 4px; background: var(--amber-soft); border: 1.6px solid var(--amber); color: var(--amber-dark); border-radius: 12px; padding: 7px 5px 7px 11px; font-size: .85rem; font-weight: 700; }
+.holdchip .hb { max-width: 38vw; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: inline-block; vertical-align: bottom; }
+.holdchip .ha { font-weight: 600; font-size: .72rem; opacity: .75; }
+.holdchip .hx { padding: 3px 8px; font-size: .95rem; border-radius: 8px; }
+.holdchip .hx:active { background: rgba(0,0,0,.08); }
+.holdbtn { width: 100%; border: 2px solid var(--amber); color: var(--amber-dark); background: #fff; border-radius: 12px; padding: 13px; font-weight: 800; margin-top: 9px; }
+.holdbtn:active { background: var(--amber-soft); }
+
+/* fast journal (receive payment) sheet */
+.fjsheet { padding: 0 14px 14px; }
+.fjrow { display: flex; align-items: center; gap: 9px; background: #fff; border: 2px solid var(--line); border-radius: 12px; padding: 12px 13px; margin-top: 9px; }
+.fjrow:active { border-color: var(--primary); }
+.fjrow .fl { font-size: .78rem; font-weight: 700; color: var(--muted); flex: none; }
+.fjrow .fv { flex: 1; text-align: right; font-weight: 800; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.fjdraw { display: flex; gap: 7px; flex-wrap: wrap; margin-top: 9px; }
+.fjdraw button { border: 2px solid var(--line); border-radius: 10px; background: #fff; padding: 9px 12px; font-size: .84rem; font-weight: 700; color: var(--muted); }
+.fjdraw button.on { border-color: var(--primary); background: var(--soft); color: var(--ink); }
+.fjsheet input.fr { width: 100%; border: 2px solid var(--line); border-radius: 12px; padding: 11px 13px; background: #fff; margin-top: 9px; }
+
 /* login */
 .pairwrap { padding: 44px 26px; text-align: center; }
 .pairwrap .logo { width: 84px; height: 84px; border-radius: 22px; background: var(--primary); color: #fff; font-size: 2.5rem; font-weight: 800; display: flex; align-items: center; justify-content: center; margin: 0 auto 18px; }
@@ -308,7 +330,7 @@ input, select { font: inherit; color: inherit; }
 {% raw %}
 <script>
 "use strict";
-var POSV = "pos-pwa 0.2.0";
+var POSV = "pos-pwa 0.3.0";
 var LS = window.localStorage;
 var CSRF = (document.querySelector('meta[name="vac-csrf"]') || {}).content || "";
 if (CSRF.indexOf("{") !== -1) CSRF = "";  /* raw-served copy: unrendered Jinja */
@@ -347,7 +369,12 @@ var STR = {
 		recv: "Received", udh_note: "Entered in khata (udhaar)", tax_note: "GST included in rates",
 		prov_note: "Provisional slip — final GST bill no. after sync", thanks: "Thank you! Visit again.",
 		final_note: "GST bill", cust_new: "+ New customer", cust_name: "Name", cust_mob: "Mobile", cust_vil: "Village",
-		cust_make: "Create", cust_made: "Customer created", need_name: "Name is required"
+		cust_make: "Create", cust_made: "Customer created", need_name: "Name is required",
+		hold: "Hold bill", held: "Bill held", held_swap: "Current bill parked too",
+		hold_drop_q: "Remove this held bill? It was never sent.",
+		fj_title: "Receive payment", fj_pick: "Pick customer", fj_amt: "Amount (₹)",
+		fj_remark: "Remark (optional)", fj_go: "Receive", fj_done: "Received — ",
+		fj_need: "Customer and amount are required", fj_perm: "This login cannot post receipts — use the owner's login"
 	},
 	hi: {
 		sell: "बिक्री", pending: "बाकी", search_ph: "सामान खोजें…", all: "सभी",
@@ -378,7 +405,12 @@ var STR = {
 		recv: "मिले", udh_note: "खाते में दर्ज (उधार)", tax_note: "दाम में GST शामिल",
 		prov_note: "अस्थायी रसीद — अंतिम GST बिल नं. सिंक के बाद", thanks: "धन्यवाद! फिर आइए।",
 		final_note: "GST बिल", cust_new: "+ नया ग्राहक", cust_name: "नाम", cust_mob: "मोबाइल", cust_vil: "गाँव",
-		cust_make: "बनाएँ", cust_made: "ग्राहक बन गया", need_name: "नाम ज़रूरी है"
+		cust_make: "बनाएँ", cust_made: "ग्राहक बन गया", need_name: "नाम ज़रूरी है",
+		hold: "बिल होल्ड करें", held: "बिल होल्ड हुआ", held_swap: "चालू बिल भी होल्ड में गया",
+		hold_drop_q: "यह होल्ड बिल हटाएँ? यह भेजा नहीं गया था।",
+		fj_title: "उधारी जमा", fj_pick: "ग्राहक चुनें", fj_amt: "रक़म (₹)",
+		fj_remark: "रिमार्क (वैकल्पिक)", fj_go: "जमा करें", fj_done: "जमा हुआ — ",
+		fj_need: "ग्राहक और रक़म ज़रूरी", fj_perm: "इस लॉगिन से जमा नहीं हो सकता — मालिक के लॉगिन से करें"
 	},
 	mr: {
 		sell: "विक्री", pending: "प्रलंबित", search_ph: "वस्तू शोधा…", all: "सर्व",
@@ -409,7 +441,12 @@ var STR = {
 		recv: "मिळाले", udh_note: "खात्यावर नोंद (उधार)", tax_note: "दरात GST समाविष्ट",
 		prov_note: "तात्पुरती पावती — अंतिम GST बिल क्र. सिंकनंतर", thanks: "धन्यवाद! पुन्हा या.",
 		final_note: "GST बिल", cust_new: "+ नवीन ग्राहक", cust_name: "नाव", cust_mob: "मोबाईल", cust_vil: "गाव",
-		cust_make: "तयार करा", cust_made: "ग्राहक तयार झाला", need_name: "नाव आवश्यक आहे"
+		cust_make: "तयार करा", cust_made: "ग्राहक तयार झाला", need_name: "नाव आवश्यक आहे",
+		hold: "बिल होल्ड करा", held: "बिल होल्ड झाले", held_swap: "चालू बिलही होल्डला गेले",
+		hold_drop_q: "हे होल्ड बिल काढायचे? हे पाठवले गेले नव्हते.",
+		fj_title: "उधारी जमा", fj_pick: "ग्राहक निवडा", fj_amt: "रक्कम (₹)",
+		fj_remark: "शेरा (ऐच्छिक)", fj_go: "जमा करा", fj_done: "जमा झाले — ",
+		fj_need: "ग्राहक व रक्कम आवश्यक", fj_perm: "या लॉगिनने जमा होत नाही — मालकांच्या लॉगिनने करा"
 	}
 };
 var LANG = LS.vacpos_lang || "mr";
@@ -559,6 +596,57 @@ function nextRef() {
 }
 function pendCount() { return queue.length; }
 
+/* ---------- held bills (park one customer's bill while another talks) ---------- */
+var HOLDS = [];
+function loadHolds() { try { HOLDS = JSON.parse(LS.vacpos_holds || "[]"); } catch (e) { HOLDS = []; } }
+function saveHolds() { LS.vacpos_holds = JSON.stringify(HOLDS); }
+function parkCurrent() {
+	HOLDS.unshift({
+		id: uidNew(), ts: Date.now(),
+		cust: CUST, customer_name: CUST ? CUST.customer_name : walkinName(),
+		payMode: payMode, cart: cart, total: cartTotal()
+	});
+	saveHolds();
+	cart = []; CUST = null; KHATA = null; payMode = "Cash";
+}
+function holdBill() {
+	if (!cart.length) return;
+	parkCurrent();
+	VIEW = "sell";
+	toast(T("held"));
+	render();
+}
+function resumeHold(id) {
+	var h = null, rest = [];
+	for (var i = 0; i < HOLDS.length; i++) { if (HOLDS[i].id === id) h = HOLDS[i]; else rest.push(HOLDS[i]); }
+	if (!h) return;
+	HOLDS = rest;
+	if (cart.length) { parkCurrent(); toast(T("held_swap")); }
+	cart = h.cart || []; CUST = h.cust || null; KHATA = null; payMode = h.payMode || "Cash";
+	saveHolds();
+	if (!isWide()) VIEW = "cart";
+	render();
+}
+function dropHold(id) {
+	if (!confirm(T("hold_drop_q"))) return;
+	HOLDS = HOLDS.filter(function (x) { return x.id !== id; });
+	saveHolds(); render();
+}
+function holdAge(ts) {
+	var m = Math.max(0, Math.round((Date.now() - ts) / 60000));
+	return m < 60 ? m + "m" : Math.floor(m / 60) + "h" + (m % 60) + "m";
+}
+function holdsStrip() {
+	if (!HOLDS.length) return "";
+	var h = '<div class="holdstrip">';
+	for (var i = 0; i < HOLDS.length; i++) {
+		var x = HOLDS[i];
+		h += '<div class="holdchip"><span onclick="resumeHold(\'' + x.id + '\')">&#9208; <span class="hb">' + esc(x.customer_name) + "</span> " + fmt(x.total) + ' <span class="ha">' + esc(holdAge(x.ts)) + "</span></span>" +
+			'<button class="hx" onclick="dropHold(\'' + x.id + '\')">&#10005;</button></div>';
+	}
+	return h + "</div>";
+}
+
 /* ---------- state ---------- */
 var VIEW = "sell", searchQ = "", groupF = "", gridCap = 60;
 var cart = [], CUST = null, KHATA = null, payMode = "Cash", BUSY = false, SYNCING = false;
@@ -594,6 +682,7 @@ function renderHdr() {
 		'<div class="grow"><div class="ttl">VAC POS</div><div class="who">' + esc(who) + " • " + esc(S.device) + "</div></div>" +
 		'<div class="netdot' + (navigator.onLine ? "" : " off") + '" id="netdot"></div>' +
 		(pendCount() ? '<span class="pendbadge">' + pendCount() + "</span>" : "") +
+		(FJCFG ? '<button class="hbtn" onclick="openFJ()" title="fast journal">&#9889;</button>' : "") +
 		'<button class="hbtn" id="syncbtn" onclick="syncNow(true)" title="sync">&#10227;</button>' +
 		'<button class="hbtn" onclick="go(\'settings\')" title="settings">&#9881;</button>' +
 		"</div>";
@@ -616,6 +705,7 @@ function matchItems() {
 }
 function renderSell() {
 	var h = '<div class="qwrap"><input id="q" type="search" placeholder="' + esc(T("search_ph")) + '" value="' + esc(searchQ) + '" oninput="onQ(this.value)" onkeydown="qKey(event)"></div>';
+	h += holdsStrip();
 	h += '<div class="chips"><button class="' + (groupF ? "" : "on") + '" onclick="setGroup(\'\')">' + esc(T("all")) + "</button>";
 	for (var i = 0; i < GROUPS.length; i++) {
 		var g = GROUPS[i];
@@ -726,7 +816,9 @@ function renderCart() {
 		'<button class="udh ' + (payMode === "Udhaar" ? "on" : "") + '" onclick="setPay(\'Udhaar\')">' + esc(T("udhaar")) + "</button>" +
 		"</div>" +
 		'<button class="gobtn' + (payMode === "Udhaar" ? " udh" : "") + '" id="gobtn" onclick="checkout()"' + (cart.length && !BUSY ? "" : " disabled") + ">" +
-		esc(T("confirm")) + (cart.length ? " — " + fmt(cartTotal()) : "") + "</button></div>";
+		esc(T("confirm")) + (cart.length ? " — " + fmt(cartTotal()) : "") + "</button>" +
+		(cart.length ? '<button class="holdbtn" onclick="holdBill()">&#9208; ' + esc(T("hold")) + "</button>" : "") +
+		"</div>";
 	return h;
 }
 function cartTotal() { var t = 0; for (var i = 0; i < cart.length; i++) t += cart[i].qty * cart[i].rate; return round2(t); }
@@ -957,8 +1049,9 @@ function printSale(sale) {
 }
 
 /* ---------- customer picker ---------- */
-var custQ = "", showNew = false;
-function openCust() {
+var custQ = "", showNew = false, CUSTMODE = "cart";
+function openCust(mode) {
+	CUSTMODE = mode === "fj" ? "fj" : "cart";
 	custQ = ""; showNew = false;
 	renderCustSheet();
 	$id("custovl").classList.add("show");
@@ -1000,7 +1093,10 @@ function renderCustSheet() {
 function custListHtml() {
 	var rows = matchCust(), h = "";
 	var w = walkinName();
-	h += '<div class="crow" onclick="pickWalkin()"><div class="ci2">₹</div><div class="cm"><div class="cn2">' + esc(w) + '</div><div class="cd2">' + esc(T("walkin")) + "</div></div></div>";
+	if (CUSTMODE !== "fj") {
+		/* a khata receipt needs a real customer — no walk-in row in fj mode */
+		h += '<div class="crow" onclick="pickWalkin()"><div class="ci2">₹</div><div class="cm"><div class="cn2">' + esc(w) + '</div><div class="cd2">' + esc(T("walkin")) + "</div></div></div>";
+	}
 	for (var i = 0; i < rows.length; i++) {
 		var c = rows[i];
 		var d = [c.custom_village, c.mobile_no].filter(function (x) { return x; }).join(" • ");
@@ -1017,6 +1113,11 @@ function pickCust(i) {
 	var rows = matchCust();
 	var c = rows[i];
 	if (!c) return;
+	if (CUSTMODE === "fj") {
+		if (FJ) { FJ.cust = c; renderFJ(); }
+		closeCust();
+		return;
+	}
 	CUST = c; KHATA = null;
 	closeCust();
 	if (VIEW !== "cart" && cart.length) VIEW = "cart";
@@ -1047,6 +1148,69 @@ function createCust() {
 		toast(T("cust_made"));
 		closeCust(); render();
 	}).catch(function (e) {
+		toast((e && e.message) || "?");
+	});
+}
+
+/* ---------- fast journal: receive khata payment (⚡) ----------
+   Rides the existing fast_voucher Server Scripts (staging-only today; the
+   header button appears only where fast_voucher_config answers enabled=1 —
+   the same absence-gate the desk Cash Desk button uses). v1 posts RECEIPTS
+   only (vtype=receipt → native Payment Entry); payment/contra/expense stay
+   on the desk dialog. Postings run with the signed-in user's permissions. */
+var FJCFG = null, FJ = null;
+function probeFJ() {
+	api("/api/method/fast_voucher_config", { method: "POST", json: {} }).then(function (d) {
+		var m = d.message;
+		FJCFG = m && m.enabled && m.drawers && m.drawers.length ? m : null;
+		if (FJCFG) render();
+	}).catch(function () { FJCFG = null; });
+}
+function openFJ() {
+	if (!FJCFG) return;
+	FJ = { cust: null, amount: 0, remark: "", sending: 0, drawer: FJCFG.drawers[0].account };
+	renderFJ();
+	$id("fjovl").classList.add("show");
+}
+function closeFJ() { FJ = null; var o = $id("fjovl"); if (o) o.classList.remove("show"); }
+function renderFJ() {
+	if (!FJ) return;
+	var h = '<div class="sheet fjsheet" onclick="event.stopPropagation()">' +
+		'<div class="shh"><div class="t">&#9889; ' + esc(T("fj_title")) + '</div><button class="x" onclick="closeFJ()">&#10005;</button></div>' +
+		'<div class="fjrow" onclick="openCust(\'fj\')"><span class="fl">' + esc(T("cust")) + '</span><span class="fv">' + esc(FJ.cust ? FJ.cust.customer_name : T("fj_pick")) + "</span></div>" +
+		'<div class="fjrow" onclick="fjAmt()"><span class="fl">' + esc(T("fj_amt")) + '</span><span class="fv">' + (FJ.amount ? fmt(FJ.amount) : "—") + "</span></div>" +
+		'<div class="fjdraw">';
+	for (var i = 0; i < FJCFG.drawers.length; i++) {
+		var d = FJCFG.drawers[i];
+		h += '<button class="' + (FJ.drawer === d.account ? "on" : "") + '" data-a="' + esc(d.account) + '" onclick="fjDrawer(this.dataset.a)">' + esc(d.account.replace(" - VAC", "")) + "</button>";
+	}
+	h += "</div>" +
+		'<input class="fr" id="fjrm" placeholder="' + esc(T("fj_remark")) + '" value="' + esc(FJ.remark) + '" onchange="if(FJ)FJ.remark=this.value">' +
+		'<button class="gobtn" onclick="fjGo()"' + (FJ.cust && FJ.amount > 0 && !FJ.sending ? "" : " disabled") + ">" +
+		esc(T("fj_go")) + (FJ.amount ? " " + fmt(FJ.amount) : "") + "</button></div>";
+	$id("fjovl").innerHTML = h;
+}
+function fjDrawer(a) { if (FJ) { FJ.drawer = a; renderFJ(); } }
+function fjAmt() { openNum(T("fj_title"), T("fj_amt"), FJ.amount || "", function (v) { if (FJ) { FJ.amount = v; renderFJ(); } }); }
+function fjGo() {
+	if (!FJ || FJ.sending) return;
+	if (!FJ.cust || !(FJ.amount > 0)) { toast(T("fj_need")); return; }
+	FJ.sending = 1; renderFJ();
+	api("/api/method/fast_voucher_post", {
+		method: "POST",
+		json: {
+			vtype: "receipt", party_type: "Customer", party: FJ.cust.name,
+			amount: FJ.amount, remark: FJ.remark || "POS PWA receipt",
+			posting_date: today(), to_account: FJ.drawer
+		}
+	}).then(function (d) {
+		var m = d.message || {};
+		toast(T("fj_done") + (m.name || ""));
+		if (CUST && FJ && FJ.cust && CUST.name === FJ.cust.name) { KHATA = null; loadKhata(); }
+		closeFJ();
+	}).catch(function (e) {
+		if (FJ) { FJ.sending = 0; renderFJ(); }
+		if (e && e.auth) { toast(T("fj_perm")); return; }
 		toast((e && e.message) || "?");
 	});
 }
@@ -1192,13 +1356,16 @@ function updateNet() {
 /* ---------- boot ---------- */
 function boot() {
 	applyLangChrome();
+	/* numovl must be inserted LAST: the numpad opens on top of the FJ sheet */
 	document.body.insertAdjacentHTML("beforeend", '<div class="ovl" id="custovl" onclick="closeCust()"></div>');
+	document.body.insertAdjacentHTML("beforeend", '<div class="ovl" id="fjovl" onclick="closeFJ()"></div>');
 	document.body.insertAdjacentHTML("beforeend", '<div class="ovl" id="numovl" onclick="closeNum()"></div>');
-	["custovl", "numovl"].forEach(function (id) {
+	["custovl", "fjovl", "numovl"].forEach(function (id) {
 		var old = document.querySelectorAll("#" + id);
 		for (var i = 0; i < old.length - 1; i++) old[i].parentNode.removeChild(old[i]);
 	});
 	loadDone();
+	loadHolds();
 	ensureAuth().then(function (authed) {
 		if (DISABLED) { renderDisabled(); return; }
 		if (!authed) { renderLogin(""); return; }
@@ -1212,6 +1379,7 @@ function boot() {
 			for (var i = 0; i < queue.length; i++) if (queue[i].status === "sending") queue[i].status = "pending";
 			queue.sort(function (a, b) { return a.ts < b.ts ? -1 : 1; });
 			render();
+			probeFJ();
 			return refreshCatalog(!CATALOG);
 		}).then(function (changed) {
 			if (changed) render();
