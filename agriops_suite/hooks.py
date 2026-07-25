@@ -427,15 +427,31 @@ fixtures = [
     },
 
     # --- Our Reports (non-standard, DB-stored) ------------------------------
-    # NOTE: the FinScope - * and StockPilot * report suites stay installer-
-    # managed (custom_doctypes/), not fixtures — they iterate too fast.
+    # NOTE: the FinScope - * report suite stays installer-managed
+    # (custom_doctypes/), not fixtures — it iterates too fast.
+    # The 8 StockPilot reports were PROMOTED to fixtures 2026-07-24 (user
+    # ruling) once the crop-family / stock-UOM / season-aware iteration
+    # stabilised — same path the Cash-management doctypes took 2026-07-20.
+    # To change them now: edit custom_doctypes/stockpilot/*.py, deploy, then
+    # re-export via sp_capture_fixtures.py — a live-only edit is reverted on
+    # the next deploy. Reorder's Report Filter rows (Show Off-season) ride
+    # along in the fixture. The seasonal_profile_map VALUE stays runtime
+    # state (never a fixture); only the Settings FIELD definitions ship.
     {
         "dt": "Report",
         "filters": {
             "name": ["in", ["LedgerLift Follow-ups",
                             "LedgerLift Customer Ledger Summary",
                             "LedgerLift Status Breakdown",
-                            "CashControl Day Book"]]
+                            "CashControl Day Book",
+                            "StockPilot Categories",
+                            "StockPilot Reorder List",
+                            "StockPilot Safety Stock List",
+                            "StockPilot Replenishment",
+                            "StockPilot Count Schedule",
+                            "StockPilot Count Variance",
+                            "StockPilot Stock Audit",
+                            "StockPilot Dead Stock"]]
         },
     },
 
