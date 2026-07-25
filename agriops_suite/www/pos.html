@@ -53,6 +53,22 @@ button { font: inherit; border: 0; cursor: pointer; background: none; color: inh
 input, select { font: inherit; color: inherit; }
 #app { max-width: 640px; margin: 0 auto; padding-bottom: 96px; }
 
+/* --- interaction affordances ---------------------------------------------
+   Every clickable element (buttons AND the onclick <div>/<span> rows) shows
+   the finger cursor, resists text-selection on rapid taps, and drops the
+   300ms touch delay. The overlay/sheet wrappers carry an onclick only to
+   dismiss / stop-propagation, so they keep the default cursor. */
+[onclick], button, .tile, .crow, .splitrow.editable, .tog { cursor: pointer; }
+[onclick], button { -webkit-user-select: none; user-select: none; touch-action: manipulation; }
+.ovl, .sheet, .numsheet, .fjsheet { cursor: default; }
+button:disabled, .gobtn:disabled, .gobtn[disabled] { cursor: not-allowed; }
+/* keyboard focus ring (click/tap focus stays quiet via :focus-visible) */
+button:focus-visible, input:focus-visible { outline: 2px solid var(--green); outline-offset: 2px; }
+/* pressed feedback for the onclick rows that had none */
+.cline .lr:active, .cline .qv:active, .fjrow:active, .splitrow.editable:active, .tog:active { filter: brightness(.96); }
+/* inner scrollers: momentum + no scroll-chaining to the page behind */
+.clist, .lines, .colR, .grid, .chips, .fjdraw { overscroll-behavior: contain; -webkit-overflow-scrolling: touch; }
+
 /* header */
 .hdr {
 	position: sticky; top: 0; z-index: 20;
@@ -112,8 +128,13 @@ input, select { font: inherit; color: inherit; }
 	overflow: hidden; text-align: left; display: flex; flex-direction: column;
 	box-shadow: var(--shadow-sm); transition: transform .13s, box-shadow .13s, border-color .13s;
 }
-.tile:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); border-color: var(--line-2); }
-.tile:active { transform: translateY(0) scale(.99); }
+/* lift only on real pointers — on a touchscreen :hover sticks after a tap */
+@media (hover: hover) {
+	.tile:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); border-color: var(--line-2); }
+	.tile:hover .add { background: var(--green); color: #fff; }
+}
+.tile:active { transform: translateY(0) scale(.99); border-color: var(--green); }
+.tile:active .add { background: var(--green); color: #fff; }
 .tile .thumb { height: 80px; position: relative; display: grid; place-items: center; }
 .tile img { width: 100%; height: 80px; object-fit: contain; background: transparent; }
 .tile .mono { width: 44px; height: 44px; border-radius: 12px; display: grid; place-items: center; font-weight: 800; font-size: 1.1rem; color: #fff; box-shadow: inset 0 1px 0 rgba(255,255,255,.3), 0 3px 8px rgba(0,0,0,.13); }
@@ -124,7 +145,6 @@ input, select { font: inherit; color: inherit; }
 .tile .tp { font-size: .92rem; font-weight: 800; color: var(--ink); }
 .tile .tp small { color: var(--faint); font-weight: 600; font-size: .66rem; }
 .tile .add { width: 24px; height: 24px; border-radius: 7px; background: var(--green-soft); color: var(--green-dark); display: grid; place-items: center; font-weight: 800; font-size: 1rem; flex: none; transition: background .13s, color .13s; }
-.tile:hover .add { background: var(--green); color: #fff; }
 .tile.c-seed .thumb { background: radial-gradient(92px 62px at 50% 32%, var(--green-soft), transparent 76%); }
 .tile.c-seed .mono { background: linear-gradient(150deg, #2f9e5e, #15733f); }
 .tile.c-pest .thumb { background: radial-gradient(92px 62px at 50% 32%, var(--amber-soft), transparent 76%); }
@@ -284,7 +304,11 @@ input, select { font: inherit; color: inherit; }
 .numsheet { background: var(--card); border-radius: 20px 20px 0 0; width: 100%; max-width: 640px; padding: 14px 14px calc(14px + env(safe-area-inset-bottom)); }
 .numsheet .nt { font-weight: 800; font-size: 1rem; }
 .numsheet .ns { font-size: .8rem; color: var(--muted); margin-top: 2px; }
-.numsheet .nd { text-align: right; font-size: 1.9rem; font-weight: 800; padding: 10px 8px; border-bottom: 2px solid var(--line); margin: 8px 0 12px; min-height: 2.2em; }
+.numsheet .nd { text-align: right; font-size: 1.9rem; font-weight: 800; padding: 10px 8px; border-bottom: 2px solid var(--green); margin: 8px 0 12px; min-height: 2.2em; font-variant-numeric: tabular-nums; }
+/* blinking caret signals the field accepts physical typing (counter PC) */
+.numsheet .nd::after { content: ""; display: inline-block; width: 2px; height: 1.1em; background: var(--green); margin-left: 2px; vertical-align: -.12em; animation: caret 1.05s step-end infinite; }
+@keyframes caret { 50% { opacity: 0; } }
+.numsheet .nhint { font-size: .74rem; color: var(--faint); text-align: right; margin: -6px 2px 10px; }
 .numpad { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
 .numpad button { border: 1px solid var(--line); border-radius: 10px; background: #fff; padding: 15px 0; font-size: 1.25rem; font-weight: 700; }
 .numpad button:active { background: var(--soft); }
@@ -380,7 +404,7 @@ input, select { font: inherit; color: inherit; }
 {% raw %}
 <script>
 "use strict";
-var POSV = "pos-pwa 0.6.1";
+var POSV = "pos-pwa 0.7.0";
 var LS = window.localStorage;
 var CSRF = (document.querySelector('meta[name="vac-csrf"]') || {}).content || "";
 if (CSRF.indexOf("{") !== -1) CSRF = "";  /* raw-served copy: unrendered Jinja */
@@ -401,7 +425,7 @@ var STR = {
 		cash: "Cash", upi: "UPI", udhaar: "Udhaar", to_cart: "Bill", items_n: "items",
 		empty: "Cart is empty — tap items to add", confirm: "Confirm Bill",
 		need_cust: "Pick the customer for udhaar", queued: "Queued", billno: "Bill",
-		qty_p: "Quantity", rate_p: "Rate (₹)", bad_num: "Enter a valid number",
+		qty_p: "Quantity", rate_p: "Rate (₹)", bad_num: "Enter a valid number", num_hint: "Type or tap · Enter to confirm",
 		st_pend: "Waiting", st_send: "Sending…", st_fail: "Failed", st_done: "Sent",
 		retry: "Retry", discard: "Delete", reprint: "Print", print: "Print",
 		discard_q: "Delete this bill forever? It has NOT reached ERPNext.",
@@ -442,7 +466,7 @@ var STR = {
 		cash: "नकद", upi: "UPI", udhaar: "उधार", to_cart: "बिल", items_n: "सामान",
 		empty: "बिल खाली है — सामान पर टैप करें", confirm: "पक्का बिल करें",
 		need_cust: "उधार के लिए ग्राहक चुनें", queued: "कतार में", billno: "बिल",
-		qty_p: "मात्रा", rate_p: "दाम (₹)", bad_num: "सही संख्या डालें",
+		qty_p: "मात्रा", rate_p: "दाम (₹)", bad_num: "सही संख्या डालें", num_hint: "टाइप करें या टैप करें · Enter से पक्का",
 		st_pend: "प्रतीक्षा में", st_send: "भेज रहे हैं…", st_fail: "असफल", st_done: "भेज दिया",
 		retry: "फिर भेजें", discard: "हटाएँ", reprint: "प्रिंट", print: "प्रिंट",
 		discard_q: "यह बिल हमेशा के लिए हटाएँ? यह ERPNext नहीं पहुँचा है।",
@@ -483,7 +507,7 @@ var STR = {
 		cash: "रोख", upi: "UPI", udhaar: "उधार", to_cart: "बिल", items_n: "वस्तू",
 		empty: "बिल रिकामे आहे — वस्तूवर टॅप करा", confirm: "पक्के बिल करा",
 		need_cust: "उधारीसाठी ग्राहक निवडा", queued: "रांगेत", billno: "बिल",
-		qty_p: "नग / प्रमाण", rate_p: "दर (₹)", bad_num: "बरोबर आकडा टाका",
+		qty_p: "नग / प्रमाण", rate_p: "दर (₹)", bad_num: "बरोबर आकडा टाका", num_hint: "टाइप करा किंवा टॅप करा · Enter ने पक्के",
 		st_pend: "प्रतीक्षेत", st_send: "पाठवत आहे…", st_fail: "अयशस्वी", st_done: "पाठवले",
 		retry: "पुन्हा पाठवा", discard: "हटवा", reprint: "प्रिंट", print: "प्रिंट",
 		discard_q: "हे बिल कायमचे हटवायचे? हे ERPNext मध्ये गेलेले नाही.",
@@ -883,9 +907,9 @@ function renderCart() {
 			h += '<div class="cline">' +
 				'<div class="ln"><div class="lt">' + esc(l.name) + "</div>" +
 				'<div class="lr" onclick="editRate(' + i + ')"><b>' + fmt(l.rate) + "</b>" + (l.uom ? " / " + esc(l.uom) : "") + " &#9998;</div></div>" +
-				'<div class="qbox"><button onclick="qDown(' + i + ')">&minus;</button>' +
+				'<div class="qbox"><button aria-label="minus one" onclick="qDown(' + i + ')">&minus;</button>' +
 				'<div class="qv" onclick="editQty(' + i + ')">' + qtyfmt(l.qty) + "</div>" +
-				'<button onclick="qUp(' + i + ')">+</button></div>' +
+				'<button aria-label="plus one" onclick="qUp(' + i + ')">+</button></div>' +
 				'<div class="amt">' + fmt(amt) + "</div>" +
 				'<button class="del" onclick="delLine(' + i + ')">&#10005;</button></div>';
 		}
@@ -952,7 +976,14 @@ function editRate(i) {
 /* ---------- numeric pad sheet ---------- */
 var NUM = null;
 function openNum(title, sub, initial, cb, allowZero) {
-	NUM = { title: title, sub: sub, val: initial == null ? "" : String(initial), cb: cb, allowZero: !!allowZero };
+	var pre = initial == null ? "" : String(initial);
+	/* pristine: a prefilled value (editing an existing rate/qty) is "typed over"
+	   — the first digit clears it, so editing 800 and typing 125 gives 125, not
+	   800125. Backspace/clear still edit the existing value in place. */
+	NUM = { title: title, sub: sub, val: pre, cb: cb, allowZero: !!allowZero, pristine: pre !== "" };
+	/* drop focus from whatever was behind (search box, etc.) so keystrokes go to
+	   the pad and, on a phone, the OS keyboard closes */
+	if (document.activeElement && document.activeElement.blur) document.activeElement.blur();
 	renderNum();
 	$id("numovl").classList.add("show");
 }
@@ -969,10 +1000,14 @@ function renderNum() {
 		'<div class="nt">' + esc(NUM.title) + "</div>" +
 		(NUM.sub ? '<div class="ns">' + esc(NUM.sub) + "</div>" : "") +
 		'<div class="nd">' + esc(NUM.val || "0") + "</div>" +
+		'<div class="nhint">' + esc(T("num_hint")) + "</div>" +
 		'<div class="numpad">' + keys + "</div></div>";
 }
 function numKey(k) {
 	if (!NUM) return;
+	/* first digit/decimal on a prefilled value starts fresh (type-over) */
+	if (NUM.pristine && (k === "." || (k >= "0" && k <= "9"))) NUM.val = "";
+	NUM.pristine = false;
 	if (k === "b") NUM.val = NUM.val.slice(0, -1);
 	else if (k === "c") NUM.val = "";
 	else if (k === ".") { if (NUM.val.indexOf(".") === -1) NUM.val = (NUM.val || "0") + "."; }
@@ -1242,7 +1277,7 @@ function renderCustSheet() {
 	/* quick-add is Customer-only (cart, or an FJ receipt) — never for suppliers/employees */
 	var canAdd = src.pt === "Customer";
 	var h = '<div class="sheet" onclick="event.stopPropagation()">' +
-		'<div class="shh"><div class="t">' + esc(partyHeading()) + '</div><button class="x" onclick="closeCust()">&#10005;</button></div>' +
+		'<div class="shh"><div class="t">' + esc(partyHeading()) + '</div><button class="x" aria-label="Close" onclick="closeCust()">&#10005;</button></div>' +
 		'<div class="sq"><input id="cq" placeholder="' + esc(T("search_ph")) + '" value="' + esc(custQ) + '" oninput="onCQ(this.value)"></div>';
 	h += '<div class="clist" id="clist">' + custListHtml() + "</div>";
 	h += '<div class="newc">';
@@ -1376,7 +1411,7 @@ function renderFJ() {
 	if (!FJ) return;
 	var types = fjTypes();
 	var h = '<div class="sheet fjsheet" onclick="event.stopPropagation()">' +
-		'<div class="shh"><div class="t">&#9889; ' + esc(T("fj_title")) + '</div><button class="x" onclick="closeFJ()">&#10005;</button></div>' +
+		'<div class="shh"><div class="t">&#9889; ' + esc(T("fj_title")) + '</div><button class="x" aria-label="Close" onclick="closeFJ()">&#10005;</button></div>' +
 		'<div class="fjtypes">';
 	for (var i = 0; i < types.length; i++)
 		h += '<button class="' + (FJ.type === types[i].k ? "on" : "") + '" data-k="' + types[i].k + '" onclick="fjSetType(this.dataset.k)">' + esc(types[i].label) + "</button>";
@@ -1622,6 +1657,18 @@ window.addEventListener("resize", function () {
 });
 document.addEventListener("visibilitychange", function () { if (!document.hidden && AUTHED) syncNow(false); });
 setInterval(function () { if (AUTHED && queue.length) syncNow(false); }, 25000);
+
+/* physical keyboard drives the numpad: on the counter PC you TYPE the amount,
+   on the tablet you tap — both feed the same pad. Active only while it is open. */
+document.addEventListener("keydown", function (e) {
+	if (!NUM) return;
+	var k = e.key;
+	if (k >= "0" && k <= "9") { numKey(k); e.preventDefault(); }
+	else if (k === ".") { numKey("."); e.preventDefault(); }
+	else if (k === "Backspace" || k === "Delete") { numKey("b"); e.preventDefault(); }
+	else if (k === "Enter") { numOk(); e.preventDefault(); }
+	else if (k === "Escape") { closeNum(); e.preventDefault(); }
+});
 
 if ("serviceWorker" in navigator && location.pathname === "/pos") {
 	try { navigator.serviceWorker.register("/api/method/agriops_suite.pos_pwa.sw", { scope: "/pos" }).catch(function () { }); } catch (e) { }
