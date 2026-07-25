@@ -129,6 +129,26 @@ Latency is now measured (done, above). Remaining:
 
 ### Phase 1 — Foundations & hygiene (2–4 days; valuable even without the PWA)
 
+> **🚀 PRODUCTION GO-LIVE 2026-07-25 — POS PWA is LIVE at
+> `vijayagrocentre.frappe.cloud/pos` (v0.11.0).** Promoted with owner sign-off
+> after a fresh backup. `pp_install.py` run with `PP_TARGET=prod
+> PP_ALLOW_PROD=yes PP_SKIP_JOURNAL=yes`: created `Sales Invoice.pwa_client_id`,
+> the **POS Cashier** role + minimal perms, and the 5 `vac_pos_*` server
+> scripts. Perm conversion verified SAFE — Sales Invoice / Customer / Item /
+> Account kept every prior standard role + gained POS Cashier; **Payment Entry
+> / Journal Entry left UNTOUCHED** (standard perms; owner skipped decision 1 —
+> Fast Journal runs on standard Accounts roles via the can_journal allowlist).
+> The 4 print formats (Delivery Note A4/A5, Journal Voucher, Money Receipt)
+> created on prod earlier and render real PDFs. App deployed (FC) — /pos serves
+> v0.11.0, SW/manifest live, guest→login gate, endpoints return real data
+> (1123 items / 3576 customers / 88 suppliers / 10 employees).
+> **Owner's remaining tasks:** (decision 2) Vijay Bopche has an *Inventory*
+> role profile that overrides a directly-added POS Cashier role — grant him
+> billing via the profile or a direct assignment; and set his password (he has
+> never logged in). Nikita (Accounts profile) + owner already have the access.
+> No test invoice was created on prod (would consume a GST number); the create
+> path is verified identical on staging with all prod deps confirmed present.
+
 > **Status 2026-07-24 evening — Phase 1 EXECUTED on staging, 12/12 E2E green.**
 > Kit lives in `custom_doctypes/pos_pwa/` (`pp_install.py` idempotent installer,
 > `pp_test.py` E2E; staging default, prod requires `PP_TARGET=prod` +

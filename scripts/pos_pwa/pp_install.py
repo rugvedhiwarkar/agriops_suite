@@ -16,9 +16,16 @@ Run:  python custom_doctypes/pos_pwa/pp_install.py
 Then: python custom_doctypes/pos_pwa/pp_test.py
 """
 import json
+import os
 
 import pp_lib
 from pp_lib import call, get_doc, rpc, upsert
+
+# PP_SKIP_JOURNAL=yes -> do NOT create the POS Journal role, its PE/JE perms, or
+# assign it. Used for the prod promotion (owner 2026-07-25): the can_journal gate
+# already grants Fast Journal via standard Accounts roles, so we leave Payment
+# Entry / Journal Entry permissions untouched on production.
+SKIP_JOURNAL = os.environ.get("PP_SKIP_JOURNAL") == "yes"
 
 FALLBACK_TAX_TEMPLATE = "Output GST In-state Inclusive - VAC"
 TEST_USER = "pos.cashier@example.com"
@@ -539,12 +546,17 @@ def smoke():
 if __name__ == "__main__":
     ensure_custom_field()
     ensure_role_named("POS Cashier")
-    ensure_role_named("POS Journal")
     ensure_perms("POS Cashier", PERM_MAP, tag="3")
-    ensure_perms("POS Journal", PERM_MAP_JOURNAL, tag="3J")
+    if SKIP_JOURNAL:
+        print("[*] PP_SKIP_JOURNAL=yes -> POS Journal role/perms/assignment SKIPPED "
+              "(Fast Journal runs on standard Accounts roles; PE/JE perms untouched)")
+    else:
+        ensure_role_named("POS Journal")
+        ensure_perms("POS Journal", PERM_MAP_JOURNAL, tag="3J")
     ensure_server_scripts()
     ensure_test_user()
     ensure_cashier_roles()
-    ensure_journal_users()
+    if not SKIP_JOURNAL:
+        ensure_journal_users()
     smoke()
     print("DONE — now run pp_test.py")
