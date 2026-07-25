@@ -38,10 +38,63 @@
 	--red: #b42318;
 	--red-soft: #fbe6e3;
 	--radius: 12px;
+	--accent-green: var(--green-dark);   /* accent TEXT on soft chips (light theme = dark green) */
+	--accent-amber: var(--amber-dark);
 	--shadow-sm: 0 1px 2px rgba(16,40,28,.06), 0 1px 3px rgba(16,40,28,.05);
 	--shadow-md: 0 6px 16px rgba(16,40,28,.09), 0 2px 6px rgba(16,40,28,.06);
 	--shadow-lg: 0 18px 44px rgba(13,40,26,.16), 0 6px 18px rgba(13,40,26,.10);
 }
+/* ---- dark theme: page/cards/lines go dark; accent hues stay vibrant; the
+   *-soft chip backgrounds become dark tints and their TEXT uses the lighter
+   --accent-* so it stays readable. Applied when the app sets data-theme, or
+   by the OS preference when the app is on "auto". ---- */
+:root[data-theme="dark"] {
+	--green: #1f9455; --green-dark: #12693c;
+	--green-soft: #16321f;
+	--amber: #cf7a24; --amber-dark: #b45309;
+	--amber-soft: #35270f;
+	--blue: #2bb6d0; --blue-soft: #123640;
+	--ivory: #0f1512; --card: #18211c; --soft: #222d27;
+	--ink: #e8f0ea; --muted: #98a59e; --faint: #6f7c75;
+	--line: #2b362f; --line-2: #3a483f;
+	--primary: #e8f0ea; --red: #e5675c; --red-soft: #3a1c19;
+	--accent-green: #5bd493; --accent-amber: #e6a659;
+	--shadow-sm: 0 1px 2px rgba(0,0,0,.45);
+	--shadow-md: 0 6px 16px rgba(0,0,0,.5);
+	--shadow-lg: 0 20px 46px rgba(0,0,0,.6);
+}
+/* dark fix-ups: elements that used an accent as TEXT on a soft chip, or --ink
+   /--primary as a dark BACKGROUND (which invert wrong when those tokens flip) */
+:root[data-theme="dark"] .tile .add,
+:root[data-theme="dark"] .custcard .ci,
+:root[data-theme="dark"] .qbox button,
+:root[data-theme="dark"] .pcard .pamt,
+:root[data-theme="dark"] .ptag.cash,
+:root[data-theme="dark"] .st.done,
+:root[data-theme="dark"] .fjdraw button.on,
+:root[data-theme="dark"] .plusone,
+:root[data-theme="dark"] .splitrow.credit.zero .sl,
+:root[data-theme="dark"] .splitrow.credit.zero .sv { color: var(--accent-green); }
+:root[data-theme="dark"] .plusone { text-shadow: 0 1px 4px rgba(0,0,0,.6); }
+:root[data-theme="dark"] .offbar,
+:root[data-theme="dark"] .khata,
+:root[data-theme="dark"] .holdchip,
+:root[data-theme="dark"] .holdbtn,
+:root[data-theme="dark"] .gohint,
+:root[data-theme="dark"] .paybtns button.udh.on,
+:root[data-theme="dark"] .ptag.khata,
+:root[data-theme="dark"] .st.pend,
+:root[data-theme="dark"] .splitrow.credit .sl,
+:root[data-theme="dark"] .splitrow.credit .sv { color: var(--accent-amber); }
+:root[data-theme="dark"] .chips button.on { background: var(--green-dark); border-color: var(--green-dark); color: #fff; }
+:root[data-theme="dark"] .pendbadge { background: var(--green); color: #071b10; }
+:root[data-theme="dark"] .tabs button.on { color: var(--ink); }
+:root[data-theme="dark"] .crow:active { background: var(--soft); }
+:root[data-theme="dark"] .tile:active { background: var(--soft); }
+:root[data-theme="dark"] #toast { background: #313f38; color: #eef4f0; }
+:root[data-theme="dark"] .pairwrap .logo,
+:root[data-theme="dark"] .pairwrap .go { background: linear-gradient(150deg, var(--green), var(--green-dark)); }
+:root[data-theme="dark"] .skel .sk-th, :root[data-theme="dark"] .skel .sk-l { background: linear-gradient(90deg, var(--soft) 25%, #2c3830 37%, var(--soft) 63%); background-size: 300% 100%; }
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 html { font-size: 17px; }
 body {
@@ -109,13 +162,13 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--green); out
 .qwrap { padding: 10px 12px 4px; background: var(--card); border-bottom: 1px solid var(--line); }
 .qwrap input {
 	width: 100%; border: 2px solid var(--line); border-radius: 12px;
-	padding: 11px 13px; font-size: 1.02rem; background: #fff;
+	padding: 11px 13px; font-size: 1.02rem; background: var(--card);
 }
 .qwrap input:focus { outline: none; border-color: var(--green); }
 .chips { display: flex; gap: 7px; overflow-x: auto; padding: 9px 12px; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
 .chips::-webkit-scrollbar { display: none; }
 .chips button {
-	flex: none; border: 1.5px solid var(--line); border-radius: 999px; background: #fff;
+	flex: none; border: 1.5px solid var(--line); border-radius: 999px; background: var(--card);
 	padding: 7px 14px; font-size: .84rem; font-weight: 700; color: var(--muted); white-space: nowrap;
 	transition: all .14s;
 }
@@ -192,7 +245,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--green); out
 .custcard .cn { font-weight: 700; font-size: 1rem; }
 .custcard .cv { font-size: .8rem; color: var(--muted); }
 .custcard .grow { flex: 1; min-width: 0; }
-.custcard .chg { border: 1.6px solid var(--line); color: var(--ink); border-radius: 9px; padding: 8px 13px; font-weight: 700; font-size: .88rem; flex: none; background: #fff; }
+.custcard .chg { border: 1.6px solid var(--line); color: var(--ink); border-radius: 9px; padding: 8px 13px; font-weight: 700; font-size: .88rem; flex: none; background: var(--card); }
 .khata { display: inline-block; margin-top: 3px; background: var(--amber-soft); color: var(--amber-dark); font-size: .78rem; font-weight: 700; border-radius: 8px; padding: 2px 8px; }
 .cline { display: flex; align-items: center; gap: 8px; padding: 10px 0; border-bottom: 1px solid var(--line); }
 .cline:last-child { border-bottom: 0; }
@@ -202,7 +255,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--green); out
 .cline .lr b { color: var(--ink); }
 .cline .lr.editing { margin-top: 4px; }
 /* inline PC editor (desktop): type the qty/rate directly, Enter commits */
-.editin { width: 84px; border: 2px solid var(--green); border-radius: 8px; padding: 5px 8px; font-size: .9rem; font-weight: 800; color: var(--ink); background: #fff; font-variant-numeric: tabular-nums; }
+.editin { width: 84px; border: 2px solid var(--green); border-radius: 8px; padding: 5px 8px; font-size: .9rem; font-weight: 800; color: var(--ink); background: var(--card); font-variant-numeric: tabular-nums; }
 .editin:focus { outline: none; }
 .editin.qedit { width: 52px; text-align: center; border-radius: 0; border-top: 0; border-bottom: 0; }
 .qbox { display: flex; align-items: center; gap: 0; border: 1.6px solid var(--line); border-radius: 11px; overflow: hidden; flex: none; }
@@ -214,7 +267,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--green); out
 .totrow .tl { font-size: .95rem; font-weight: 700; color: var(--muted); }
 .totrow .tv { font-size: 1.45rem; font-weight: 800; color: var(--ink); }
 .paybtns { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; }
-.paybtns button { border: 2px solid var(--line); border-radius: 13px; background: #fff; padding: 13px 6px; font-weight: 800; font-size: .98rem; color: var(--muted); }
+.paybtns button { border: 2px solid var(--line); border-radius: 13px; background: var(--card); padding: 13px 6px; font-weight: 800; font-size: .98rem; color: var(--muted); }
 .paybtns button.cash.on { border-color: var(--primary); background: var(--soft); color: var(--ink); }
 .paybtns button.upi.on { border-color: var(--primary); background: var(--soft); color: var(--ink); }
 .paybtns button.udh.on { border-color: var(--amber); background: var(--amber-soft); color: var(--amber-dark); }
@@ -222,7 +275,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--green); out
 
 /* split breakdown editor */
 .splitbox { margin-top: 11px; border: 1.5px solid var(--line-2); border-radius: 12px; overflow: hidden; box-shadow: var(--shadow-sm); }
-.splitrow { display: flex; align-items: center; justify-content: space-between; padding: 12px 13px; border-bottom: 1px solid var(--line); background: #fff; }
+.splitrow { display: flex; align-items: center; justify-content: space-between; padding: 12px 13px; border-bottom: 1px solid var(--line); background: var(--card); }
 .splitrow:last-child { border-bottom: 0; }
 .splitrow .sl { font-weight: 700; font-size: .95rem; display: inline-flex; align-items: center; gap: 9px; }
 .splitrow .sl .ptag { width: 24px; height: 24px; border-radius: 7px; display: grid; place-items: center; font-size: .8rem; }
@@ -280,11 +333,11 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--green); out
 /* settings */
 .setrow { margin-bottom: 12px; }
 .setrow label { display: block; font-size: .8rem; font-weight: 700; color: var(--muted); margin-bottom: 5px; }
-.setrow input { width: 100%; border: 2px solid var(--line); border-radius: 11px; padding: 10px 12px; background: #fff; }
+.setrow input { width: 100%; border: 2px solid var(--line); border-radius: 11px; padding: 10px 12px; background: var(--card); }
 .setrow input:focus { outline: none; border-color: var(--primary); }
-.setbtn { width: 100%; border: 2px solid var(--line); border-radius: 12px; padding: 13px; font-weight: 700; background: #fff; margin-top: 9px; }
+.setbtn { width: 100%; border: 2px solid var(--line); border-radius: 12px; padding: 13px; font-weight: 700; background: var(--card); margin-top: 9px; }
 .setbtn.warn { border-color: var(--red); color: var(--red); }
-.setbtn.act { border-color: var(--primary); color: var(--ink); background: #fff; }
+.setbtn.act { border-color: var(--primary); color: var(--ink); background: var(--card); }
 .togrow { display: flex; align-items: center; justify-content: space-between; padding: 4px 0; }
 .togrow .tl2 { font-weight: 700; font-size: .95rem; }
 .tog { width: 52px; height: 30px; border-radius: 999px; background: var(--line); position: relative; transition: background .15s; flex: none; }
@@ -292,7 +345,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--green); out
 .tog::after { content: ""; position: absolute; top: 3px; left: 3px; width: 24px; height: 24px; border-radius: 50%; background: #fff; transition: left .15s; }
 .tog.on::after { left: 25px; }
 .langrow2 { display: flex; gap: 8px; }
-.langrow2 button { flex: 1; border: 2px solid var(--line); border-radius: 11px; padding: 10px; font-weight: 700; background: #fff; color: var(--muted); }
+.langrow2 button { flex: 1; border: 2px solid var(--line); border-radius: 11px; padding: 10px; font-weight: 700; background: var(--card); color: var(--muted); }
 .langrow2 button.on { border-color: var(--primary); background: var(--soft); color: var(--ink); }
 .vtag { text-align: center; color: var(--muted); font-size: .75rem; margin: 18px 0 8px; }
 
@@ -312,7 +365,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--green); out
 .sheet .shh .t { font-weight: 800; font-size: 1.02rem; flex: 1; }
 .sheet .shh .x { font-size: 1.3rem; color: var(--muted); padding: 4px 8px; }
 .sheet .sq { padding: 0 14px 10px; }
-.sheet .sq input { width: 100%; border: 2px solid var(--line); border-radius: 12px; padding: 11px 13px; background: #fff; }
+.sheet .sq input { width: 100%; border: 2px solid var(--line); border-radius: 12px; padding: 11px 13px; background: var(--card); }
 .sheet .sq input:focus { outline: none; border-color: var(--primary); }
 .clist { overflow-y: auto; flex: 1; padding: 0 10px 12px; }
 .crow { display: flex; align-items: center; gap: 10px; background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; margin: 0 4px 8px; }
@@ -324,7 +377,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--green); out
 .newc { margin: 2px 14px 12px; }
 .newc .setbtn { margin-top: 7px; }
 .newform { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 12px; margin: 0 14px 12px; }
-.newform input { width: 100%; border: 2px solid var(--line); border-radius: 11px; padding: 10px 12px; background: #fff; margin-bottom: 9px; }
+.newform input { width: 100%; border: 2px solid var(--line); border-radius: 11px; padding: 10px 12px; background: var(--card); margin-bottom: 9px; }
 .newform input:focus { outline: none; border-color: var(--primary); }
 
 /* numeric pad (rate / qty entry — native-POS style, replaces prompt()) */
@@ -337,7 +390,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--green); out
 @keyframes caret { 50% { opacity: 0; } }
 .numsheet .nhint { font-size: .74rem; color: var(--faint); text-align: right; margin: -6px 2px 10px; }
 .numpad { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
-.numpad button { border: 1px solid var(--line); border-radius: 10px; background: #fff; padding: 15px 0; font-size: 1.25rem; font-weight: 700; }
+.numpad button { border: 1px solid var(--line); border-radius: 10px; background: var(--card); padding: 15px 0; font-size: 1.25rem; font-weight: 700; }
 .numpad button:active { background: var(--soft); }
 .numpad .nfn { background: var(--soft); }
 .numpad .nok { grid-row: span 2; background: linear-gradient(150deg, var(--green), var(--green-dark)); color: #fff; border-color: transparent; font-size: 1.5rem; }
@@ -350,7 +403,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--green); out
 .askbox .askm { color: var(--muted); font-size: .93rem; line-height: 1.45; margin-bottom: 17px; }
 .askrow { display: flex; gap: 9px; }
 .askrow button { flex: 1; padding: 13px; border-radius: 12px; font-weight: 800; font-size: .96rem; }
-.askrow .askno { border: 1.6px solid var(--line-2); background: #fff; color: var(--ink); }
+.askrow .askno { border: 1.6px solid var(--line-2); background: var(--card); color: var(--ink); }
 .askrow .askyes { background: var(--green-dark); color: #fff; }
 .askrow .askyes.danger { background: var(--red); }
 
@@ -362,7 +415,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--green); out
 .holdchip .ha { font-weight: 600; font-size: .72rem; opacity: .75; }
 .holdchip .hx { padding: 3px 8px; font-size: .95rem; border-radius: 8px; }
 .holdchip .hx:active { background: rgba(0,0,0,.08); }
-.holdbtn { width: 100%; border: 2px solid var(--amber); color: var(--amber-dark); background: #fff; border-radius: 12px; padding: 13px; font-weight: 800; margin-top: 9px; }
+.holdbtn { width: 100%; border: 2px solid var(--amber); color: var(--amber-dark); background: var(--card); border-radius: 12px; padding: 13px; font-weight: 800; margin-top: 9px; }
 .holdbtn:active { background: var(--amber-soft); }
 /* why the confirm button can't fire yet */
 .gohint { text-align: center; font-size: .8rem; font-weight: 600; color: var(--amber-dark); margin-top: 7px; }
@@ -377,27 +430,27 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--green); out
 .fjtypes button { flex: 1; border-radius: 9px; padding: 9px 4px; font-size: .82rem; font-weight: 800; color: var(--muted); background: transparent; transition: all .13s; }
 .fjtypes button.on { background: var(--card); color: var(--ink); box-shadow: var(--shadow-sm); }
 .fjlbl { font-size: .72rem; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; color: var(--faint); margin: 12px 2px 0; }
-.fjrow { display: flex; align-items: center; gap: 9px; background: #fff; border: 2px solid var(--line); border-radius: 12px; padding: 12px 13px; margin-top: 9px; }
+.fjrow { display: flex; align-items: center; gap: 9px; background: var(--card); border: 2px solid var(--line); border-radius: 12px; padding: 12px 13px; margin-top: 9px; }
 .fjrow:active { border-color: var(--green); }
 .fjrow .fl { font-size: .78rem; font-weight: 700; color: var(--muted); flex: none; }
 .fjrow .fv { flex: 1; text-align: right; font-weight: 800; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .fjdraw { display: flex; gap: 7px; flex-wrap: wrap; margin-top: 8px; }
-.fjdraw button { border: 1.6px solid var(--line-2); border-radius: 10px; background: #fff; padding: 9px 12px; font-size: .84rem; font-weight: 700; color: var(--muted); }
+.fjdraw button { border: 1.6px solid var(--line-2); border-radius: 10px; background: var(--card); padding: 9px 12px; font-size: .84rem; font-weight: 700; color: var(--muted); }
 .fjdraw button.on { border-color: var(--green); background: var(--green-soft); color: var(--green-dark); }
-.fjsheet input.fr { width: 100%; border: 2px solid var(--line); border-radius: 12px; padding: 11px 13px; background: #fff; margin-top: 9px; }
+.fjsheet input.fr { width: 100%; border: 2px solid var(--line); border-radius: 12px; padding: 11px 13px; background: var(--card); margin-top: 9px; }
 
 /* login */
 .pairwrap { padding: 44px 26px; text-align: center; }
 .pairwrap .logo { width: 84px; height: 84px; border-radius: 22px; background: var(--primary); color: #fff; font-size: 2.5rem; font-weight: 800; display: flex; align-items: center; justify-content: center; margin: 0 auto 18px; }
 .pairwrap h1 { font-size: 1.35rem; margin-bottom: 6px; }
 .pairwrap p { color: var(--muted); font-size: .92rem; margin-bottom: 20px; line-height: 1.5; }
-.pairwrap input { width: 100%; border: 2px solid var(--line); border-radius: 12px; padding: 13px 14px; background: #fff; margin-bottom: 10px; font-size: 1rem; }
+.pairwrap input { width: 100%; border: 2px solid var(--line); border-radius: 12px; padding: 13px 14px; background: var(--card); margin-bottom: 10px; font-size: 1rem; }
 .pairwrap input:focus { outline: none; border-color: var(--primary); }
 .pairwrap .go { width: 100%; background: var(--primary); color: #fff; border-radius: 12px; padding: 14px; font-size: 1.05rem; font-weight: 800; margin-top: 4px; }
 .pairwrap .go:disabled { opacity: .6; }
 .pairerr { color: var(--red); font-size: .88rem; margin-top: 12px; min-height: 1.2em; }
 .langrow { display: flex; gap: 8px; justify-content: center; margin-bottom: 18px; }
-.langrow button { border: 2px solid var(--line); border-radius: 999px; padding: 7px 14px; font-size: .9rem; font-weight: 700; background: #fff; color: var(--muted); }
+.langrow button { border: 2px solid var(--line); border-radius: 999px; padding: 7px 14px; font-size: .9rem; font-weight: 700; background: var(--card); color: var(--muted); }
 .langrow button.on { border-color: var(--primary); background: var(--soft); color: var(--ink); }
 
 /* desktop / counter PC: native-POS two-pane split (items left, bill right) */
@@ -448,7 +501,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--green); out
 {% raw %}
 <script>
 "use strict";
-var POSV = "pos-pwa 0.9.0";
+var POSV = "pos-pwa 0.10.0";
 var LS = window.localStorage;
 var CSRF = (document.querySelector('meta[name="vac-csrf"]') || {}).content || "";
 if (CSRF.indexOf("{") !== -1) CSRF = "";  /* raw-served copy: unrendered Jinja */
@@ -480,6 +533,7 @@ var STR = {
 		none_p: "Nothing waiting. All bills are in.",
 		set: "Settings", set_dev: "Counter code (on receipt ref)", set_prof: "POS Profile",
 		set_autop: "Print automatically after billing", set_lang: "Language",
+		set_theme: "Theme", theme_light: "Light", theme_dark: "Dark", theme_auto: "Auto",
 		set_refresh: "Refresh catalog", set_logout: "Log out", set_adv: "Advanced (device token)",
 		set_token: "API token (key:secret) — kiosk mode", set_save: "Save",
 		set_shop: "Receipt header", set_sn: "Shop name", set_ss: "Address line", set_sg: "GSTIN", set_sp: "Phone",
@@ -523,6 +577,7 @@ var STR = {
 		none_p: "कुछ बाकी नहीं। सभी बिल पहुँच गए।",
 		set: "सेटिंग्स", set_dev: "काउंटर कोड (रसीद क्र.)", set_prof: "POS प्रोफ़ाइल",
 		set_autop: "बिल के बाद अपने आप प्रिंट", set_lang: "भाषा",
+		set_theme: "थीम", theme_light: "लाइट", theme_dark: "डार्क", theme_auto: "ऑटो",
 		set_refresh: "कैटलॉग रिफ्रेश करें", set_logout: "लॉग आउट", set_adv: "एडवांस (डिवाइस टोकन)",
 		set_token: "API टोकन (key:secret) — कियोस्क मोड", set_save: "सेव करें",
 		set_shop: "रसीद हैडर", set_sn: "दुकान का नाम", set_ss: "पता", set_sg: "GSTIN", set_sp: "फ़ोन",
@@ -566,6 +621,7 @@ var STR = {
 		none_p: "काही प्रलंबित नाही. सर्व बिले पोहोचली.",
 		set: "सेटिंग्ज", set_dev: "काउंटर कोड (पावती क्र.)", set_prof: "POS प्रोफाइल",
 		set_autop: "बिल झाल्यावर आपोआप प्रिंट", set_lang: "भाषा",
+		set_theme: "थीम", theme_light: "लाइट", theme_dark: "डार्क", theme_auto: "ऑटो",
 		set_refresh: "कॅटलॉग रिफ्रेश करा", set_logout: "लॉग आउट", set_adv: "ॲडव्हान्स (डिव्हाइस टोकन)",
 		set_token: "API टोकन (key:secret) — किऑस्क मोड", set_save: "जतन करा",
 		set_shop: "पावती शीर्षक", set_sn: "दुकानाचे नाव", set_ss: "पत्ता", set_sg: "GSTIN", set_sp: "फोन",
@@ -596,6 +652,24 @@ var LANG = LS.vacpos_lang || "mr";
 function T(k) { return (STR[LANG] && STR[LANG][k]) || STR.en[k] || k; }
 function setLang(l) { LANG = l; LS.vacpos_lang = l; applyLangChrome(); render(); if (!AUTHED) renderLogin(""); }
 function applyLangChrome() { document.documentElement.lang = LANG; }
+
+/* ---- theme (light / dark / auto) ---- */
+var THEME = LS.vacpos_theme || "auto";
+function resolvedTheme() {
+	if (THEME === "dark" || THEME === "light") return THEME;
+	return (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches) ? "dark" : "light";
+}
+function applyTheme() {
+	var m = resolvedTheme();
+	document.documentElement.setAttribute("data-theme", m);
+	var mc = document.querySelector('meta[name="theme-color"]');
+	if (mc) mc.setAttribute("content", m === "dark" ? "#18211c" : "#ffffff");
+}
+function setTheme(t) { THEME = t; LS.vacpos_theme = t; applyTheme(); render(); if (!AUTHED) renderLogin(""); }
+applyTheme();  /* apply immediately, before first paint */
+if (window.matchMedia) {
+	try { window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", function () { if (THEME === "auto") applyTheme(); }); } catch (e) { }
+}
 
 /* ---------- settings ---------- */
 function loadS() {
@@ -1366,9 +1440,21 @@ function printDoc(doctype, name, fmt) {
 	fetch(url, { headers: headers, credentials: "same-origin" })
 		.then(function (r) { if (!r.ok) throw 0; return r.blob(); })
 		.then(function (b) {
+			/* load the PDF into a hidden same-origin iframe and print IT — a
+			   window.open() here is popup-blocked (it's outside the click gesture);
+			   iframe.print() opens the real print dialog with no popup. */
 			var u = URL.createObjectURL(b);
-			window.open(u, "_blank");
-			setTimeout(function () { URL.revokeObjectURL(u); }, 60000);
+			var ifr = document.createElement("iframe");
+			ifr.style.cssText = "position:fixed;right:0;bottom:0;width:0;height:0;border:0;opacity:0";
+			ifr.onload = function () {
+				setTimeout(function () {
+					try { ifr.contentWindow.focus(); ifr.contentWindow.print(); }
+					catch (e) { window.open(u, "_blank"); }
+				}, 250);
+			};
+			ifr.src = u;
+			document.body.appendChild(ifr);
+			setTimeout(function () { URL.revokeObjectURL(u); if (ifr.parentNode) ifr.parentNode.removeChild(ifr); }, 90000);
 		})
 		.catch(function () { toast(T("print_fail")); });
 }
@@ -1712,6 +1798,11 @@ function renderSettings() {
 		'<div class="togrow"><div class="tl2">' + esc(T("set_autop")) + '</div><div class="tog' + (S.autoprint ? " on" : "") + '" onclick="togAuto()"></div></div>' +
 		'<div class="setrow" style="margin-top:12px"><label>' + esc(T("set_lang")) + '</label><div class="langrow2">' +
 		LANGS.map(function (l) { return '<button class="' + (l.code === LANG ? "on" : "") + '" onclick="setLang(\'' + l.code + '\')">' + esc(l.label) + "</button>"; }).join("") +
+		"</div></div>" +
+		'<div class="setrow" style="margin-top:12px"><label>' + esc(T("set_theme")) + '</label><div class="langrow2">' +
+		[["light", T("theme_light")], ["dark", T("theme_dark")], ["auto", T("theme_auto")]].map(function (t) {
+			return '<button class="' + (t[0] === THEME ? "on" : "") + '" onclick="setTheme(\'' + t[0] + '\')">' + esc(t[1]) + "</button>";
+		}).join("") +
 		"</div></div></div>";
 	h += '<div class="sec"><div class="sh">' + esc(T("set_shop")) + "</div>" +
 		'<div class="setrow"><label>' + esc(T("set_sn")) + '</label><input value="' + esc(S.shop_name) + '" onchange="chS(\'shop_name\',this.value)"></div>' +
