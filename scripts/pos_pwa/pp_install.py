@@ -198,6 +198,18 @@ villages = []
 if frappe.db.exists("DocType", "Village"):
     villages = [v.name for v in frappe.get_all(
         "Village", fields=["name"], order_by="name", limit_page_length=0)]
+# the cash drawers this POS can take money into (profile payment modes of type
+# Cash) — lets the counter pick CASH 1 vs CASH 2 on a cash sale. Label comes from
+# the account name ("CASH 1 - VAC" -> "Cash 1").
+cash_modes = []
+for pay in profile.payments:
+    mode = pay.mode_of_payment
+    if frappe.db.get_value("Mode of Payment", mode, "type") == "Cash":
+        acc = frappe.db.get_value(
+            "Mode of Payment Account",
+            {"parent": mode, "company": profile.company}, "default_account")
+        label = (acc or mode).replace(" - VAC", "").title() if acc else mode
+        cash_modes.append({"mode": mode, "label": label, "default": 1 if pay.default else 0})
 
 frappe.response["message"] = {
     "profile": {
@@ -221,6 +233,7 @@ frappe.response["message"] = {
     "uoms": uoms_all,
     "customer_groups": customer_groups,
     "villages": villages,
+    "cash_modes": cash_modes,
     "version": latest,
 }
 """
