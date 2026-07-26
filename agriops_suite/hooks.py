@@ -451,7 +451,8 @@ fixtures = [
                             "StockPilot Count Schedule",
                             "StockPilot Count Variance",
                             "StockPilot Stock Audit",
-                            "StockPilot Dead Stock"]]
+                            "StockPilot Dead Stock",
+                            "StockPilot Build-Ahead"]]
         },
     },
 
