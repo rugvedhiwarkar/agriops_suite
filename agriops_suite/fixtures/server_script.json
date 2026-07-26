@@ -404,5 +404,53 @@
   "reference_doctype": "Stock Count Session",
   "script": "# Stock Count Session — validate. Recomputes the derived columns so a desk\n# edit (office correcting a mis-keyed count) stays consistent with what the\n# PWA stored.\n#\n# It deliberately does NOT re-snapshot book_qty / valuation_rate: those are\n# the position AS OF THE COUNT, written once by stock_count_submit. Refreshing\n# them here would silently rewrite history every time the form is opened and\n# destroy the variance the count exists to measure.\n\ntot = 0\nvar = 0\nvval = 0.0\n\nfor row in (doc.get(\"items\") or []):\n    tot = tot + 1\n    dq = frappe.utils.flt(row.counted_qty) - frappe.utils.flt(row.book_qty)\n    row.diff_qty = dq\n    row.diff_value = dq * frappe.utils.flt(row.valuation_rate)\n    if abs(dq) > 0.0005:\n        var = var + 1\n        vval = vval + row.diff_value\n\ndoc.lines_counted = tot\ndoc.lines_variance = var\ndoc.variance_value = vval\n\nif not doc.counted_by:\n    doc.counted_by = doc.owner\n",
   "script_type": "DocType Event"
+ },
+ {
+  "allow_guest": 0,
+  "api_method": "driver_list",
+  "disabled": 0,
+  "docstatus": 0,
+  "doctype": "Server Script",
+  "doctype_event": "Before Insert",
+  "enable_rate_limit": 0,
+  "event_frequency": "All",
+  "modified": "2026-07-26 12:47:53.387260",
+  "name": "driver_list",
+  "rate_limit_count": 5,
+  "rate_limit_seconds": 86400,
+  "script": "utype = frappe.db.get_value(\"User\", frappe.session.user, \"user_type\")\nif utype != \"System User\":\n    frappe.throw(\"Office users only\")\nrows = frappe.get_all(\"Has Role\",\n    filters={\"role\": \"Driver\", \"parenttype\": \"User\"},\n    fields=[\"parent\"], limit_page_length=0)\ndrivers = []\nseen = []\nfor r in rows:\n    u = r[\"parent\"]\n    if u in seen:\n        continue\n    seen.append(u)\n    info = frappe.db.get_value(\"User\", u, [\"enabled\", \"full_name\"], as_dict=True)\n    if info and info.enabled:\n        drivers.append({\"user\": u, \"full_name\": info.full_name or u})\nfrappe.response[\"message\"] = {\"drivers\": drivers}\n",
+  "script_type": "API"
+ },
+ {
+  "allow_guest": 0,
+  "api_method": "driver_deliveries_list",
+  "disabled": 0,
+  "docstatus": 0,
+  "doctype": "Server Script",
+  "doctype_event": "Before Insert",
+  "enable_rate_limit": 0,
+  "event_frequency": "All",
+  "modified": "2026-07-26 12:47:53.569727",
+  "name": "driver_deliveries_list",
+  "rate_limit_count": 5,
+  "rate_limit_seconds": 86400,
+  "script": "me = frappe.session.user\nSI_FIELDS = [\"name\", \"customer\", \"customer_name\", \"posting_date\",\n             \"custom_delivery_status\", \"custom_delivered_at\",\n             \"contact_mobile\", \"shipping_address\", \"address_display\"]\n\nassigned = frappe.get_all(\"Sales Invoice\",\n    filters={\"custom_assigned_driver\": me, \"custom_delivery_status\": \"Assigned\", \"docstatus\": 1},\n    fields=SI_FIELDS, order_by=\"posting_date asc\", limit_page_length=100)\ndelivered = frappe.get_all(\"Sales Invoice\",\n    filters={\"custom_assigned_driver\": me, \"custom_delivery_status\": \"Delivered\", \"docstatus\": 1},\n    fields=SI_FIELDS, order_by=\"custom_delivered_at desc\", limit_page_length=15)\nrows = assigned + delivered\n\nnames = []\ncust_names = []\nfor r in rows:\n    names.append(r[\"name\"])\n    if r[\"customer\"] and r[\"customer\"] not in cust_names:\n        cust_names.append(r[\"customer\"])\n\nitems_by = {}\nif names:\n    for it in frappe.get_all(\"Sales Invoice Item\",\n            filters={\"parent\": [\"in\", names]},\n            fields=[\"parent\", \"item_name\", \"qty\", \"uom\"],\n            order_by=\"idx asc\", limit_page_length=0):\n        items_by.setdefault(it[\"parent\"], []).append(\n            {\"item_name\": it[\"item_name\"], \"qty\": it[\"qty\"], \"uom\": it[\"uom\"]})\n\ncust_by = {}\nif cust_names:\n    for c in frappe.get_all(\"Customer\",\n            filters={\"name\": [\"in\", cust_names]},\n            fields=[\"name\", \"custom_village\", \"mobile_no\"],\n            limit_page_length=0):\n        cust_by[c[\"name\"]] = c\n\nout = []\nfor r in rows:\n    c = cust_by.get(r[\"customer\"], {})\n    out.append({\n        \"name\": r[\"name\"],\n        \"customer_name\": r[\"customer_name\"] or r[\"customer\"],\n        \"village\": c.get(\"custom_village\") or \"\",\n        \"phone\": r[\"contact_mobile\"] or c.get(\"mobile_no\") or \"\",\n        \"address_html\": r[\"shipping_address\"] or r[\"address_display\"] or \"\",\n        \"posting_date\": str(r[\"posting_date\"]) if r[\"posting_date\"] else \"\",\n        \"status\": r[\"custom_delivery_status\"],\n        \"delivered_at\": str(r[\"custom_delivered_at\"]) if r[\"custom_delivered_at\"] else \"\",\n        \"items\": items_by.get(r[\"name\"], []),\n    })\n\nfrappe.response[\"message\"] = {\n    \"deliveries\": out,\n    \"driver\": frappe.db.get_value(\"User\", me, \"full_name\"),\n}\n",
+  "script_type": "API"
+ },
+ {
+  "allow_guest": 0,
+  "api_method": "driver_delivery_confirm",
+  "disabled": 0,
+  "docstatus": 0,
+  "doctype": "Server Script",
+  "doctype_event": "Before Insert",
+  "enable_rate_limit": 0,
+  "event_frequency": "All",
+  "modified": "2026-07-26 12:47:53.751224",
+  "name": "driver_delivery_confirm",
+  "rate_limit_count": 5,
+  "rate_limit_seconds": 86400,
+  "script": "me = frappe.session.user\nname = frappe.form_dict.get(\"invoice\")\nif not name:\n    frappe.throw(\"invoice required\")\n\nsi = frappe.db.get_value(\"Sales Invoice\", name,\n    [\"custom_assigned_driver\", \"custom_delivery_status\"], as_dict=True)\nif not si:\n    frappe.throw(\"No such invoice\")\nif si.custom_assigned_driver != me:\n    frappe.throw(\"This delivery is not assigned to you\")\nif si.custom_delivery_status not in (\"Assigned\", \"Delivered\"):\n    frappe.throw(\"This invoice is not out for delivery\")\n\nupdates = {}\nif si.custom_delivery_status != \"Delivered\":\n    updates[\"custom_delivery_status\"] = \"Delivered\"\n    updates[\"custom_delivered_at\"] = frappe.utils.now()\n\nphoto = frappe.form_dict.get(\"photo_url\")\nif photo:\n    updates[\"custom_pod_photo\"] = photo\n\nif updates:\n    frappe.db.set_value(\"Sales Invoice\", name, updates)\n\n# re-parent the uploaded File to this SI so the photo shows in its attachments\nif photo:\n    fname = frappe.db.get_value(\"File\", {\"file_url\": photo}, \"name\")\n    if fname:\n        frappe.db.set_value(\"File\", fname, {\n            \"attached_to_doctype\": \"Sales Invoice\",\n            \"attached_to_field\": \"custom_pod_photo\",\n            \"attached_to_name\": name,\n        })\n\nfrappe.response[\"message\"] = {\"name\": name, \"status\": \"Delivered\"}\n",
+  "script_type": "API"
  }
 ]

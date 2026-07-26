@@ -10,198 +10,255 @@
 <link rel="icon" href="/assets/agriops_suite/images/slip-icon-192.png">
 <link rel="apple-touch-icon" href="/assets/agriops_suite/images/slip-icon-192.png">
 <style>
+/* ============================================================
+   Big-touch field UI — sized for wet / dirty / gloved hands:
+   large targets (>=60px), thick borders, generous gaps, high
+   contrast for sunlight. Keep the VAC green identity.
+   ============================================================ */
 :root {
 	--green: #166b41;
-	--green-dark: #0e4d2e;
-	--green-soft: #e3f0e8;
-	--ivory: #f6f5f0;
+	--green-dark: #0c4227;
+	--green-soft: #dcece3;
+	--ivory: #f4f3ec;
 	--card: #ffffff;
-	--ink: #22221e;
-	--muted: #6b6b62;
-	--line: #dddbd2;
-	--amber: #b45309;
-	--amber-soft: #fdf0e0;
-	--red: #b91c1c;
-	--red-soft: #fdecec;
-	--radius: 14px;
+	--ink: #1a1a15;
+	--muted: #565549;
+	--line: #c7c5b8;
+	--line-2: #b3b1a2;
+	--amber: #9a4a08;
+	--amber-soft: #fbe9cf;
+	--blue: #24418f;
+	--blue-soft: #dde5fb;
+	--red: #a81919;
+	--red-soft: #fbe3e3;
+	--radius: 16px;
 }
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-html { font-size: 17px; }
+html { font-size: 18px; }
 body {
 	font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans Devanagari", sans-serif;
 	background: var(--ivory); color: var(--ink);
 	min-height: 100vh; overscroll-behavior-y: contain;
+	-webkit-text-size-adjust: 100%;
 }
 button { font: inherit; border: 0; cursor: pointer; background: none; color: inherit; }
 input { font: inherit; color: inherit; }
-#app { max-width: 480px; margin: 0 auto; padding-bottom: 40px; }
+#app { max-width: 520px; margin: 0 auto; padding-bottom: 48px; }
 
 /* header */
 .hdr {
 	position: sticky; top: 0; z-index: 20;
 	background: var(--green); color: #fff;
-	padding: 12px 14px calc(12px);
-	display: flex; align-items: center; gap: 10px;
-	box-shadow: 0 2px 8px rgba(0,0,0,.18);
+	padding: 12px 12px;
+	display: flex; align-items: center; gap: 9px;
+	box-shadow: 0 2px 10px rgba(0,0,0,.22);
 }
-.hdr .ttl { font-size: 1.15rem; font-weight: 700; letter-spacing: .3px; }
-.hdr .who { font-size: .8rem; opacity: .85; margin-top: 1px; }
-.hdr .grow { flex: 1; }
-.netdot { width: 11px; height: 11px; border-radius: 50%; background: #7ef0ae; box-shadow: 0 0 6px #7ef0ae; }
-.netdot.off { background: #f3b13c; box-shadow: none; }
-.hdr .sync {
-	min-width: 44px; height: 44px; border-radius: 12px; font-size: 1.35rem;
-	background: rgba(255,255,255,.14); color: #fff; display: flex; align-items: center; justify-content: center;
+.hdr .hgrow { flex: 1; min-width: 0; }
+.hdr .ttl { font-size: 1.2rem; font-weight: 800; letter-spacing: .3px; }
+.hdr .who { font-size: .85rem; opacity: .9; margin-top: 1px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.netdot { width: 13px; height: 13px; border-radius: 50%; background: #8ff2ba; box-shadow: 0 0 7px #8ff2ba; flex: 0 0 auto; }
+.netdot.off { background: #f6b33f; box-shadow: none; }
+.hdr .iconbtn {
+	min-width: 50px; height: 50px; border-radius: 13px; font-size: 1.5rem;
+	background: rgba(255,255,255,.16); color: #fff; display: flex; align-items: center; justify-content: center; flex: 0 0 auto;
 }
-.hdr .sync:active { background: rgba(255,255,255,.3); }
-.hdr .sync.spin { animation: spin 1s linear infinite; }
+.hdr .iconbtn:active { background: rgba(255,255,255,.34); }
+.hdr .iconbtn.spin { animation: spin 1s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
 .pendbadge {
-	background: #fff; color: var(--green-dark); font-weight: 800; font-size: .85rem;
-	border-radius: 999px; padding: 3px 10px;
+	background: #fff; color: var(--green-dark); font-weight: 800; font-size: .9rem;
+	border-radius: 999px; padding: 5px 12px; flex: 0 0 auto;
 }
 
 /* offline banner */
 .offbar {
 	background: var(--amber-soft); color: var(--amber);
-	font-size: .88rem; font-weight: 600; text-align: center;
-	padding: 8px 12px; border-bottom: 1px solid #f0ddc2;
+	font-size: .98rem; font-weight: 700; text-align: center;
+	padding: 11px 12px; border-bottom: 2px solid #eccfa2;
 }
 
 /* cards & form */
-.card { background: var(--card); border-radius: var(--radius); box-shadow: 0 1px 4px rgba(40,40,20,.08); margin: 14px 12px; padding: 16px 14px; }
-.flabel { display: flex; align-items: baseline; gap: 8px; font-weight: 700; font-size: 1.02rem; margin: 18px 2px 8px; }
-.flabel:first-child { margin-top: 2px; }
+.card { background: var(--card); border-radius: var(--radius); box-shadow: 0 1px 5px rgba(40,40,20,.09); margin: 14px 12px; padding: 18px 16px; }
+.flabel { display: flex; align-items: center; gap: 9px; font-weight: 800; font-size: 1.12rem; margin: 22px 2px 10px; }
+.flabel:first-child { margin-top: 4px; }
 .flabel .num {
-	background: var(--green-soft); color: var(--green-dark);
-	border-radius: 8px; min-width: 28px; height: 28px; display: inline-flex; align-items: center; justify-content: center;
-	font-size: .95rem;
+	background: var(--green); color: #fff;
+	border-radius: 9px; min-width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center;
+	font-size: 1rem; font-weight: 800; flex: 0 0 auto;
 }
-.flabel .hint { font-weight: 500; font-size: .8rem; color: var(--muted); }
+.flabel .hint { font-weight: 600; font-size: .85rem; color: var(--muted); }
 .tin {
-	width: 100%; border: 2px solid var(--line); border-radius: 12px;
-	padding: 13px 14px; font-size: 1.25rem; background: #fff;
+	width: 100%; border: 2.5px solid var(--line-2); border-radius: 13px;
+	padding: 15px 15px; font-size: 1.25rem; background: #fff; min-height: 60px;
 }
-.tin:focus { outline: none; border-color: var(--green); }
-.row { display: flex; gap: 10px; }
+.tin:focus { outline: none; border-color: var(--green); box-shadow: 0 0 0 3px var(--green-soft); }
+.row { display: flex; gap: 12px; }
 .row > * { flex: 1; }
 .chip {
-	border: 2px solid var(--line); border-radius: 999px; padding: 9px 14px;
-	font-size: .95rem; font-weight: 600; background: #fff; white-space: nowrap;
+	border: 2.5px solid var(--line-2); border-radius: 999px; padding: 13px 18px;
+	font-size: 1.05rem; font-weight: 700; background: #fff; white-space: nowrap; min-height: 56px;
 }
 .chip:active, .chip.on { border-color: var(--green); background: var(--green-soft); color: var(--green-dark); }
 
 /* big toggle (from-place) */
-.fromgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.fromgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .fromgrid button {
-	border: 2px solid var(--line); border-radius: var(--radius); background: #fff;
-	padding: 14px 8px; text-align: center; min-height: 84px;
+	border: 2.5px solid var(--line-2); border-radius: var(--radius); background: #fff;
+	padding: 16px 10px; text-align: center; min-height: 96px;
 }
-.fromgrid .b1 { font-weight: 800; font-size: 1.02rem; }
-.fromgrid .b2 { font-size: .8rem; color: var(--muted); margin-top: 4px; }
-.fromgrid button.on { border-color: var(--green); background: var(--green-soft); }
+.fromgrid .b1 { font-weight: 800; font-size: 1.08rem; }
+.fromgrid .b2 { font-size: .85rem; color: var(--muted); margin-top: 5px; }
+.fromgrid button.on { border-color: var(--green); background: var(--green-soft); border-width: 3px; }
 .fromgrid button.on .b1 { color: var(--green-dark); }
-.dirhint { margin-top: 8px; font-size: .92rem; font-weight: 700; text-align: center; border-radius: 10px; padding: 7px; }
+.dirhint { margin-top: 10px; font-size: 1.02rem; font-weight: 800; text-align: center; border-radius: 11px; padding: 11px; }
 .dirhint.pur { background: var(--green-soft); color: var(--green-dark); }
-.dirhint.sal { background: #e7ecfb; color: #24418f; }
+.dirhint.sal { background: var(--blue-soft); color: var(--blue); }
 
 /* item grid */
-.itemgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.itemgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .itemgrid button {
-	border: 2px solid var(--line); border-radius: var(--radius); background: #fff;
-	padding: 12px 8px; min-height: 64px; font-weight: 700; font-size: .93rem; line-height: 1.25;
+	border: 2.5px solid var(--line-2); border-radius: var(--radius); background: #fff;
+	padding: 14px 10px; min-height: 76px; font-weight: 700; font-size: 1rem; line-height: 1.25;
 }
-.itemgrid button.on { border-color: var(--green); background: var(--green-soft); color: var(--green-dark); }
-.itemgrid button.more { border-style: dashed; color: var(--muted); font-weight: 600; }
+.itemgrid button.on { border-color: var(--green); background: var(--green-soft); color: var(--green-dark); border-width: 3px; }
+.itemgrid button.more { border-style: dashed; color: var(--muted); font-weight: 700; }
 /* goods lines (multi-item) */
-.lines { display: flex; flex-direction: column; gap: 8px; margin-bottom: 10px; }
+.lines { display: flex; flex-direction: column; gap: 10px; margin-bottom: 12px; }
 .line {
-	display: flex; align-items: center; gap: 10px;
+	display: flex; align-items: center; gap: 12px;
 	background: var(--green-soft); color: var(--green-dark);
-	border-radius: 10px; padding: 10px 12px; font-size: 1rem;
+	border-radius: 12px; padding: 14px 14px; font-size: 1.12rem;
 }
 .line .lt { flex: 1; min-width: 0; }
 .line .lx {
-	min-width: 40px; height: 40px; border-radius: 10px; font-size: 1.1rem; font-weight: 800;
-	background: rgba(0,0,0,.07); color: var(--red);
+	min-width: 52px; height: 52px; border-radius: 12px; font-size: 1.3rem; font-weight: 800;
+	background: rgba(0,0,0,.08); color: var(--red); flex: 0 0 auto;
 }
 .addline {
-	width: 100%; margin-top: 10px; border: 2px dashed var(--green); color: var(--green-dark);
-	border-radius: 12px; padding: 12px; font-size: 1.05rem; font-weight: 800; background: #fff;
+	width: 100%; margin-top: 12px; border: 2.5px dashed var(--green); color: var(--green-dark);
+	border-radius: 13px; padding: 15px; font-size: 1.12rem; font-weight: 800; background: #fff; min-height: 60px;
 }
 .addline:active { background: var(--green-soft); }
 
 /* qty */
-.qtyrow { display: flex; gap: 10px; align-items: stretch; }
-.qtyrow .tin { text-align: center; font-size: 1.7rem; font-weight: 800; }
+.qtyrow { display: flex; gap: 12px; align-items: stretch; }
+.qtyrow .tin { text-align: center; font-size: 1.9rem; font-weight: 800; }
 .qbtn {
-	min-width: 62px; border: 2px solid var(--line); border-radius: 12px; background: #fff;
-	font-size: 1.6rem; font-weight: 800; color: var(--green-dark);
+	min-width: 68px; border: 2.5px solid var(--line-2); border-radius: 13px; background: #fff;
+	font-size: 2rem; font-weight: 800; color: var(--green-dark);
 }
 .qbtn:active { background: var(--green-soft); }
 
 /* photo */
-.photorow { display: flex; align-items: center; gap: 12px; margin-top: 4px; }
+.photorow { display: flex; align-items: center; gap: 13px; margin-top: 6px; }
 .pbtn {
-	flex: 1; border: 2px dashed var(--line); border-radius: 12px; padding: 12px;
-	font-weight: 600; color: var(--muted); font-size: .95rem; text-align: center;
+	flex: 1; border: 2.5px dashed var(--line-2); border-radius: 13px; padding: 16px 12px;
+	font-weight: 700; color: var(--muted); font-size: 1.02rem; text-align: center; min-height: 60px;
 }
-.pthumb { width: 58px; height: 58px; border-radius: 10px; object-fit: cover; display: none; border: 2px solid var(--line); }
+.pthumb { width: 66px; height: 66px; border-radius: 12px; object-fit: cover; display: none; border: 2.5px solid var(--line-2); flex: 0 0 auto; }
 .pthumb.show { display: block; }
 
-/* save */
+/* primary action button */
 .save {
-	width: 100%; margin-top: 20px; background: var(--green); color: #fff;
-	border-radius: var(--radius); padding: 17px; font-size: 1.25rem; font-weight: 800;
-	box-shadow: 0 3px 10px rgba(22,107,65,.35);
+	width: 100%; margin-top: 24px; background: var(--green); color: #fff;
+	border-radius: var(--radius); padding: 20px; font-size: 1.4rem; font-weight: 800; min-height: 66px;
+	box-shadow: 0 4px 14px rgba(22,107,65,.4); letter-spacing: .2px;
 }
-.save:active { background: var(--green-dark); }
+.save:active { background: var(--green-dark); transform: translateY(1px); }
+.save.alt { background: var(--card); color: var(--green-dark); border: 2.5px solid var(--green); box-shadow: none; }
+.save.alt:active { background: var(--green-soft); }
+.save.danger { background: var(--red); box-shadow: 0 4px 14px rgba(168,25,25,.35); }
+.save:disabled { opacity: .6; }
 
 /* queue list */
-.qhead { display: flex; align-items: center; margin: 20px 14px 4px; gap: 8px; }
-.qhead h2 { font-size: 1rem; color: var(--muted); font-weight: 700; }
-.qitem { display: flex; gap: 10px; align-items: center; padding: 12px 4px; border-bottom: 1px solid var(--line); }
+.qhead { display: flex; align-items: center; margin: 24px 16px 4px; gap: 8px; }
+.qhead h2 { font-size: 1.05rem; color: var(--muted); font-weight: 800; }
+.qitem { display: flex; gap: 12px; align-items: center; padding: 16px 6px; border-bottom: 1.5px solid var(--line); }
 .qitem:last-child { border-bottom: 0; }
-.qitem .qi1 { font-weight: 700; font-size: .97rem; }
-.qitem .qi2 { font-size: .82rem; color: var(--muted); margin-top: 2px; }
+.qitem .qi1 { font-weight: 800; font-size: 1.06rem; }
+.qitem .qi2 { font-size: .9rem; color: var(--muted); margin-top: 3px; }
 .qitem .grow { flex: 1; min-width: 0; }
-.badge { font-size: .78rem; font-weight: 800; border-radius: 999px; padding: 4px 10px; white-space: nowrap; }
+.badge { font-size: .86rem; font-weight: 800; border-radius: 999px; padding: 6px 12px; white-space: nowrap; }
 .badge.wait { background: var(--amber-soft); color: var(--amber); }
 .badge.ok { background: var(--green-soft); color: var(--green-dark); }
 .badge.err { background: var(--red-soft); color: var(--red); }
-.empty { text-align: center; color: var(--muted); padding: 18px 0 8px; font-size: .92rem; }
+.empty { text-align: center; color: var(--muted); padding: 22px 10px 10px; font-size: 1.02rem; line-height: 1.6; }
 
-/* pairing */
-.pairwrap { padding: 48px 22px; text-align: center; }
-.pairwrap .logo {
-	width: 88px; height: 88px; border-radius: 22px; background: var(--green); color: #fff;
-	font-size: 2.6rem; display: flex; align-items: center; justify-content: center; margin: 0 auto 18px;
-	font-weight: 800;
+/* login / pairing */
+.loginwrap { padding: 40px 22px 60px; text-align: center; max-width: 460px; margin: 0 auto; }
+.loginwrap .logo {
+	width: 92px; height: 92px; border-radius: 24px; background: var(--green); color: #fff;
+	font-size: 2.8rem; display: flex; align-items: center; justify-content: center; margin: 0 auto 18px;
+	font-weight: 800; box-shadow: 0 6px 18px rgba(22,107,65,.3);
 }
-.pairwrap h1 { font-size: 1.35rem; margin-bottom: 10px; }
-.pairwrap p { color: var(--muted); font-size: .95rem; line-height: 1.55; margin-bottom: 22px; }
-.pairerr { color: var(--red); font-weight: 700; font-size: .9rem; margin-top: 12px; min-height: 1.2em; }
+.loginwrap h1 { font-size: 1.5rem; margin-bottom: 14px; }
+.loginwrap p { color: var(--muted); font-size: 1.02rem; line-height: 1.55; margin-bottom: 20px; }
+.loginwrap .tin { margin-bottom: 12px; text-align: left; }
+.langrow { display: flex; gap: 10px; justify-content: center; margin-bottom: 20px; }
+.langrow button {
+	flex: 1; border: 2.5px solid var(--line-2); border-radius: 13px; padding: 13px 6px;
+	font-size: 1.05rem; font-weight: 800; background: var(--card); color: var(--muted); min-height: 54px;
+}
+.langrow button.on { border-color: var(--green); background: var(--green-soft); color: var(--green-dark); }
+.langrow2 { display: flex; gap: 10px; margin-top: 6px; }
+.langrow2 button {
+	flex: 1; border: 2.5px solid var(--line-2); border-radius: 13px; padding: 15px 6px;
+	font-size: 1.08rem; font-weight: 800; background: var(--card); color: var(--muted); min-height: 58px;
+}
+.langrow2 button.on { border-color: var(--green); background: var(--green-soft); color: var(--green-dark); }
+.pairerr { color: var(--red); font-weight: 800; font-size: 1rem; margin-top: 14px; min-height: 1.3em; }
+.qrlink { display: block; width: 100%; margin-top: 20px; color: var(--green-dark); font-weight: 800; font-size: 1.08rem; text-decoration: underline; padding: 12px; min-height: 48px; }
+
+/* mode tabs */
+.tabs { display: flex; background: var(--green-dark); position: sticky; top: 0; z-index: 19; }
+.tabs .tab { flex: 1; color: #c4e4d3; font-weight: 800; font-size: 1.12rem; padding: 16px 8px; border-bottom: 4px solid transparent; letter-spacing: .3px; min-height: 58px; }
+.tabs .tab.on { color: #fff; border-bottom-color: #fff; background: rgba(255,255,255,.08); }
+
+/* delivery cards */
+.dcard { background: var(--card); border-radius: var(--radius); box-shadow: 0 1px 5px rgba(40,40,20,.09); margin: 14px 12px; padding: 17px 16px; display: flex; gap: 12px; align-items: stretch; }
+.dcard:active { background: var(--green-soft); }
+.dcard .body { flex: 1; min-width: 0; }
+.dcard .cust { font-weight: 800; font-size: 1.22rem; line-height: 1.25; }
+.dcard .meta { color: var(--muted); font-size: .92rem; margin-top: 4px; }
+.dcard .goods { margin-top: 9px; font-size: 1.05rem; color: var(--ink); font-weight: 600; }
+.dcard .chev { color: var(--muted); font-size: 1.9rem; align-self: center; }
+.dbadge { font-size: .86rem; font-weight: 800; border-radius: 999px; padding: 6px 13px; white-space: nowrap; display: inline-block; margin-top: 10px; }
+.dbadge.todo { background: var(--blue-soft); color: var(--blue); }
+.dbadge.wait { background: var(--amber-soft); color: var(--amber); }
+.dbadge.ok { background: var(--green-soft); color: var(--green-dark); }
+.dbadge.err { background: var(--red-soft); color: var(--red); }
+
+/* delivery detail */
+.dback { display: flex; align-items: center; gap: 8px; margin: 14px 12px 0; }
+.dback button { min-width: 52px; height: 52px; font-size: 1.7rem; color: var(--green-dark); border-radius: 12px; background: var(--card); box-shadow: 0 1px 4px rgba(40,40,20,.1); flex: 0 0 auto; }
+.dtitle { font-weight: 800; font-size: 1.28rem; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.drow { display: flex; justify-content: space-between; gap: 14px; padding: 13px 0; border-bottom: 1.5px solid var(--line); font-size: 1.1rem; }
+.drow .k { color: var(--muted); white-space: nowrap; font-weight: 600; }
+.drow .v { font-weight: 800; text-align: right; }
+.ditem { display: flex; justify-content: space-between; gap: 12px; padding: 14px 15px; background: var(--green-soft); color: var(--green-dark); border-radius: 12px; margin-top: 10px; font-size: 1.15rem; font-weight: 700; }
+.callbtn { display: block; text-align: center; background: var(--green-soft); color: var(--green-dark); font-weight: 800; border-radius: 13px; padding: 17px; margin-top: 16px; font-size: 1.15rem; text-decoration: none; min-height: 60px; }
+.callbtn:active { background: #cfe4d7; }
 
 /* search overlay */
 .ovl { position: fixed; inset: 0; background: var(--ivory); z-index: 50; display: none; flex-direction: column; }
 .ovl.show { display: flex; }
-.ovl .obar { display: flex; gap: 8px; padding: 10px 12px; background: var(--green); }
-.ovl .obar .tin { border: 0; font-size: 1.1rem; }
-.ovl .obar .back { color: #fff; font-size: 1.5rem; min-width: 44px; }
-.ovl .olist { flex: 1; overflow-y: auto; padding: 6px 12px 30px; }
+.ovl .obar { display: flex; gap: 10px; padding: 12px; background: var(--green); }
+.ovl .obar .tin { border: 0; font-size: 1.2rem; }
+.ovl .obar .back { color: #fff; font-size: 1.8rem; min-width: 52px; }
+.ovl .olist { flex: 1; overflow-y: auto; padding: 8px 12px 40px; }
 .ovl .olist button {
-	display: block; width: 100%; text-align: left; background: #fff; border: 1px solid var(--line);
-	border-radius: 10px; padding: 13px 14px; margin-top: 8px; font-weight: 600; font-size: .98rem;
+	display: block; width: 100%; text-align: left; background: #fff; border: 2px solid var(--line);
+	border-radius: 12px; padding: 17px 16px; margin-top: 10px; font-weight: 700; font-size: 1.1rem; min-height: 60px;
 }
 .ovl .olist button:active { background: var(--green-soft); }
-.ovl .olist .uom { color: var(--muted); font-size: .8rem; font-weight: 500; }
+.ovl .olist .uom { color: var(--muted); font-size: .88rem; font-weight: 600; }
 
 /* toast */
 #toast {
-	position: fixed; left: 50%; bottom: 26px; transform: translateX(-50%) translateY(90px);
-	background: var(--ink); color: #fff; border-radius: 12px; padding: 12px 20px;
-	font-weight: 700; font-size: .97rem; z-index: 99; transition: transform .25s ease; max-width: 90vw;
-	box-shadow: 0 6px 20px rgba(0,0,0,.3);
+	position: fixed; left: 50%; bottom: 30px; transform: translateX(-50%) translateY(110px);
+	background: var(--ink); color: #fff; border-radius: 13px; padding: 15px 24px;
+	font-weight: 800; font-size: 1.08rem; z-index: 99; transition: transform .25s ease; max-width: 92vw;
+	box-shadow: 0 6px 22px rgba(0,0,0,.34);
 }
 #toast.show { transform: translateX(-50%) translateY(0); }
 </style>
@@ -214,23 +271,150 @@ input { font: inherit; color: inherit; }
 <script>
 "use strict";
 /* ============================================================
-   VAC स्लिप — Driver Slip PWA
-   Offline-first capture of the paper transport book's 5 fields.
-   One slip = one document; sync is idempotent on client_uid.
+   VAC स्लिप — Driver PWA
+   Two modes: office->driver Deliveries + driver->office Transfer
+   capture. Offline-first; sync idempotent. Sign-in by ERPNext
+   email+password (session) OR a QR device token. mr/hi/en.
    ============================================================ */
 
 var LS = window.localStorage;
 var $id = function (i) { return document.getElementById(i); };
+function esc(s) { return String(s == null ? "" : s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
+
+/* ---------- i18n (Marathi first) ---------- */
+var LANGS = [{ code: "mr", label: "मराठी" }, { code: "hi", label: "हिंदी" }, { code: "en", label: "English" }];
+var STR = {
+	mr: {
+		app: "VAC स्लिप", tab_deliv: "डिलिव्हरी", tab_transfer: "ट्रान्सफर नोंद",
+		offline_bar: "इंटरनेट नाही — काम फोनमध्ये जतन होईल, नंतर आपोआप जाईल", left: "बाकी",
+		send_toast: "पाठवत आहे…", fail_retry: "जमले नाही — पुन्हा प्रयत्न करा",
+		/* login */
+		login_h: "VAC स्लिप", login_sub: "तुमच्या ERPNext ईमेल व पासवर्डने साइन इन करा.",
+		login_email: "ईमेल", login_pw: "पासवर्ड", login_go: "साइन इन करा", login_ing: "साइन इन होत आहे…",
+		login_bad: "ईमेल किंवा पासवर्ड चुकला", login_net: "इंटरनेट नाही — पुन्हा करा", login_locked: "खूप प्रयत्न झाले — थोडे थांबा",
+		login_qr: "किंवा QR कोडने जोडा", login_code: "जोडणी कोड", login_pair: "जोडा", paired: "जोडणी झाली ✓",
+		logout_q: "या फोनवरून लॉग आउट करायचे?", bye: "लॉग आउट झाले",
+		/* deliveries */
+		deliv_empty: "अजून कोणतीही डिलिव्हरी नेमून दिलेली नाही.<br>ऑफिसकडून डिलिव्हरी आल्यावर इथे दिसेल.",
+		checking: "नवीन डिलिव्हरी तपासत आहे…",
+		b_todo: "डिलिव्हरी बाकी", b_sending: "पाठवत आहे ⏳", b_delivered: "पोहोच झाली ✓", b_err: "अडचण — पुन्हा पाठवू",
+		d_village: "गाव", d_addr: "पत्ता", d_billno: "बिल नं", d_date: "तारीख", d_goods: "माल", d_nogoods: "माल नाही",
+		call_suffix: "ला फोन करा",
+		pod_btn: "📷 सही केलेल्या स्लिपचा फोटो (ऐच्छिक)", pod_done: "📷 फोटो घेतला ✓ (बदलण्यासाठी दाबा)",
+		deliver_btn: "✓ पोहोच झाली — नोंदवा",
+		delivered_sending: "पोहोच नोंदवली ✓ — पाठवत आहे", delivered_err: "अडचण आली — वर ↻ दाबा", delivered_ok: "पोहोच झाली ✓",
+		pod_saved: "पोहोच नोंदवली ✓",
+		/* transfer */
+		t_date: "तारीख", t_today: "आज", t_billno: "बिल नं", t_billno_hint: "(स्लिप बुकातला)",
+		t_from: "माल कुठून निघाला?", t_goods: "माल व नग", t_goods_hint: "(एकाहून जास्त माल चालेल)",
+		t_qty_ph: "नग", t_addline: "+ हा माल जोडा",
+		t_dest: "कुठे नेला?", t_dest_hint: "(गाव — फक्त माहितीसाठी)", t_dest_ph: "गावाचे नाव",
+		t_photo: "फोटो", t_optional: "(ऐच्छिक)", t_photo_btn: "📷 स्लिपचा फोटो जोडा", t_photo_done: "📷 फोटो जोडला ✓ (बदलण्यासाठी दाबा)",
+		t_save: "✓ स्लिप जतन करा", t_slips: "स्लिपा", t_search_ph: "माल शोधा…", t_more: "🔍 दुसरा माल…", t_no_match: "काही सापडले नाही",
+		dir_pur: "खरेदी — KP कडून माल आला", dir_sal: "विक्री — KP ला माल गेला",
+		pick_first: "आधी मालाचे नाव निवडा", enter_qty: "नग भरा", picked_qty: "{x} ✓ — आता नग भरा",
+		v_date: "१ — तारीख भरा", v_bill: "२ — बिल नं भरा", v_from: "३ — माल कुठून ते निवडा", v_goods: "४ — माल व नग जोडा",
+		slip_saved: "स्लिप जतन झाली ✓", save_fail: "जतन जमले नाही — पुन्हा प्रयत्न करा",
+		l_queued: "पाठवायची ⏳", l_error: "अडचण — पुन्हा जाईल", l_synced: "पोहोचली ✓ फोटो बाकी", l_done: "पोहोचली ✓",
+		l_pur: "खरेदी", l_sal: "विक्री", l_bill: "बिल", list_empty: "अजून एकही स्लिप नाही",
+		/* settings */
+		set: "सेटिंग्ज", set_lang: "भाषा", set_logout: "लॉग आउट", set_adv: "ॲडव्हान्स — QR / डिव्हाइस टोकन",
+		set_adv_hint: "फक्त शेअर केलेल्या फोनसाठी. साधारण वापरात रिकामे ठेवा.", set_save: "जतन करा", set_saved: "जतन झाले"
+	},
+	hi: {
+		app: "VAC स्लिप", tab_deliv: "डिलिवरी", tab_transfer: "ट्रांसफर",
+		offline_bar: "इंटरनेट नहीं — काम फ़ोन में सेव होगा, बाद में अपने आप जाएगा", left: "बाकी",
+		send_toast: "भेज रहे हैं…", fail_retry: "नहीं हुआ — फिर से करें",
+		login_h: "VAC स्लिप", login_sub: "अपने ERPNext ईमेल और पासवर्ड से साइन इन करें।",
+		login_email: "ईमेल", login_pw: "पासवर्ड", login_go: "साइन इन करें", login_ing: "साइन इन हो रहा है…",
+		login_bad: "ईमेल या पासवर्ड गलत", login_net: "इंटरनेट नहीं — फिर से करें", login_locked: "बहुत कोशिशें — थोड़ा रुकें",
+		login_qr: "या QR कोड से जोड़ें", login_code: "जोड़ने का कोड", login_pair: "जोड़ें", paired: "जुड़ गया ✓",
+		logout_q: "इस फ़ोन से लॉग आउट करें?", bye: "लॉग आउट हो गया",
+		deliv_empty: "अभी कोई डिलिवरी नहीं दी गई है।<br>ऑफिस से डिलिवरी आने पर यहाँ दिखेगी।",
+		checking: "नई डिलिवरी देख रहे हैं…",
+		b_todo: "डिलिवरी बाकी", b_sending: "भेज रहे हैं ⏳", b_delivered: "पहुँच गई ✓", b_err: "दिक्कत — फिर भेजेंगे",
+		d_village: "गाँव", d_addr: "पता", d_billno: "बिल नं", d_date: "तारीख", d_goods: "सामान", d_nogoods: "सामान नहीं",
+		call_suffix: "को कॉल करें",
+		pod_btn: "📷 साइन की हुई स्लिप का फोटो (वैकल्पिक)", pod_done: "📷 फोटो लिया ✓ (बदलने के लिए दबाएँ)",
+		deliver_btn: "✓ पहुँच गई — दर्ज करें",
+		delivered_sending: "पहुँच दर्ज ✓ — भेज रहे हैं", delivered_err: "दिक्कत हुई — ऊपर ↻ दबाएँ", delivered_ok: "पहुँच गई ✓",
+		pod_saved: "पहुँच दर्ज हुई ✓",
+		t_date: "तारीख", t_today: "आज", t_billno: "बिल नं", t_billno_hint: "(स्लिप बुक का)",
+		t_from: "सामान कहाँ से निकला?", t_goods: "सामान व नग", t_goods_hint: "(एक से ज़्यादा सामान चलेगा)",
+		t_qty_ph: "नग", t_addline: "+ यह सामान जोड़ें",
+		t_dest: "कहाँ ले गए?", t_dest_hint: "(गाँव — सिर्फ़ जानकारी)", t_dest_ph: "गाँव का नाम",
+		t_photo: "फोटो", t_optional: "(वैकल्पिक)", t_photo_btn: "📷 स्लिप का फोटो जोड़ें", t_photo_done: "📷 फोटो जोड़ा ✓ (बदलने के लिए दबाएँ)",
+		t_save: "✓ स्लिप सेव करें", t_slips: "स्लिपें", t_search_ph: "सामान खोजें…", t_more: "🔍 दूसरा सामान…", t_no_match: "कुछ नहीं मिला",
+		dir_pur: "खरीद — KP से सामान आया", dir_sal: "बिक्री — KP को सामान गया",
+		pick_first: "पहले सामान का नाम चुनें", enter_qty: "नग भरें", picked_qty: "{x} ✓ — अब नग भरें",
+		v_date: "1 — तारीख भरें", v_bill: "2 — बिल नं भरें", v_from: "3 — सामान कहाँ से चुनें", v_goods: "4 — सामान व नग जोड़ें",
+		slip_saved: "स्लिप सेव हुई ✓", save_fail: "सेव नहीं हुआ — फिर से करें",
+		l_queued: "भेजनी है ⏳", l_error: "दिक्कत — फिर जाएगी", l_synced: "पहुँची ✓ फोटो बाकी", l_done: "पहुँची ✓",
+		l_pur: "खरीद", l_sal: "बिक्री", l_bill: "बिल", list_empty: "अभी एक भी स्लिप नहीं",
+		set: "सेटिंग्स", set_lang: "भाषा", set_logout: "लॉग आउट", set_adv: "एडवांस — QR / डिवाइस टोकन",
+		set_adv_hint: "सिर्फ़ शेयर किए फ़ोन के लिए। आम इस्तेमाल में खाली रखें।", set_save: "सेव करें", set_saved: "सेव हुआ"
+	},
+	en: {
+		app: "VAC Slip", tab_deliv: "Deliveries", tab_transfer: "Transfer",
+		offline_bar: "No internet — work is saved on this phone and sent automatically later", left: "left",
+		send_toast: "Sending…", fail_retry: "Didn't work — try again",
+		login_h: "VAC Slip", login_sub: "Sign in with your ERPNext email and password.",
+		login_email: "Email", login_pw: "Password", login_go: "Sign in", login_ing: "Signing in…",
+		login_bad: "Wrong email or password", login_net: "No connection — try again", login_locked: "Too many tries — wait a minute",
+		login_qr: "or connect with a QR code", login_code: "Pairing code", login_pair: "Connect", paired: "Connected ✓",
+		logout_q: "Log out of this phone?", bye: "Logged out",
+		deliv_empty: "No deliveries assigned yet.<br>They will appear here when the office sends one.",
+		checking: "Checking for new deliveries…",
+		b_todo: "To deliver", b_sending: "Sending ⏳", b_delivered: "Delivered ✓", b_err: "Problem — will resend",
+		d_village: "Village", d_addr: "Address", d_billno: "Bill no", d_date: "Date", d_goods: "Goods", d_nogoods: "No goods",
+		call_suffix: "— Call",
+		pod_btn: "📷 Photo of signed slip (optional)", pod_done: "📷 Photo taken ✓ (tap to change)",
+		deliver_btn: "✓ Mark delivered",
+		delivered_sending: "Delivery recorded ✓ — sending", delivered_err: "Problem — tap ↻ above", delivered_ok: "Delivered ✓",
+		pod_saved: "Delivery recorded ✓",
+		t_date: "Date", t_today: "Today", t_billno: "Bill no", t_billno_hint: "(from the slip book)",
+		t_from: "Where did the goods leave from?", t_goods: "Goods & qty", t_goods_hint: "(more than one item is fine)",
+		t_qty_ph: "Qty", t_addline: "+ Add this item",
+		t_dest: "Where taken?", t_dest_hint: "(village — for info only)", t_dest_ph: "Village name",
+		t_photo: "Photo", t_optional: "(optional)", t_photo_btn: "📷 Add slip photo", t_photo_done: "📷 Photo added ✓ (tap to change)",
+		t_save: "✓ Save slip", t_slips: "Slips", t_search_ph: "Search item…", t_more: "🔍 Other item…", t_no_match: "No matches",
+		dir_pur: "Purchase — goods came from KP", dir_sal: "Sale — goods went to KP",
+		pick_first: "Pick the item first", enter_qty: "Enter quantity", picked_qty: "{x} ✓ — now enter qty",
+		v_date: "1 — enter the date", v_bill: "2 — enter the bill no", v_from: "3 — pick where from", v_goods: "4 — add goods & qty",
+		slip_saved: "Slip saved ✓", save_fail: "Could not save — try again",
+		l_queued: "To send ⏳", l_error: "Problem — will retry", l_synced: "Sent ✓ photo pending", l_done: "Sent ✓",
+		l_pur: "Purchase", l_sal: "Sale", l_bill: "Bill", list_empty: "No slips yet",
+		set: "Settings", set_lang: "Language", set_logout: "Log out", set_adv: "Advanced — QR / device token",
+		set_adv_hint: "Only for a shared phone. Leave empty for normal use.", set_save: "Save", set_saved: "Saved"
+	}
+};
+var LANG = LS.vacslip_lang || "mr";
+function T(k) { return (STR[LANG] && STR[LANG][k]) || STR.en[k] || k; }
+function applyLangChrome() { document.documentElement.lang = LANG; var t = document.querySelector(".hdr .ttl"); if (t) t.textContent = T("app"); }
+function setLang(l) { LANG = l; LS.vacslip_lang = l; applyLangChrome(); rerender(); }
+
+/* which screen is showing — so a language switch re-renders it in place */
+var CURVIEW = "login", CURARG = null;
+function rerender() {
+	if (!AUTHED && !haveAuth()) { renderLogin($id("lerr") ? $id("lerr").textContent : ""); return; }
+	if (CURVIEW === "settings") renderSettings();
+	else if (CURVIEW === "detail" && CURARG) renderDelivDetail(CURARG);
+	else if (MODE === "deliv") renderDeliveries();
+	else renderMain();
+}
 
 /* ---------- tiny IndexedDB wrapper ---------- */
 var _db = null;
 function db() {
 	return _db ? Promise.resolve(_db) : new Promise(function (res, rej) {
-		var r = indexedDB.open("vacslip", 1);
+		var r = indexedDB.open("vacslip", 2);
 		r.onupgradeneeded = function () {
 			var d = r.result;
 			if (!d.objectStoreNames.contains("queue")) d.createObjectStore("queue", { keyPath: "uid" });
 			if (!d.objectStoreNames.contains("photos")) d.createObjectStore("photos", { keyPath: "uid" });
+			if (!d.objectStoreNames.contains("deliveries")) d.createObjectStore("deliveries", { keyPath: "name" });
+			if (!d.objectStoreNames.contains("delivconfirm")) d.createObjectStore("delivconfirm", { keyPath: "name" });
+			if (!d.objectStoreNames.contains("delivphotos")) d.createObjectStore("delivphotos", { keyPath: "name" });
 		};
 		r.onsuccess = function () { _db = r.result; res(_db); };
 		r.onerror = function () { rej(r.error); };
@@ -241,17 +425,24 @@ function idbDel(st, k) { return db().then(function (d) { return new Promise(func
 function idbGet(st, k) { return db().then(function (d) { return new Promise(function (res, rej) { var q = d.transaction(st).objectStore(st).get(k); q.onsuccess = function () { res(q.result); }; q.onerror = function () { rej(q.error); }; }); }); }
 function idbAll(st) { return db().then(function (d) { return new Promise(function (res, rej) { var q = d.transaction(st).objectStore(st).getAll(); q.onsuccess = function () { res(q.result || []); }; q.onerror = function () { rej(q.error); }; }); }); }
 
-/* ---------- api ---------- */
+/* ---------- auth (session cookie + CSRF, OR device token) ---------- */
+var TOKEN = LS.vacslip_token || "";   /* QR / kiosk device token (key:secret) */
+var CSRF = "";                        /* session CSRF token (email+password login) */
+var AUTHED = false;
+var AUTH = null;                      /* { user, full_name } */
+function haveAuth() { return !!TOKEN || AUTHED; }
+
 function api(path, opts) {
 	opts = opts || {};
 	var headers = opts.headers || {};
-	if (LS.vacslip_token) headers["Authorization"] = "token " + LS.vacslip_token;
+	if (TOKEN) headers["Authorization"] = "token " + TOKEN;
+	else if (CSRF) headers["X-Frappe-CSRF-Token"] = CSRF;
 	var body = opts.body;
 	if (opts.json) { headers["Content-Type"] = "application/json"; body = JSON.stringify(opts.json); }
-	return fetch(path, { method: opts.method || "GET", headers: headers, body: body }).catch(function () {
-		throw { net: true, message: "नेटवर्क नाही" };
+	return fetch(path, { method: opts.method || "GET", headers: headers, body: body, credentials: "same-origin" }).catch(function () {
+		throw { net: true, message: T("login_net") };
 	}).then(function (res) {
-		if (res.status === 401 || res.status === 403) throw { auth: true, message: "जोडणी अवैध" };
+		if (res.status === 401 || res.status === 403) throw { auth: true, message: T("login_bad") };
 		return res.text().then(function (text) {
 			var data = {};
 			try { data = JSON.parse(text); } catch (e) { }
@@ -265,6 +456,117 @@ function api(path, opts) {
 			return data;
 		});
 	});
+}
+
+function ensureAuth() {
+	if (!navigator.onLine) {
+		AUTHED = LS.vacslip_authed === "1" || !!TOKEN;
+		if (AUTHED && !AUTH) { try { AUTH = JSON.parse(LS.vacslip_auth || "null"); } catch (e) { } }
+		return Promise.resolve(AUTHED);
+	}
+	if (TOKEN) {
+		/* device-token path: validate + prime the boot cache in one call */
+		return api("/api/method/driver_slip_bootstrap", { method: "POST" }).then(function (r) {
+			var b = r.message || {}; b.ts = Date.now();
+			LS.vacslip_boot = JSON.stringify(b);
+			AUTH = { user: b.driver, full_name: b.driver }; AUTHED = true;
+			LS.vacslip_authed = "1"; LS.vacslip_auth = JSON.stringify(AUTH);
+			return true;
+		}).catch(function () { AUTHED = false; LS.removeItem("vacslip_authed"); return false; });
+	}
+	/* session path: 403 here == "no valid session" == show login */
+	return fetch("/api/method/agriops_suite.slip.csrf", { credentials: "same-origin" })
+		.then(function (r) { return r.ok ? r.json() : null; })
+		.then(function (j) {
+			var m = j && j.message;
+			if (m && m.csrf_token) {
+				CSRF = m.csrf_token; AUTH = { user: m.user, full_name: m.full_name }; AUTHED = true;
+				LS.vacslip_authed = "1"; LS.vacslip_auth = JSON.stringify(AUTH);
+				return true;
+			}
+			AUTHED = false; LS.removeItem("vacslip_authed");
+			return false;
+		})
+		.catch(function () { AUTHED = LS.vacslip_authed === "1"; return AUTHED; });
+}
+function needLogin() { AUTHED = false; CSRF = ""; LS.removeItem("vacslip_authed"); renderLogin(""); }
+
+function renderLogin(err) {
+	CURVIEW = "login";
+	var langs = LANGS.map(function (l) { return '<button class="' + (l.code === LANG ? "on" : "") + '" onclick="setLang(\'' + l.code + '\')">' + esc(l.label) + "</button>"; }).join("");
+	$id("app").innerHTML =
+		'<div class="loginwrap">' +
+		'<div class="logo">V</div>' +
+		"<h1>" + esc(T("login_h")) + "</h1>" +
+		'<div class="langrow">' + langs + "</div>" +
+		"<p>" + esc(T("login_sub")) + "</p>" +
+		'<input id="lem" class="tin" type="email" inputmode="email" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="' + esc(T("login_email")) + '">' +
+		'<input id="lpw" class="tin" type="password" placeholder="' + esc(T("login_pw")) + '">' +
+		'<button id="lbtn" class="save" onclick="doLogin()">' + esc(T("login_go")) + "</button>" +
+		'<div id="lerr" class="pairerr">' + esc(err || "") + "</div>" +
+		'<button class="qrlink" onclick="toggleQR()">' + esc(T("login_qr")) + "</button>" +
+		'<div id="qrbox" style="display:none">' +
+		'<input id="pairin" class="tin" placeholder="' + esc(T("login_code")) + '" autocomplete="off" autocapitalize="off" spellcheck="false">' +
+		'<button id="pairgo" class="save alt" onclick="doPair()">' + esc(T("login_pair")) + "</button>" +
+		"</div></div>";
+	var pw = $id("lpw");
+	if (pw) pw.addEventListener("keydown", function (e) { if (e.key === "Enter") doLogin(); });
+}
+function toggleQR() { var b = $id("qrbox"); if (b) b.style.display = (b.style.display === "none" ? "block" : "none"); }
+function doLogin() {
+	var email = (($id("lem") || {}).value || "").trim();
+	var pw = ($id("lpw") || {}).value || "";
+	if (!email || !pw) { renderLogin(T("login_bad")); if ($id("lem")) $id("lem").value = email; return; }
+	var btn = $id("lbtn"); if (btn) { btn.disabled = true; btn.textContent = T("login_ing"); }
+	fetch("/api/method/login", {
+		method: "POST",
+		headers: { "Content-Type": "application/x-www-form-urlencoded" },
+		body: "usr=" + encodeURIComponent(email) + "&pwd=" + encodeURIComponent(pw),
+		credentials: "same-origin"
+	}).then(function (r) {
+		if (r.status === 429) throw { m: T("login_locked") };
+		if (!r.ok) throw { m: T("login_bad") };
+		TOKEN = ""; LS.removeItem("vacslip_token");   /* email login => session path */
+		return ensureAuth();
+	}).then(function (ok) { if (!ok) throw { m: T("login_bad") }; boot(); })
+		.catch(function (e) { renderLogin(e && e.m ? e.m : T("login_net")); if ($id("lem")) $id("lem").value = email; });
+}
+function doPair() {
+	$id("lerr").textContent = T("login_ing");
+	tryPair(($id("pairin") || {}).value).then(function () {
+		TOKEN = LS.vacslip_token; AUTHED = true; LS.vacslip_authed = "1";
+		boot(); toast(T("paired"));
+	}).catch(function (e) { $id("lerr").textContent = e.message || T("login_bad"); });
+}
+function doLogout() {
+	fetch("/api/method/logout", { credentials: "same-origin" }).catch(function () { }).then(function () {
+		CSRF = ""; AUTHED = false; AUTH = null; TOKEN = "";
+		LS.removeItem("vacslip_authed"); LS.removeItem("vacslip_token"); LS.removeItem("vacslip_boot");
+		toast(T("bye")); renderLogin("");
+	});
+}
+
+/* ---------- settings ---------- */
+function renderSettings() {
+	CURVIEW = "settings";
+	var langs = LANGS.map(function (l) { return '<button class="' + (l.code === LANG ? "on" : "") + '" onclick="setLang(\'' + l.code + '\')">' + esc(l.label) + "</button>"; }).join("");
+	$id("app").innerHTML =
+		'<div class="dback"><button onclick="backHome()">←</button><div class="dtitle">' + esc(T("set")) + "</div></div>" +
+		'<div class="card">' +
+		'<div class="flabel" style="margin-top:2px">' + esc(T("set_lang")) + "</div>" +
+		'<div class="langrow2">' + langs + "</div>" +
+		'<button class="save danger" onclick="doLogout()">' + esc(T("set_logout")) + "</button>" +
+		'<div class="flabel">' + esc(T("set_adv")) + '</div>' +
+		'<div class="flabel hint" style="margin:0 2px 8px;font-weight:600">' + esc(T("set_adv_hint")) + "</div>" +
+		'<input id="tok" class="tin" type="password" placeholder="key:secret" value="' + esc(TOKEN) + '">' +
+		'<button class="addline" onclick="saveToken()">' + esc(T("set_save")) + "</button>" +
+		"</div>";
+}
+function backHome() { if (MODE === "deliv") renderDeliveries(); else renderMain(); }
+function saveToken() {
+	var v = (($id("tok") || {}).value || "").trim();
+	if (v) { LS.vacslip_token = v; TOKEN = v; } else { LS.removeItem("vacslip_token"); TOKEN = ""; }
+	toast(T("set_saved")); boot();
 }
 
 /* ---------- bootstrap cache (driver name, shortlist, item master) ---------- */
@@ -297,10 +599,10 @@ function pushDest(d) {
 	LS.vacslip_dests = JSON.stringify(a.slice(0, 15));
 }
 
-/* ---------- sync engine ---------- */
+/* ---------- sync engine (transfer slips) ---------- */
 var syncing = false;
 function syncNow() {
-	if (syncing || !navigator.onLine || !LS.vacslip_token) { updateNet(); return Promise.resolve(); }
+	if (syncing || !navigator.onLine || !haveAuth()) { updateNet(); return Promise.resolve(); }
 	syncing = true; updateNet();
 	return idbAll("queue").then(function (items) {
 		items.sort(function (a, b) { return a.created_at - b.created_at; });
@@ -320,7 +622,7 @@ function syncNow() {
 					q.err = "";
 					return idbPut("queue", q).then(renderList);
 				}).catch(function (e) {
-					if (e.auth) { needPair(); throw e; }
+					if (e.auth) { needLogin(); throw e; }
 					if (e.net) throw e; // stop the chain, we're offline
 					q.state = "error"; q.err = e.message || "?";
 					return idbPut("queue", q).then(renderList);
@@ -342,9 +644,6 @@ function syncNow() {
 					fd.append("docname", q.server_name);
 					fd.append("fieldname", "slip_photo");
 					return api("/api/method/upload_file", { method: "POST", body: fd }).then(function (up) {
-						/* v16 upload_file attaches the File but does NOT set the doc
-						   field — write slip_photo ourselves. If the office already
-						   reviewed the slip (edit lock), the attachment alone is fine. */
 						var furl = (up.message || {}).file_url;
 						var setField = furl
 							? api("/api/resource/Driver Slip/" + encodeURIComponent(q.server_name), { method: "PUT", json: { slip_photo: furl } }).catch(function (e) { if (e.auth) throw e; })
@@ -354,7 +653,7 @@ function syncNow() {
 							return idbDel("photos", q.uid).then(function () { return idbPut("queue", q); }).then(renderList);
 						});
 					}).catch(function (e) {
-						if (e.auth) { needPair(); throw e; }
+						if (e.auth) { needLogin(); throw e; }
 						/* keep photo queued for a later pass */
 					});
 				});
@@ -362,7 +661,7 @@ function syncNow() {
 		});
 		return chain;
 	}).catch(function () { /* offline or auth — queue stays */ })
-	.then(function () { syncing = false; updateNet(); renderList(); });
+		.then(function () { syncing = false; updateNet(); renderList(); });
 }
 
 /* ---------- ui helpers ---------- */
@@ -378,14 +677,15 @@ function today() {
 }
 function niceDate(iso) {
 	if (!iso) return "";
-	var p = iso.split("-");
-	return p[2] + "/" + p[1];
+	var p = String(iso).split("-");
+	return p.length === 3 ? p[2].slice(0, 2) + "/" + p[1] : String(iso);
 }
 function uidNew() {
 	return (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : "u" + Date.now() + "-" + Math.random().toString(36).slice(2, 10);
 }
+function fmtQty(q) { var n = parseFloat(q); return isNaN(n) ? "" : String(n); }
 
-/* ---------- pairing ---------- */
+/* ---------- QR pairing (device token; the login-screen alternative) ---------- */
 function checkPairFromHash() {
 	var m = (location.hash || "").match(/[#&]pair=([^&]+)/);
 	if (m) {
@@ -395,51 +695,53 @@ function checkPairFromHash() {
 }
 function tryPair(tok) {
 	tok = (tok || "").trim();
-	if (!tok || tok.indexOf(":") < 1) return Promise.reject({ message: "कोड चुकीचा आहे" });
+	if (!tok || tok.indexOf(":") < 1) return Promise.reject({ message: T("login_bad") });
 	var prev = LS.vacslip_token;
-	LS.vacslip_token = tok;
+	LS.vacslip_token = tok; TOKEN = tok;
 	return api("/api/method/driver_slip_bootstrap", { method: "POST" }).then(function (r) {
 		var b = r.message || {}; b.ts = Date.now();
 		LS.vacslip_boot = JSON.stringify(b);
 		delete LS.vacslip_token_candidate;
 		return b;
 	}).catch(function (e) {
-		if (prev) LS.vacslip_token = prev; else LS.removeItem("vacslip_token");
-		throw e.net ? { message: "इंटरनेट नाही — नेटवर्क चालू करून पुन्हा प्रयत्न करा" } : { message: "जोडणी जमली नाही — ऑफिसशी संपर्क करा" };
+		if (prev) { LS.vacslip_token = prev; TOKEN = prev; } else { LS.removeItem("vacslip_token"); TOKEN = ""; }
+		throw e.net ? { message: T("login_net") } : { message: T("login_bad") };
 	});
 }
-function needPair() {
-	renderPair("जोडणी संपली आहे किंवा बदलली आहे — ऑफिसकडून नवीन QR कोड घ्या.");
+
+/* ============================================================
+   Header + tabs (shared shell)
+   ============================================================ */
+function headerHtml(active) {
+	var name = (getBoot() || {}).driver || (AUTH && AUTH.full_name) || "";
+	return '<header class="hdr">' +
+		'<div class="hgrow"><div class="ttl">' + esc(T("app")) + '</div><div class="who">' + esc(name) + "</div></div>" +
+		'<span id="pend" class="pendbadge" style="display:none"></span>' +
+		'<div id="netdot" class="netdot"></div>' +
+		'<button id="syncbtn" class="iconbtn" aria-label="sync">↻</button>' +
+		'<button class="iconbtn" aria-label="settings" onclick="renderSettings()">⚙</button>' +
+		"</header>" +
+		'<div class="tabs">' +
+		'<button class="tab' + (active === "deliv" ? " on" : "") + '" data-mode="deliv">' + esc(T("tab_deliv")) + "</button>" +
+		'<button class="tab' + (active === "transfer" ? " on" : "") + '" data-mode="transfer">' + esc(T("tab_transfer")) + "</button>" +
+		"</div>" +
+		'<div id="offbar" class="offbar" style="display:none">' + esc(T("offline_bar")) + "</div>";
+}
+function wireTabs() {
+	Array.prototype.forEach.call(document.querySelectorAll(".tab"), function (t) {
+		t.onclick = function () { setMode(t.dataset.mode); };
+	});
 }
 
-/* ---------- screens ---------- */
-function renderPair(msg) {
-	var el = $id("app");
-	el.innerHTML =
-		'<div class="pairwrap">' +
-		'<div class="logo">V</div>' +
-		'<h1>VAC स्लिप — जोडणी</h1>' +
-		'<p>ऑफिसकडून मिळालेला QR कोड फोनच्या कॅमेऱ्याने स्कॅन करा.<br>किंवा जोडणी कोड खाली टाका.</p>' +
-		'<input id="pairin" class="tin" placeholder="जोडणी कोड" autocomplete="off" autocapitalize="off" spellcheck="false">' +
-		'<button id="pairgo" class="save">जोडा</button>' +
-		'<div id="pairerr" class="pairerr">' + (msg || "") + "</div>" +
-		"</div>";
-	$id("pairgo").onclick = function () {
-		$id("pairerr").textContent = "जोडणी चालू आहे…";
-		tryPair($id("pairin").value).then(function () { boot(); toast("जोडणी झाली ✓"); }).catch(function (e) {
-			$id("pairerr").textContent = e.message || "जमले नाही";
-		});
-	};
-}
-
+/* ============================================================
+   Transfer capture (driver -> office)
+   ============================================================ */
 var F = { slip_date: "", challan_no: "", from_place: "", lines: [], destination: "", photo: null };
 var curItem = "";
 
 function getPlaces() {
 	var b = getBoot() || {};
 	if (b.places && b.places.length) return b.places;
-	/* offline fallback until the first bootstrap lands; the authoritative list
-	   (+ its Purchase/Sale mapping) lives in the Bootstrap/Validate scripts */
 	return [
 		{ value: "Main Store Paraswada (KP)", label: "मेन स्टोअर परसवाडा", hint: "प्लांटवरून माल आणला", leg: "Purchase" },
 		{ value: "Parijat (VAC)", label: "परिजात", hint: "गोदामातून माल नेला", leg: "Sale" }
@@ -447,62 +749,54 @@ function getPlaces() {
 }
 
 function renderMain() {
-	var b = getBoot() || {};
+	CURVIEW = "home";
 	var el = $id("app");
 	el.innerHTML =
-		'<header class="hdr">' +
-		'<div><div class="ttl">VAC स्लिप</div><div class="who">' + (b.driver || "") + "</div></div>" +
-		'<div class="grow"></div>' +
-		'<span id="pend" class="pendbadge" style="display:none"></span>' +
-		'<div id="netdot" class="netdot"></div>' +
-		'<button id="syncbtn" class="sync" aria-label="sync">↻</button>' +
-		"</header>" +
-		'<div id="offbar" class="offbar" style="display:none">इंटरनेट नाही — स्लिप फोनमध्ये जतन होईल, नंतर आपोआप जाईल</div>' +
+		headerHtml("transfer") +
 		'<div class="card" id="formcard">' +
 
-		'<div class="flabel"><span class="num">१</span> तारीख</div>' +
-		'<div class="row"><input id="f_date" type="date" class="tin"><button id="f_today" class="chip" style="flex:0 0 auto">आज</button></div>' +
+		'<div class="flabel"><span class="num">1</span> ' + esc(T("t_date")) + "</div>" +
+		'<div class="row"><input id="f_date" type="date" class="tin"><button id="f_today" class="chip" style="flex:0 0 auto">' + esc(T("t_today")) + "</button></div>" +
 
-		'<div class="flabel"><span class="num">२</span> बिल नं <span class="hint">(स्लिप बुकातला)</span></div>' +
+		'<div class="flabel"><span class="num">2</span> ' + esc(T("t_billno")) + ' <span class="hint">' + esc(T("t_billno_hint")) + "</span></div>" +
 		'<input id="f_challan" class="tin" inputmode="numeric" autocomplete="off" placeholder="—">' +
 
-		'<div class="flabel"><span class="num">३</span> माल कुठून निघाला?</div>' +
+		'<div class="flabel"><span class="num">3</span> ' + esc(T("t_from")) + "</div>" +
 		'<div id="fromgrid" class="fromgrid"></div>' +
 		'<div id="dirhint" class="dirhint" style="display:none"></div>' +
 
-		'<div class="flabel"><span class="num">४</span> माल व नग <span class="hint">(एकाहून जास्त माल चालेल)</span></div>' +
+		'<div class="flabel"><span class="num">4</span> ' + esc(T("t_goods")) + ' <span class="hint">' + esc(T("t_goods_hint")) + "</span></div>" +
 		'<div id="lines" class="lines"></div>' +
 		'<div id="itemgrid" class="itemgrid"></div>' +
-		'<div class="qtyrow" style="margin-top:10px">' +
+		'<div class="qtyrow" style="margin-top:12px">' +
 		'<button class="qbtn" id="q_minus">−</button>' +
-		'<input id="f_qty" class="tin" inputmode="numeric" placeholder="नग" autocomplete="off">' +
+		'<input id="f_qty" class="tin" inputmode="numeric" placeholder="' + esc(T("t_qty_ph")) + '" autocomplete="off">' +
 		'<button class="qbtn" id="q_plus">+</button>' +
 		"</div>" +
-		'<button id="addline" class="addline">+ हा माल जोडा</button>' +
+		'<button id="addline" class="addline">' + esc(T("t_addline")) + "</button>" +
 
-		'<div class="flabel"><span class="num">६</span> कुठे नेला? <span class="hint">(गाव — फक्त माहितीसाठी)</span></div>' +
-		'<input id="f_dest" class="tin" autocomplete="off" list="destlist" placeholder="गावाचे नाव">' +
+		'<div class="flabel"><span class="num">5</span> ' + esc(T("t_dest")) + ' <span class="hint">' + esc(T("t_dest_hint")) + "</span></div>" +
+		'<input id="f_dest" class="tin" autocomplete="off" list="destlist" placeholder="' + esc(T("t_dest_ph")) + '">' +
 		"<datalist id='destlist'></datalist>" +
 
-		'<div class="flabel">फोटो <span class="hint">(ऐच्छिक)</span></div>' +
+		'<div class="flabel">' + esc(T("t_photo")) + ' <span class="hint">' + esc(T("t_optional")) + "</span></div>" +
 		'<div class="photorow">' +
-		'<button id="pbtn" class="pbtn">📷 स्लिपचा फोटो जोडा</button>' +
+		'<button id="pbtn" class="pbtn">' + esc(T("t_photo_btn")) + "</button>" +
 		'<img id="pthumb" class="pthumb" alt="">' +
 		'<input id="f_photo" type="file" accept="image/*" capture="environment" style="display:none">' +
 		"</div>" +
 
-		'<button id="savebtn" class="save">✓ स्लिप जतन करा</button>' +
+		'<button id="savebtn" class="save">' + esc(T("t_save")) + "</button>" +
 		"</div>" +
 
-		'<div class="qhead"><h2>स्लिपा</h2></div>' +
+		'<div class="qhead"><h2>' + esc(T("t_slips")) + "</h2></div>" +
 		'<div class="card" id="qlist" style="margin-top:4px"></div>' +
 
 		'<div id="ovl" class="ovl">' +
-		'<div class="obar"><button class="back" id="ovlback">←</button><input id="ovlin" class="tin" placeholder="माल शोधा…" autocomplete="off"></div>' +
+		'<div class="obar"><button class="back" id="ovlback">←</button><input id="ovlin" class="tin" placeholder="' + esc(T("t_search_ph")) + '" autocomplete="off"></div>' +
 		'<div class="olist" id="ovllist"></div>' +
 		"</div>";
 
-	/* wire up */
 	$id("f_date").value = F.slip_date || today();
 	$id("f_today").onclick = function () { $id("f_date").value = today(); };
 	$id("f_challan").value = F.challan_no || "";
@@ -528,15 +822,16 @@ function renderMain() {
 			F.photo = blob;
 			var u = URL.createObjectURL(blob);
 			var t = $id("pthumb"); t.src = u; t.classList.add("show");
-			$id("pbtn").textContent = "📷 फोटो जोडला ✓ (बदलण्यासाठी दाबा)";
+			$id("pbtn").textContent = T("t_photo_done");
 		});
 	};
 
 	$id("savebtn").onclick = saveSlip;
-	$id("syncbtn").onclick = function () { toast("पाठवत आहे…"); syncNow(); };
+	$id("syncbtn").onclick = function () { toast(T("send_toast")); syncAll(); };
 	$id("ovlback").onclick = function () { $id("ovl").classList.remove("show"); };
 	$id("ovlin").oninput = function () { renderOvlList(this.value); };
 
+	wireTabs();
 	updateNet();
 	renderList();
 }
@@ -547,7 +842,7 @@ function renderFromGrid() {
 	g.innerHTML = "";
 	getPlaces().forEach(function (p) {
 		var b = document.createElement("button");
-		b.innerHTML = '<div class="b1">' + p.label + '</div><div class="b2">' + (p.hint || "") + "</div>";
+		b.innerHTML = '<div class="b1">' + esc(p.label) + '</div><div class="b2">' + esc(p.hint || "") + "</div>";
 		b.dataset.value = p.value;
 		b.onclick = function () { setFrom(p.value); };
 		g.appendChild(b);
@@ -563,7 +858,7 @@ function setFrom(v) {
 	var h = $id("dirhint");
 	h.style.display = "block";
 	h.className = "dirhint " + (leg === "Purchase" ? "pur" : "sal");
-	h.textContent = leg === "Purchase" ? "खरेदी — KP कडून माल आला" : "विक्री — KP ला माल गेला";
+	h.textContent = leg === "Purchase" ? T("dir_pur") : T("dir_sal");
 }
 
 function renderLines() {
@@ -575,7 +870,7 @@ function renderLines() {
 		d.className = "line";
 		var t = document.createElement("span");
 		t.className = "lt";
-		t.innerHTML = (l.item_label || l.item).replace(/</g, "&lt;") + " × <b>" + l.qty + "</b>";
+		t.innerHTML = esc(l.item_label || l.item) + " × <b>" + esc(l.qty) + "</b>";
 		var x = document.createElement("button");
 		x.className = "lx";
 		x.textContent = "✕";
@@ -588,8 +883,8 @@ function renderLines() {
 
 function addLine() {
 	var qty = parseFloat($id("f_qty").value || "0");
-	if (!curItem) return toast("आधी मालाचे नाव निवडा");
-	if (!(qty > 0)) return toast("नग भरा");
+	if (!curItem) return toast(T("pick_first"));
+	if (!(qty > 0)) return toast(T("enter_qty"));
 	F.lines.push({ item: curItem, item_label: itemLabel(curItem), qty: qty });
 	curItem = "";
 	$id("f_qty").value = "";
@@ -600,6 +895,7 @@ function addLine() {
 function renderItemGrid() {
 	var b = getBoot() || {};
 	var g = $id("itemgrid");
+	if (!g) return;
 	g.innerHTML = "";
 	(b.shortlist || []).slice(0, 7).forEach(function (code) {
 		var btn = document.createElement("button");
@@ -610,7 +906,7 @@ function renderItemGrid() {
 	});
 	var more = document.createElement("button");
 	more.className = "more";
-	more.textContent = "🔍 दुसरा माल…";
+	more.textContent = T("t_more");
 	more.onclick = function () {
 		$id("ovl").classList.add("show");
 		$id("ovlin").value = "";
@@ -629,7 +925,7 @@ function pickItem(code) {
 		c.classList.toggle("on", on);
 		if (on) found = true;
 	});
-	if (!found) toast(itemLabel(code) + " ✓ — आता नग भरा");
+	if (!found) toast(T("picked_qty").replace("{x}", itemLabel(code)));
 	$id("ovl").classList.remove("show");
 	var qi = $id("f_qty");
 	if (qi) qi.focus();
@@ -645,13 +941,13 @@ function renderOvlList(qstr) {
 		var lbl = (it.item_name || it.name);
 		if (q && lbl.toLowerCase().indexOf(q) < 0 && it.name.toLowerCase().indexOf(q) < 0) return false;
 		var btn = document.createElement("button");
-		btn.innerHTML = lbl.replace(/</g, "&lt;") + ' <span class="uom">' + (it.stock_uom || "") + "</span>";
+		btn.innerHTML = esc(lbl) + ' <span class="uom">' + esc(it.stock_uom || "") + "</span>";
 		btn.onclick = function () { pickItem(it.name); };
 		list.appendChild(btn);
 		hits++;
 		return hits >= 30;
 	});
-	if (!hits) list.innerHTML = '<div class="empty">काही सापडले नाही</div>';
+	if (!hits) list.innerHTML = '<div class="empty">' + esc(T("t_no_match")) + "</div>";
 }
 
 function bump(d) {
@@ -678,17 +974,14 @@ function shrinkImage(file) {
 }
 
 function saveSlip() {
-	/* a picked-but-not-yet-added line still counts — keeps the common
-	   one-item slip at the same number of taps as before */
 	if (curItem && parseFloat($id("f_qty").value || "0") > 0) addLine();
-
 	var date = $id("f_date").value;
 	var challan = $id("f_challan").value.trim();
 	var dest = $id("f_dest").value.trim();
-	if (!date) return toast("१ — तारीख भरा");
-	if (!challan) return toast("२ — बिल नं भरा");
-	if (!F.from_place) return toast("३ — माल कुठून ते निवडा");
-	if (!F.lines.length) return toast("४ — माल व नग जोडा");
+	if (!date) return toast(T("v_date"));
+	if (!challan) return toast(T("v_bill"));
+	if (!F.from_place) return toast(T("v_from"));
+	if (!F.lines.length) return toast(T("v_goods"));
 
 	var q = {
 		uid: uidNew(),
@@ -702,15 +995,14 @@ function saveSlip() {
 		if (photo) return idbPut("photos", { uid: q.uid, blob: photo });
 	}).then(function () {
 		pushDest(dest);
-		/* sticky fields for the next slip of the same trip: date + from-place */
 		F.photo = null; F.lines = []; curItem = ""; F.destination = "";
 		var num = parseInt(challan, 10);
 		F.challan_no = isNaN(num) ? "" : String(num + 1);
 		F.slip_date = date;
 		renderMain();
-		toast("स्लिप जतन झाली ✓");
+		toast(T("slip_saved"));
 		syncNow();
-	}).catch(function () { toast("जतन जमले नाही — पुन्हा प्रयत्न करा"); });
+	}).catch(function () { toast(T("save_fail")); });
 }
 
 function renderList() {
@@ -718,32 +1010,29 @@ function renderList() {
 	if (!wrap) return;
 	idbAll("queue").then(function (items) {
 		items.sort(function (a, b) { return b.created_at - a.created_at; });
-		/* prune old finished entries */
 		var cutoff = Date.now() - 60 * 24 * 3600 * 1000;
 		items.filter(function (x) { return x.state === "done" && x.created_at < cutoff; }).forEach(function (x) { idbDel("queue", x.uid); });
 		items = items.filter(function (x) { return !(x.state === "done" && x.created_at < cutoff); }).slice(0, 30);
 
-		var pend = items.filter(function (x) { return x.state === "queued" || x.state === "error"; }).length;
-		var pb = $id("pend");
-		if (pb) { pb.style.display = pend ? "" : "none"; pb.textContent = pend + " बाकी"; }
+		updatePend();
 
-		if (!items.length) { wrap.innerHTML = '<div class="empty">अजून एकही स्लिप नाही</div>'; return; }
+		if (!items.length) { wrap.innerHTML = '<div class="empty">' + esc(T("list_empty")) + "</div>"; return; }
 		wrap.innerHTML = "";
 		items.forEach(function (q) {
 			var d = document.createElement("div");
 			d.className = "qitem";
 			var badge;
-			if (q.state === "queued") badge = '<span class="badge wait">पाठवायची ⏳</span>';
-			else if (q.state === "error") badge = '<span class="badge err">अडचण — पुन्हा जाईल</span>';
-			else if (q.state === "synced") badge = '<span class="badge ok">पोहोचली ✓ फोटो बाकी</span>';
-			else badge = '<span class="badge ok">पोहोचली ✓</span>';
-			var dir = (q.from_place || "").indexOf("Main Store Paraswada") === 0 ? "खरेदी" : "विक्री";
+			if (q.state === "queued") badge = '<span class="badge wait">' + esc(T("l_queued")) + "</span>";
+			else if (q.state === "error") badge = '<span class="badge err">' + esc(T("l_error")) + "</span>";
+			else if (q.state === "synced") badge = '<span class="badge ok">' + esc(T("l_synced")) + "</span>";
+			else badge = '<span class="badge ok">' + esc(T("l_done")) + "</span>";
+			var dir = (q.from_place || "").indexOf("Main Store Paraswada") === 0 ? T("l_pur") : T("l_sal");
 			var goods = (q.items || []).map(function (l) { return (l.item_label || l.item) + "×" + l.qty; }).join(", ") || (q.item_label || q.item || "");
 			d.innerHTML =
-				'<div class="grow"><div class="qi1">' + goods + "</div>" +
-				'<div class="qi2">' + niceDate(q.slip_date) + " · बिल " + q.challan_no + " · " + dir +
-				(q.destination ? " · " + q.destination : "") +
-				(q.server_name ? " · " + q.server_name : "") + "</div></div>" + badge;
+				'<div class="grow"><div class="qi1">' + esc(goods) + "</div>" +
+				'<div class="qi2">' + niceDate(q.slip_date) + " · " + esc(T("l_bill")) + " " + esc(q.challan_no) + " · " + dir +
+				(q.destination ? " · " + esc(q.destination) : "") +
+				(q.server_name ? " · " + esc(q.server_name) : "") + "</div></div>" + badge;
 			wrap.appendChild(d);
 		});
 	});
@@ -754,36 +1043,275 @@ function updateNet() {
 	if (!dot) return;
 	var on = navigator.onLine;
 	dot.classList.toggle("off", !on);
-	bar.style.display = on ? "none" : "";
+	if (bar) bar.style.display = on ? "none" : "";
 	if (btn) btn.classList.toggle("spin", syncing);
+}
+
+/* ============================================================
+   Deliveries (office -> driver): assigned Sales Invoices + POD.
+   ============================================================ */
+var MODE = "deliv";
+
+function setMode(m) {
+	MODE = m; LS.vacslip_mode = m;
+	if (m === "deliv") { renderDeliveries(); refreshDeliveries(); }
+	else renderMain();
+}
+
+function stripAddr(html) {
+	if (!html) return "";
+	return html.replace(/<br\s*\/?>/gi, ", ").replace(/<[^>]*>/g, "")
+		.replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">")
+		.replace(/\s+/g, " ").replace(/(,\s*)+/g, ", ").replace(/^[,\s]+|[,\s]+$/g, "").trim();
+}
+
+function delivEffective(x, cmap) {
+	var c = cmap[x.name];
+	return {
+		delivered: (x.status === "Delivered") || (!!c && c.state !== "error"),
+		pending: !!c && (c.state === "queued" || c.state === "photo"),
+		error: !!c && c.state === "error"
+	};
+}
+
+function renderDeliveries() {
+	CURVIEW = "home";
+	var el = $id("app");
+	el.innerHTML = headerHtml("deliv") + '<div id="delivwrap"></div>';
+	wireTabs();
+	var sb = $id("syncbtn");
+	if (sb) sb.onclick = function () { toast(T("checking")); refreshDeliveries(); syncAll(); };
+	updateNet();
+	renderDelivList();
+}
+
+function renderDelivList() {
+	var wrap = $id("delivwrap");
+	if (!wrap) return;
+	Promise.all([idbAll("deliveries"), idbAll("delivconfirm")]).then(function (res) {
+		var list = res[0] || [], confirms = res[1] || [];
+		var cutoff = Date.now() - 3 * 24 * 3600 * 1000;
+		confirms.filter(function (c) { return c.state === "done" && c.created_at < cutoff; })
+			.forEach(function (c) { idbDel("delivconfirm", c.name); idbDel("delivphotos", c.name); });
+		var cmap = {}; confirms.forEach(function (c) { cmap[c.name] = c; });
+		list.forEach(function (x) { x._e = delivEffective(x, cmap); });
+		list.sort(function (a, b) {
+			if (a._e.delivered !== b._e.delivered) return a._e.delivered ? 1 : -1;
+			return (b.posting_date || "").localeCompare(a.posting_date || "");
+		});
+		updatePend();
+		if (!list.length) {
+			wrap.innerHTML = '<div class="empty" style="padding:48px 24px">' + T("deliv_empty") + "</div>";
+			return;
+		}
+		wrap.innerHTML = "";
+		list.forEach(function (x) {
+			var goods = (x.items || []).map(function (l) { return (l.item_name || "") + "×" + fmtQty(l.qty); }).join(", ");
+			var loc = [x.village, x.phone].filter(Boolean).join(" · ");
+			var badge;
+			if (x._e.error) badge = '<span class="dbadge err">' + esc(T("b_err")) + "</span>";
+			else if (x._e.pending) badge = '<span class="dbadge wait">' + esc(T("b_sending")) + "</span>";
+			else if (x._e.delivered) badge = '<span class="dbadge ok">' + esc(T("b_delivered")) + "</span>";
+			else badge = '<span class="dbadge todo">' + esc(T("b_todo")) + "</span>";
+			var d = document.createElement("div");
+			d.className = "dcard";
+			d.innerHTML =
+				'<div class="body">' +
+				'<div class="cust">' + esc(x.customer_name) + "</div>" +
+				(loc ? '<div class="meta">' + esc(loc) + "</div>" : "") +
+				'<div class="goods">' + esc(goods) + "</div>" +
+				badge +
+				'<div class="meta">' + esc(x.name) + " · " + niceDate(x.posting_date) + "</div>" +
+				'</div><div class="chev">›</div>';
+			d.onclick = function () { renderDelivDetail(x.name); };
+			wrap.appendChild(d);
+		});
+	});
+}
+
+function renderDelivDetail(name) {
+	CURVIEW = "detail"; CURARG = name;
+	Promise.all([idbGet("deliveries", name), idbGet("delivconfirm", name)]).then(function (res) {
+		var x = res[0], c = res[1];
+		if (!x) { setMode("deliv"); return; }
+		var cmap = {}; if (c) cmap[name] = c;
+		var e = delivEffective(x, cmap);
+		var addr = stripAddr(x.address_html);
+		var itemsHtml = (x.items || []).map(function (l) {
+			return '<div class="ditem"><span>' + esc(l.item_name || "") + "</span><b>" + fmtQty(l.qty) + " " + esc(l.uom || "") + "</b></div>";
+		}).join("");
+		var actionHtml;
+		if (e.delivered) {
+			actionHtml = '<div class="dbadge ok" style="display:block;text-align:center;padding:16px;margin-top:20px;font-size:1.05rem">' +
+				(e.pending ? esc(T("delivered_sending")) : (e.error ? esc(T("delivered_err")) : esc(T("delivered_ok")))) +
+				(x.delivered_at ? '<div style="font-weight:600;margin-top:5px">' + esc(x.delivered_at) + "</div>" : "") +
+				"</div>";
+		} else {
+			actionHtml =
+				'<div class="photorow" style="margin-top:20px">' +
+				'<button id="dpbtn" class="pbtn">' + esc(T("pod_btn")) + "</button>" +
+				'<img id="dpthumb" class="pthumb" alt="">' +
+				'<input id="dphoto" type="file" accept="image/*" capture="environment" style="display:none">' +
+				"</div>" +
+				'<button id="ddeliver" class="save">' + esc(T("deliver_btn")) + "</button>";
+		}
+		$id("app").innerHTML =
+			headerHtml("deliv") +
+			'<div class="dback"><button id="dbk">←</button><div class="dtitle">' + esc(x.customer_name) + "</div></div>" +
+			'<div class="card">' +
+			(x.village ? '<div class="drow"><span class="k">' + esc(T("d_village")) + '</span><span class="v">' + esc(x.village) + "</span></div>" : "") +
+			(addr ? '<div class="drow"><span class="k">' + esc(T("d_addr")) + '</span><span class="v">' + esc(addr) + "</span></div>" : "") +
+			'<div class="drow"><span class="k">' + esc(T("d_billno")) + '</span><span class="v">' + esc(x.name) + "</span></div>" +
+			'<div class="drow"><span class="k">' + esc(T("d_date")) + '</span><span class="v">' + niceDate(x.posting_date) + "</span></div>" +
+			'<div class="flabel" style="margin-top:16px">' + esc(T("d_goods")) + "</div>" +
+			(itemsHtml || '<div class="empty">' + esc(T("d_nogoods")) + "</div>") +
+			(x.phone ? '<a class="callbtn" href="tel:' + encodeURIComponent(x.phone) + '">📞 ' + esc(x.phone) + " " + esc(T("call_suffix")) + "</a>" : "") +
+			actionHtml +
+			"</div>";
+		wireTabs();
+		var sb = $id("syncbtn"); if (sb) sb.onclick = function () { toast(T("send_toast")); syncAll(); };
+		updateNet();
+		$id("dbk").onclick = function () { setMode("deliv"); };
+
+		var pending = { blob: null };
+		var pin = $id("dphoto");
+		if (pin) {
+			$id("dpbtn").onclick = function () { pin.click(); };
+			pin.onchange = function () {
+				var f = this.files && this.files[0];
+				if (!f) return;
+				shrinkImage(f).then(function (blob) {
+					pending.blob = blob;
+					var t = $id("dpthumb"); t.src = URL.createObjectURL(blob); t.classList.add("show");
+					$id("dpbtn").textContent = T("pod_done");
+				});
+			};
+		}
+		var dv = $id("ddeliver");
+		if (dv) dv.onclick = function () { confirmDelivery(x, pending.blob); };
+	});
+}
+
+function confirmDelivery(x, blob) {
+	var rec = { name: x.name, state: "queued", has_photo: !!blob, err: "", created_at: Date.now() };
+	idbPut("delivconfirm", rec).then(function () {
+		if (blob) return idbPut("delivphotos", { name: x.name, blob: blob });
+	}).then(function () {
+		x.status = "Delivered";
+		return idbPut("deliveries", x);
+	}).then(function () {
+		toast(T("pod_saved"));
+		setMode("deliv");
+		syncDeliv();
+	}).catch(function () { toast(T("fail_retry")); });
+}
+
+function refreshDeliveries() {
+	if (!navigator.onLine || !haveAuth()) return Promise.resolve();
+	return api("/api/method/driver_deliveries_list", { method: "POST" }).then(function (r) {
+		var list = (r.message || {}).deliveries || [];
+		return db().then(function (d) {
+			return new Promise(function (res, rej) {
+				var t = d.transaction("deliveries", "readwrite");
+				var st = t.objectStore("deliveries");
+				st.clear();
+				list.forEach(function (x) { st.put(x); });
+				t.oncomplete = function () { res(); };
+				t.onerror = function () { rej(t.error); };
+			});
+		}).then(function () { if (MODE === "deliv" && CURVIEW === "home") renderDelivList(); else updatePend(); });
+	}).catch(function (e) { if (e.auth) needLogin(); });
+}
+
+function syncDeliv() {
+	if (!navigator.onLine || !haveAuth()) { updateNet(); return Promise.resolve(); }
+	return idbAll("delivconfirm").then(function (items) {
+		var chain = Promise.resolve();
+		items.filter(function (x) { return x.state === "queued" || x.state === "error"; }).forEach(function (q) {
+			chain = chain.then(function () {
+				return api("/api/method/driver_delivery_confirm", { method: "POST", json: { invoice: q.name } }).then(function () {
+					q.state = q.has_photo ? "photo" : "done"; q.err = "";
+					return idbPut("delivconfirm", q).then(function () { if (MODE === "deliv" && CURVIEW === "home") renderDelivList(); });
+				}).catch(function (e) {
+					if (e.auth) { needLogin(); throw e; }
+					if (e.net) throw e;
+					q.state = "error"; q.err = e.message || "?";
+					return idbPut("delivconfirm", q).then(function () { if (MODE === "deliv" && CURVIEW === "home") renderDelivList(); });
+				});
+			});
+		});
+		return chain.then(function () { return idbAll("delivconfirm"); });
+	}).then(function (items) {
+		var chain = Promise.resolve();
+		items.filter(function (x) { return x.state === "photo"; }).forEach(function (q) {
+			chain = chain.then(function () {
+				return idbGet("delivphotos", q.name).then(function (ph) {
+					if (!ph || !ph.blob) { q.state = "done"; return idbPut("delivconfirm", q); }
+					var fd = new FormData();
+					fd.append("file", ph.blob, "pod-" + q.name.replace(/[^\w.-]/g, "") + ".jpg");
+					fd.append("is_private", "1");
+					return api("/api/method/upload_file", { method: "POST", body: fd }).then(function (up) {
+						var furl = (up.message || {}).file_url;
+						var setPhoto = furl
+							? api("/api/method/driver_delivery_confirm", { method: "POST", json: { invoice: q.name, photo_url: furl } })
+							: Promise.resolve();
+						return setPhoto.then(function () {
+							q.state = "done";
+							return idbDel("delivphotos", q.name).then(function () { return idbPut("delivconfirm", q); });
+						});
+					}).catch(function (e) { if (e.auth) { needLogin(); throw e; } });
+				});
+			});
+		});
+		return chain;
+	}).catch(function () { }).then(function () {
+		if (MODE === "deliv" && CURVIEW === "home") renderDelivList(); else updatePend();
+	});
+}
+
+function syncAll() { return Promise.all([syncNow(), syncDeliv()]); }
+
+function updatePend() {
+	Promise.all([idbAll("queue"), idbAll("delivconfirm")]).then(function (res) {
+		var slips = (res[0] || []).filter(function (x) { return x.state === "queued" || x.state === "error"; }).length;
+		var conf = (res[1] || []).filter(function (x) { return x.state === "queued" || x.state === "error" || x.state === "photo"; }).length;
+		var n = slips + conf;
+		var pb = $id("pend");
+		if (pb) { pb.style.display = n ? "" : "none"; pb.textContent = n + " " + T("left"); }
+	});
 }
 
 /* ---------- boot ---------- */
 function boot() {
+	applyLangChrome();
 	checkPairFromHash();
 	if (LS.vacslip_token_candidate) {
 		var cand = LS.vacslip_token_candidate;
-		renderPair("जोडणी चालू आहे…");
-		tryPair(cand).then(function () { boot(); toast("जोडणी झाली ✓"); }).catch(function (e) { renderPair(e.message); });
+		renderLogin(T("login_ing"));
+		tryPair(cand).then(function () { TOKEN = LS.vacslip_token; AUTHED = true; LS.vacslip_authed = "1"; boot(); toast(T("paired")); })
+			.catch(function (e) { renderLogin(e.message); });
 		return;
 	}
-	if (!LS.vacslip_token) { renderPair(""); return; }
-	renderMain();
-	refreshBoot(false).then(function () {
-		renderFromGrid();
-		renderItemGrid();
-		var b = getBoot();
-		if (b) { var w = document.querySelector(".hdr .who"); if (w) w.textContent = b.driver || ""; }
-	}).catch(function (e) { if (e.auth) needPair(); });
-	syncNow();
+	ensureAuth().then(function (authed) {
+		if (!authed) { renderLogin(""); return; }
+		MODE = LS.vacslip_mode || "deliv";
+		if (MODE === "deliv") renderDeliveries(); else renderMain();
+		refreshBoot(false).then(function () {
+			if (MODE === "transfer") { renderFromGrid(); renderItemGrid(); }
+			var b = getBoot();
+			if (b) { var w = document.querySelector(".hdr .who"); if (w) w.textContent = b.driver || (AUTH && AUTH.full_name) || ""; }
+		}).catch(function (e) { if (e.auth) needLogin(); });
+		refreshDeliveries();
+		syncAll();
+	});
 }
 
 window.addEventListener("hashchange", function () {
 	if ((location.hash || "").indexOf("pair=") >= 0) boot();
 });
-window.addEventListener("online", function () { updateNet(); syncNow(); });
+window.addEventListener("online", function () { updateNet(); syncAll(); refreshDeliveries(); });
 window.addEventListener("offline", updateNet);
-document.addEventListener("visibilitychange", function () { if (!document.hidden) syncNow(); });
+document.addEventListener("visibilitychange", function () { if (!document.hidden && haveAuth()) { syncAll(); refreshDeliveries(); } });
 
 if ("serviceWorker" in navigator) {
 	try { navigator.serviceWorker.register("/api/method/agriops_suite.slip.sw", { scope: "/slip" }).catch(function () { }); } catch (e) { }

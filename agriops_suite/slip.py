@@ -26,6 +26,32 @@ from werkzeug.wrappers import Response
 SCOPE = "/slip"
 
 
+@frappe.whitelist(methods=["GET"])
+def csrf():
+	"""CSRF token + identity for the CURRENT logged-in session.
+
+	The /slip app signs in with the driver's own email + password (frappe's
+	/api/method/login sets the session cookie). Every subsequent POST to a Driver
+	Slip / delivery endpoint then needs an X-Frappe-CSRF-Token header — a cookie
+	session without it is rejected. The token is fetched here right after login
+	because the app shell is service-worker cached and a baked-in token would go
+	stale. (Same pattern as count.py / pos_pwa.py.)
+
+	Not allow_guest: a caller with no valid session gets 403, which is exactly how
+	the app decides whether to show the login screen. Same-origin means a
+	cross-site page cannot read this response, so returning the token is safe.
+	"""
+	user = frappe.session.user
+	roles = frappe.get_roles(user)
+	return {
+		"csrf_token": frappe.sessions.get_csrf_token(),
+		"user": user,
+		"full_name": frappe.db.get_value("User", user, "full_name") or user,
+		"is_driver": "Driver" in roles,
+		"is_office": frappe.db.get_value("User", user, "user_type") == "System User",
+	}
+
+
 @frappe.whitelist(allow_guest=True, methods=["GET"])
 def sw():
 	"""Serve public/js/slip_sw.js with the scope-widening header."""

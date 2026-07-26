@@ -263,6 +263,16 @@ fixtures = [
                     # place-of-supply, and Busy has no state/pincode to populate one
                     # safely (PINCode set on 6 of 3,923 masters).
                     "Customer-custom_village",
+                    # Driver Delivery board on Sales Invoice: office assigns a
+                    # submitted SI to a driver; the /slip PWA shows it and stamps
+                    # POD. All allow_on_submit=1 (assigned after submit); no stock
+                    # doc is created — these are pure dispatch/proof metadata.
+                    "Sales Invoice-custom_driver_delivery_sb",
+                    "Sales Invoice-custom_assigned_driver",
+                    "Sales Invoice-custom_delivery_status",
+                    "Sales Invoice-custom_col_break_driver",
+                    "Sales Invoice-custom_delivered_at",
+                    "Sales Invoice-custom_pod_photo",
                 ],
             ]
         },
@@ -302,6 +312,9 @@ fixtures = [
                     # Driver Slip office review: Make Invoice button + challan
                     # duplicate warning (the PWA's desk-side counterpart)
                     "Driver Slip - Make Invoice",
+                    # Delivery board: "Send to Driver" button on the Sales Invoice
+                    # (pushes the SI to the /slip PWA; assigns a Driver-role user)
+                    "Sales Invoice - Send to Driver",
                     # Cash-management forms: denomination grid + book-balance
                     # fetch. BDV set_query still filters on the surviving
                     # "Cash In Hand - VAC"; CUV's now filters by account_type.
@@ -383,6 +396,13 @@ fixtures = [
                     "Driver Slip Submit",
                     "Driver Slip Bootstrap",
                     "Driver Slip Make Invoice",
+                    # Delivery board (office -> driver) endpoints. safe_exec:
+                    # frappe.get_all is perm-free (curated price-free output);
+                    # frappe.db.set_value bypasses the submit lock so the driver
+                    # needs NO Sales Invoice permission. Ownership-checked.
+                    "driver_list",
+                    "driver_deliveries_list",
+                    "driver_delivery_confirm",
                     # Cash Update Voucher fix (frozen-on-submit book balance,
                     # one-count-per-day, negative-drawer + Rs 1L guards) and its
                     # sibling Bank Deposit Voucher (over-balance now advisory).
