@@ -188,6 +188,17 @@ for dt in ["Item", "Item Price", "Customer"]:
     rows = frappe.get_all(dt, fields=["modified"], order_by="modified desc", limit_page_length=1)
     latest[dt] = str(rows[0].modified) if rows else None
 
+# quick-create dropdowns for the POS new-customer form
+customer_groups = [g.name for g in frappe.get_all(
+    "Customer Group", filters={"is_group": 0}, fields=["name"],
+    order_by="name", limit_page_length=0)]
+# the Village master (if it has been created); the field may still be Data or a
+# Link to Village, but either way the POS offers this list + "add new village"
+villages = []
+if frappe.db.exists("DocType", "Village"):
+    villages = [v.name for v in frappe.get_all(
+        "Village", fields=["name"], order_by="name", limit_page_length=0)]
+
 frappe.response["message"] = {
     "profile": {
         "name": profile.name,
@@ -208,6 +219,8 @@ frappe.response["message"] = {
     "employees": employees,
     "modes_of_payment": modes,
     "uoms": uoms_all,
+    "customer_groups": customer_groups,
+    "villages": villages,
     "version": latest,
 }
 """

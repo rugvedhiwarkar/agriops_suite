@@ -432,8 +432,11 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--green); out
 .newc { margin: 2px 14px 12px; }
 .newc .setbtn { margin-top: 7px; }
 .newform { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 12px; margin: 0 14px 12px; }
-.newform input { width: 100%; border: 2px solid var(--line); border-radius: 11px; padding: 10px 12px; background: var(--card); margin-bottom: 9px; }
-.newform input:focus { outline: none; border-color: var(--primary); }
+.newform input, .newform select { width: 100%; border: 2px solid var(--line); border-radius: 11px; padding: 10px 12px; background: var(--card); color: var(--ink); margin-bottom: 9px; font: inherit; }
+.newform input:focus, .newform select:focus { outline: none; border-color: var(--primary); }
+.newform .nflbl { display: block; font-size: .74rem; font-weight: 700; color: var(--muted); margin: 2px 2px 4px; }
+.newform .nfrow { display: flex; gap: 8px; }
+.newform .nfrow > div { flex: 1; min-width: 0; }
 
 /* numeric pad (rate / qty entry — native-POS style, replaces prompt()) */
 .numsheet { background: var(--card); border-radius: 20px 20px 0 0; width: 100%; max-width: 640px; padding: 14px 14px calc(14px + env(safe-area-inset-bottom)); }
@@ -608,6 +611,7 @@ var STR = {
 		prov_note: "Provisional slip — final GST bill no. after sync", thanks: "Thank you! Visit again.",
 		final_note: "GST bill", cust_new: "+ New customer", cust_name: "Name", cust_mob: "Mobile", cust_vil: "Village",
 		cust_make: "Create", cust_made: "Customer created", need_name: "Name is required",
+		cust_alias: "Alias / short name", cust_grp: "Customer group", cust_type: "Type", cust_indiv: "Individual", cust_company: "Company", vil_new: "New village added",
 		split: "Split", khata_bal: "Khata (balance)", overpaid: "More than the bill total",
 		bal_khata: "Balance to khata", split_hint: "Enter cash / UPI — the rest goes on khata",
 		hold: "Hold bill", held: "Bill held", held_swap: "Current bill parked too",
@@ -656,6 +660,7 @@ var STR = {
 		prov_note: "अस्थायी रसीद — अंतिम GST बिल नं. सिंक के बाद", thanks: "धन्यवाद! फिर आइए।",
 		final_note: "GST बिल", cust_new: "+ नया ग्राहक", cust_name: "नाम", cust_mob: "मोबाइल", cust_vil: "गाँव",
 		cust_make: "बनाएँ", cust_made: "ग्राहक बन गया", need_name: "नाम ज़रूरी है",
+		cust_alias: "उपनाम / छोटा नाम", cust_grp: "ग्राहक समूह", cust_type: "प्रकार", cust_indiv: "व्यक्ति", cust_company: "कंपनी", vil_new: "नया गाँव जोड़ा गया",
 		split: "बाँटें", khata_bal: "खाता (बाकी)", overpaid: "बिल से ज़्यादा",
 		bal_khata: "बाकी खाते में", split_hint: "नकद / UPI डालें — बाकी खाते में जाएगा",
 		hold: "बिल होल्ड करें", held: "बिल होल्ड हुआ", held_swap: "चालू बिल भी होल्ड में गया",
@@ -704,6 +709,7 @@ var STR = {
 		prov_note: "तात्पुरती पावती — अंतिम GST बिल क्र. सिंकनंतर", thanks: "धन्यवाद! पुन्हा या.",
 		final_note: "GST बिल", cust_new: "+ नवीन ग्राहक", cust_name: "नाव", cust_mob: "मोबाईल", cust_vil: "गाव",
 		cust_make: "तयार करा", cust_made: "ग्राहक तयार झाला", need_name: "नाव आवश्यक आहे",
+		cust_alias: "टोपणनाव / छोटे नाव", cust_grp: "ग्राहक गट", cust_type: "प्रकार", cust_indiv: "व्यक्ती", cust_company: "कंपनी", vil_new: "नवीन गाव जोडले",
 		split: "विभागून", khata_bal: "खाते (बाकी)", overpaid: "बिलापेक्षा जास्त",
 		bal_khata: "बाकी खात्यावर", split_hint: "रोख / UPI टाका — उरलेले खात्यावर जाईल",
 		hold: "बिल होल्ड करा", held: "बिल होल्ड झाले", held_swap: "चालू बिलही होल्डला गेले",
@@ -1887,10 +1893,23 @@ function renderCustSheet() {
 	if (canAdd && !showNew) h += '<button class="setbtn act" onclick="toggleNew()">' + esc(T("cust_new")) + "</button>";
 	h += "</div>";
 	if (canAdd && showNew) {
+		var groups = (CATALOG && CATALOG.customer_groups) || [];
+		var vils = (CATALOG && CATALOG.villages) || [];
+		var dg = commonGroup();
 		h += '<div class="newform">' +
 			'<input id="ncn" placeholder="' + esc(T("cust_name")) + ' *" value="">' +
 			'<input id="ncm" inputmode="tel" placeholder="' + esc(T("cust_mob")) + '" value="">' +
-			'<input id="ncv" placeholder="' + esc(T("cust_vil")) + '" value="">' +
+			/* village: native datalist = dropdown of existing villages + type a new one */
+			'<label class="nflbl">' + esc(T("cust_vil")) + "</label>" +
+			'<input id="ncv" list="vilopts" autocomplete="off" placeholder="' + esc(T("cust_vil")) + '" value="">' +
+			'<datalist id="vilopts">' + vils.map(function (v) { return '<option value="' + esc(v) + '"></option>'; }).join("") + "</datalist>" +
+			'<input id="ncalias" placeholder="' + esc(T("cust_alias")) + '" value="">' +
+			'<div class="nfrow">' +
+			'<div><label class="nflbl">' + esc(T("cust_grp")) + "</label>" +
+			'<select id="ncgrp">' + groups.map(function (g) { return '<option value="' + esc(g) + '"' + (g === dg ? " selected" : "") + ">" + esc(g) + "</option>"; }).join("") + "</select></div>" +
+			'<div><label class="nflbl">' + esc(T("cust_type")) + "</label>" +
+			'<select id="nctype"><option value="Individual">' + esc(T("cust_indiv")) + '</option><option value="Company">' + esc(T("cust_company")) + "</option></select></div>" +
+			"</div>" +
 			'<button class="setbtn act" onclick="createCust()">' + esc(T("cust_make")) + "</button></div>";
 	}
 	h += "</div>";
@@ -1942,21 +1961,41 @@ function createCust() {
 	var nm = (($id("ncn") || {}).value || "").trim();
 	var mb = (($id("ncm") || {}).value || "").trim();
 	var vl = (($id("ncv") || {}).value || "").trim();
+	var al = (($id("ncalias") || {}).value || "").trim();
+	var grp = (($id("ncgrp") || {}).value || "").trim() || commonGroup();
+	var typ = (($id("nctype") || {}).value || "").trim() || "Individual";
 	if (!nm) { toast(T("need_name")); return; }
-	var payload = { customer_name: nm, customer_group: commonGroup(), territory: "All Territories" };
-	if (mb) payload.mobile_no = mb;
-	if (vl) payload.custom_village = vl;
-	api("/api/resource/Customer", { method: "POST", json: payload }).then(function (d) {
-		var doc = d.data || {};
-		var c = { name: doc.name, customer_name: doc.customer_name || nm, mobile_no: mb, custom_village: vl, customer_group: payload.customer_group };
-		CUSTOMERS.unshift(c);
-		if (CATALOG) { CATALOG.customers = CUSTOMERS; idbKPut("catalog", CATALOG).catch(function () { }); }
-		CUST = c; KHATA = null;
-		toast(T("cust_made"));
-		closeCust(); render();
-	}).catch(function (e) {
-		toast((e && e.message) || "?");
-	});
+	var known = (CATALOG && CATALOG.villages) || [];
+	var newVillage = vl && known.indexOf(vl) === -1;
+	function postCustomer() {
+		var payload = { customer_name: nm, customer_group: grp, customer_type: typ, territory: "All Territories" };
+		if (mb) payload.mobile_no = mb;
+		if (vl) payload.custom_village = vl;
+		if (al) payload.custom_alias = al;
+		api("/api/resource/Customer", { method: "POST", json: payload }).then(function (d) {
+			var doc = d.data || {};
+			var c = { name: doc.name, customer_name: doc.customer_name || nm, mobile_no: mb, custom_village: vl, custom_alias: al, customer_group: grp };
+			CUSTOMERS.unshift(c);
+			if (CATALOG) { CATALOG.customers = CUSTOMERS; idbKPut("catalog", CATALOG).catch(function () { }); }
+			CUST = c; KHATA = null;
+			toast(T("cust_made"));
+			closeCust(); render();
+		}).catch(function (e) { toast((e && e.message) || "?"); });
+	}
+	if (newVillage) {
+		/* register the new village in the master FIRST so the dropdown grows and a
+		   Link-typed field resolves; if it already exists or we lack perm, proceed
+		   anyway (a Data-typed field accepts the string regardless) */
+		api("/api/resource/Village", { method: "POST", json: { village_name: vl } })
+			.then(function () {
+				if (CATALOG) { CATALOG.villages = (CATALOG.villages || []).concat([vl]).sort(); idbKPut("catalog", CATALOG).catch(function () { }); }
+				toast(T("vil_new"));
+			})
+			.catch(function () { })
+			.then(postCustomer);
+	} else {
+		postCustomer();
+	}
 }
 
 /* ---------- fast journal (⚡) ----------
