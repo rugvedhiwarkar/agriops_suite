@@ -273,6 +273,13 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--green); out
 .cline .lmeta { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .uomchip { display: inline-flex; align-items: center; gap: 3px; margin-top: 2px; font-size: .74rem; font-weight: 700; color: var(--green-dark); background: var(--green-soft); border-radius: 999px; padding: 2px 9px; cursor: pointer; white-space: nowrap; }
 .uomchip:active { filter: brightness(.96); }
+.uomchip.static { cursor: default; background: var(--soft); color: var(--muted); }
+.modebar { display: flex; gap: 8px; padding: 8px 12px 0; }
+.modebar button { flex: 1; border: 2px solid var(--line); border-radius: 11px; background: var(--card); padding: 9px; font-weight: 800; font-size: .92rem; color: var(--muted); }
+.modebar button.on { border-color: var(--primary); background: var(--soft); color: var(--ink); }
+.modebar.buy button.on { border-color: var(--amber); background: var(--amber-soft); color: var(--amber-dark); }
+.batchin { width: 100%; max-width: 130px; border: 1.6px solid var(--line); border-radius: 8px; padding: 4px 8px; font-size: .78rem; margin-top: 2px; background: var(--card); color: var(--ink); }
+.gobtn.buy { background: linear-gradient(150deg, var(--amber), var(--amber-dark)); }
 .discchip { display: inline-flex; align-items: center; margin-top: 2px; font-size: .74rem; font-weight: 700; color: var(--amber-dark); background: var(--amber-soft); border-radius: 999px; padding: 2px 9px; cursor: pointer; white-space: nowrap; }
 .discchip:active { filter: brightness(.96); }
 .cline .lr.struck b { text-decoration: line-through; color: var(--muted); font-weight: 600; }
@@ -371,7 +378,45 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--green); out
 .recrow:active { background: var(--soft); }
 .rec-main { flex: 1; min-width: 0; }
 .rec-ref { font-weight: 800; font-size: .9rem; display: flex; align-items: center; gap: 7px; }
+.rec-time { font-weight: 700; font-size: .72rem; color: var(--muted); background: var(--soft); border-radius: 6px; padding: 1px 6px; }
 .rec-sub { font-size: .78rem; color: var(--muted); margin-top: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.rec-items { font-size: .76rem; color: var(--ink); margin-top: 3px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; opacity: .85; }
+.recfilters { display: flex; gap: 7px; overflow-x: auto; padding: 2px 0 10px; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+.recfilters::-webkit-scrollbar { display: none; }
+.recfilters button { flex: none; border: 1.6px solid var(--line); border-radius: 999px; background: var(--card); padding: 6px 12px; font-weight: 700; font-size: .82rem; color: var(--muted); white-space: nowrap; }
+.recfilters button b { color: var(--ink); }
+.recfilters button.on { border-color: var(--primary); background: var(--soft); color: var(--ink); }
+.invsheet { max-width: 640px; max-height: 88vh; display: flex; flex-direction: column; overflow-y: auto; }
+.invmeta { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; padding: 4px 2px 10px; }
+.invmeta .im-cust { font-size: .95rem; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.invtblwrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 10px; }
+.invtbl { width: 100%; border-collapse: collapse; font-size: .82rem; }
+.invtbl th, .invtbl td { padding: 7px 9px; border-bottom: 1px solid var(--line); text-align: left; white-space: nowrap; }
+.invtbl th { background: var(--soft); color: var(--muted); font-weight: 700; font-size: .72rem; }
+.invtbl td.c, .invtbl th.c { text-align: center; }
+.invtbl td.r, .invtbl th.r { text-align: right; font-variant-numeric: tabular-nums; }
+.invtbl tr:last-child td { border-bottom: 0; }
+.invtotals { margin-top: 12px; }
+.invkv { display: flex; justify-content: space-between; padding: 6px 2px; font-size: .9rem; border-top: 1px solid var(--line); }
+.invkv.grand { font-weight: 800; font-size: 1.05rem; }
+.invkv.due b { color: var(--amber-dark); }
+.invrem { margin-top: 10px; font-size: .82rem; color: var(--muted); font-style: italic; }
+.invactions { margin-top: 14px; display: flex; gap: 8px; }
+.invactions button { flex: 1; }
+.repcards { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 9px; margin: 4px 0 6px; }
+.repcard { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 12px; box-shadow: var(--shadow-sm); }
+.repcard .rc-l { font-size: .72rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .03em; }
+.repcard .rc-v { font-size: 1.3rem; font-weight: 800; color: var(--ink); margin-top: 4px; font-variant-numeric: tabular-nums; }
+.repcard .rc-s { font-size: .74rem; color: var(--faint); margin-top: 2px; }
+.repcard.due .rc-v { color: var(--amber-dark); }
+.repcard.cash { background: var(--green-soft); border-color: var(--green-soft); }
+.repcard.cash .rc-v { color: var(--green-dark); }
+.repsec { font-size: .78rem; font-weight: 800; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); margin: 14px 2px 8px; }
+.repitbl th.sortcol { cursor: pointer; }
+.repflat tbody tr { cursor: pointer; }
+.repflat tbody tr:active { background: var(--soft); }
+.invtbl td.nowrap { white-space: nowrap; }
+.repflat .rec-pill { font-size: .66rem; padding: 1px 6px; }
 .rec-r { text-align: right; flex: none; }
 .rec-amt { font-weight: 800; font-size: .95rem; font-variant-numeric: tabular-nums; }
 .rec-date { font-size: .72rem; color: var(--faint); margin-top: 2px; }
@@ -421,6 +466,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--green); out
    (80). Fixes the customer window appearing behind the Fast Journal form. */
 #custovl { z-index: 70; }
 #uomovl { z-index: 74; }
+#invovl { z-index: 78; }
 #discovl { z-index: 80; align-items: flex-end; }
 #numovl { z-index: 80; }
 .sheet {
@@ -617,9 +663,10 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--green); out
     "18:46:00 DAP 50 KG": [{ uom: "50 KG", conversion_factor: 1 }, { uom: "Bag", conversion_factor: 1 }],
     "GI Fencing Wire 10 KG": [{ uom: "10 KG", conversion_factor: 1 }, { uom: "Kg", conversion_factor: 0.1 }]
   };
+  var BATCH = { "Coragen 30 ML": 1, "18:46:00 DAP 50 KG": 1 };  // demo: a couple of batch-tracked items
   var items = [], prices = [];
   ITEMS.forEach(function (r) {
-    items.push({ name: r[0], item_name: r[0], item_group: r[1], stock_uom: r[2], image: null, gst_hsn_code: "", uoms: ALTU[r[0]] || [] });
+    items.push({ name: r[0], item_name: r[0], item_group: r[1], stock_uom: r[2], image: null, gst_hsn_code: "", uoms: ALTU[r[0]] || [], has_batch_no: BATCH[r[0]] ? 1 : 0, is_stock_item: 1 });
     if (r[3] != null) prices.push({ item_code: r[0], price_list_rate: r[3], uom: r[2] });  // default price under stock_uom (ERPNext auto-fills this)
   });
   // a couple of genuinely per-UOM prices on DEFINED alternate units (only units
@@ -680,10 +727,11 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--green); out
   var RECENT = {
     can_journal: 1,
     sales: [
-      { name: "SI26-00921", customer: "Umesh Agashe", customer_name: "Umesh Agashe", grand_total: 1700, rounded_total: 1700, outstanding_amount: 0, status: "Paid", posting_date: "2026-07-25" },
-      { name: "SI26-00920", customer: "Ramesh Patil", customer_name: "Ramesh Patil", grand_total: 4300, rounded_total: 4300, outstanding_amount: 2300, status: "Partly Paid", posting_date: "2026-07-25" },
-      { name: "SI26-00919", customer: "Cash Customer", customer_name: "Cash Customer", grand_total: 540, rounded_total: 540, outstanding_amount: 0, status: "Paid", posting_date: "2026-07-25" },
-      { name: "SI26-00918", customer: "A. G. Nagpure", customer_name: "A. G. Nagpure", grand_total: 2600, rounded_total: 2600, outstanding_amount: 2600, status: "Unpaid", posting_date: "2026-07-24" }
+      { name: "SI26-00922", customer: "Balaji Deshmukh", customer_name: "Balaji Deshmukh", grand_total: 2960, rounded_total: 2960, outstanding_amount: 0, status: "Draft", docstatus: 0, posting_date: "2026-07-26", payments: [], items: [{ item_name: "18:46:00 DAP 50 KG", qty: 2, uom: "50 KG" }, { item_name: "Ferrari 4 KG", qty: 1, uom: "4 KG" }] },
+      { name: "SI26-00921", customer: "Umesh Agashe", customer_name: "Umesh Agashe", grand_total: 1700, rounded_total: 1700, outstanding_amount: 0, status: "Paid", docstatus: 1, posting_date: "2026-07-25", payments: [{ mode: "Cash", amount: 1700 }], items: [{ item_name: "18:46:00 DAP 50 KG", qty: 1, uom: "50 KG" }, { item_name: "Coragen 30 ML", qty: 3, uom: "30 ML" }] },
+      { name: "SI26-00920", customer: "Ramesh Patil", customer_name: "Ramesh Patil", grand_total: 4300, rounded_total: 4300, outstanding_amount: 2300, status: "Partly Paid", docstatus: 1, posting_date: "2026-07-25", payments: [{ mode: "UPI", amount: 2000 }], items: [{ item_name: "20:20:00:13 Navratna 50 KG", qty: 2, uom: "50 KG" }, { item_name: "Mega Zinc 10 KG", qty: 1, uom: "10 KG" }, { item_name: "Sagarika 500 ML", qty: 4, uom: "500 ML" }, { item_name: "Sail 500 GM", qty: 1, uom: "500 GM" }] },
+      { name: "SI26-00919", customer: "Cash Customer", customer_name: "Cash Customer", grand_total: 540, rounded_total: 540, outstanding_amount: 0, status: "Paid", docstatus: 1, posting_date: "2026-07-25", payments: [{ mode: "Cash 2", amount: 540 }], items: [{ item_name: "Nagraj 505 1 Litre", qty: 1, uom: "1 Litre" }] },
+      { name: "SI26-00918", customer: "A. G. Nagpure", customer_name: "A. G. Nagpure", grand_total: 2600, rounded_total: 2600, outstanding_amount: 2600, status: "Unpaid", docstatus: 1, posting_date: "2026-07-24", payments: [], items: [{ item_name: "Soybean JS-335 30 KG", qty: 1, uom: "30 KG" }] }
     ],
     payments: [
       { name: "PE26-00492", kind: "Receive", party: "Umesh Agashe", amount: 5000, date: "2026-07-25", remark: "khata collection" },
@@ -702,10 +750,40 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--green); out
   window.fetch = function (url, opts) {
     url = String(url); opts = opts || {};
     function body() { try { return JSON.parse(opts.body || "{}"); } catch (e) { return {}; } }
-    if (url.indexOf("pos_pwa.csrf") >= 0) return Promise.resolve(J({ message: { csrf_token: "demo", user: "demo@vac", full_name: "Demo Cashier", is_cashier: 1, can_journal: 1 } }));
+    if (url.indexOf("pos_pwa.csrf") >= 0) return Promise.resolve(J({ message: { csrf_token: "demo", user: "demo@vac", full_name: "Demo Cashier", is_cashier: 1, can_journal: 1, can_purchase: 1 } }));
+    if (url.indexOf("vac_pos_purchase") >= 0) { var bpr = body(); return Promise.resolve(J({ message: { duplicate: false, name: "PR-DEMO-" + Math.floor(1 + Object.keys(seen).length), docstatus: 0, supplier: bpr.supplier, total_qty: 0 } })); }
+    if (url.indexOf("/api/resource/Supplier") >= 0 && (opts.method === "POST")) { var bs = body(); return Promise.resolve(J({ data: { name: bs.supplier_name, supplier_name: bs.supplier_name } })); }
     if (url.indexOf("vac_pos_ping") >= 0) return Promise.resolve(J({ message: { pong: true, user: "demo@vac", can_journal: 1 } }));
     if (url.indexOf("vac_pos_catalog") >= 0) return Promise.resolve(J({ message: CATALOG }));
     if (url.indexOf("vac_pos_outstanding") >= 0) return Promise.resolve(J({ message: { outstanding: 1250 } }));
+    if (url.indexOf("vac_pos_report") >= 0) return Promise.resolve(J({ message: {
+      from: "demo", to: "demo", total_sales: 21840, total_udhaar: 4900, bill_count: 14, qty_total: 49,
+      items_sold: [
+        { item_name: "18:46:00 DAP 50 KG", uom: "50 KG", qty: 12, amount: 16200 },
+        { item_name: "Coragen 30 ML", uom: "30 ML", qty: 9, amount: 10350 },
+        { item_name: "20:20:00:13 Navratna 50 KG", uom: "50 KG", qty: 6, amount: 7500 },
+        { item_name: "Sagarika 500 ML", uom: "500 ML", qty: 14, amount: 3640 },
+        { item_name: "Mega Zinc 10 KG", uom: "10 KG", qty: 5, amount: 3200 },
+        { item_name: "Nagraj 505 1 Litre", uom: "1 Litre", qty: 3, amount: 1620 }
+      ],
+      bills: [
+        { name: "SI26-00922", customer_name: "Balaji Deshmukh", time: "2026-07-26 15:42:10", date: "2026-07-26", amount: 2960, outstanding: 0, items: [{ item_name: "18:46:00 DAP 50 KG", qty: 2 }, { item_name: "Ferrari 4 KG", qty: 1 }] },
+        { name: "SI26-00921", customer_name: "Umesh Agashe", time: "2026-07-26 14:05:33", date: "2026-07-26", amount: 1700, outstanding: 0, items: [{ item_name: "18:46:00 DAP 50 KG", qty: 1 }, { item_name: "Coragen 30 ML", qty: 3 }] },
+        { name: "SI26-00920", customer_name: "Ramesh Patil", time: "2026-07-26 12:20:00", date: "2026-07-26", amount: 4300, outstanding: 2300, items: [{ item_name: "20:20:00:13 Navratna 50 KG", qty: 2 }, { item_name: "Mega Zinc 10 KG", qty: 1 }, { item_name: "Sagarika 500 ML", qty: 4 }] },
+        { name: "SI26-00919", customer_name: "Cash Customer", time: "2026-07-26 10:11:00", date: "2026-07-26", amount: 540, outstanding: 0, items: [{ item_name: "Nagraj 505 1 Litre", qty: 1 }] }
+      ],
+      lines: [
+        { invoice: "SI26-00922", date: "2026-07-26", time: "2026-07-26 15:42:10", customer_name: "Balaji Deshmukh", item_name: "18:46:00 DAP 50 KG", qty: 2, uom: "50 KG", rate: 1350, amount: 2700, status: "Draft" },
+        { invoice: "SI26-00922", date: "2026-07-26", time: "2026-07-26 15:42:10", customer_name: "Balaji Deshmukh", item_name: "Ferrari 4 KG", qty: 1, uom: "4 KG", rate: 780, amount: 780, status: "Draft" },
+        { invoice: "SI26-00921", date: "2026-07-26", time: "2026-07-26 14:05:33", customer_name: "Umesh Agashe", item_name: "18:46:00 DAP 50 KG", qty: 1, uom: "50 KG", rate: 1350, amount: 1350, status: "Paid" },
+        { invoice: "SI26-00921", date: "2026-07-26", time: "2026-07-26 14:05:33", customer_name: "Umesh Agashe", item_name: "Coragen 30 ML", qty: 3, uom: "30 ML", rate: 1150, amount: 3450, status: "Paid" },
+        { invoice: "SI26-00920", date: "2026-07-26", time: "2026-07-26 12:20:00", customer_name: "Ramesh Patil", item_name: "20:20:00:13 Navratna 50 KG", qty: 2, uom: "50 KG", rate: 1250, amount: 2500, status: "Partly Paid" },
+        { invoice: "SI26-00920", date: "2026-07-26", time: "2026-07-26 12:20:00", customer_name: "Ramesh Patil", item_name: "Mega Zinc 10 KG", qty: 1, uom: "10 KG", rate: 640, amount: 640, status: "Partly Paid" },
+        { invoice: "SI26-00919", date: "2026-07-26", time: "2026-07-26 10:11:00", customer_name: "Cash Customer", item_name: "Nagraj 505 1 Litre", qty: 1, uom: "1 Litre", rate: 540, amount: 540, status: "Paid" }
+      ],
+      cash: [{ label: "Cash 1", balance: 53590 }, { label: "Cash 2", balance: 595 }, { label: "Upi Payment", balance: 131744.06 }],
+      can_cash: 1
+    } }));
     if (url.indexOf("vac_pos_set_price") >= 0) {
       var bp = body(); var u = bp.uom || "";
       var had = prices.some(function (p) { return p.item_code === bp.item_code && (p.uom || "") === u; });
@@ -715,6 +793,14 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--green); out
     }
     if (url.indexOf("fast_voucher_config") >= 0) return Promise.resolve(J({ message: FJCFG }));
     if (url.indexOf("vac_pos_recent") >= 0) return Promise.resolve(J({ message: RECENT }));
+    if (url.indexOf("vac_pos_invoice") >= 0) {
+      var inm = decodeURIComponent((url.split("name=")[1] || "").split("&")[0]);
+      var s = (RECENT.sales || []).filter(function (x) { return x.name === inm; })[0] || {};
+      var its = (s.items || []).map(function (it, ix) { var lr = [1350, 780, 1150, 640, 260, 2600][ix % 6]; return { item_name: it.item_name, item_code: it.item_name, qty: it.qty, uom: it.uom, price_list_rate: lr, discount_percentage: ix === 0 ? 5 : 0, discount_amount: 0, rate: ix === 0 ? Math.round(lr * 0.95) : lr, amount: (ix === 0 ? Math.round(lr * 0.95) : lr) * it.qty }; });
+      var net = its.reduce(function (a, i) { return a + i.amount; }, 0);
+      var tax = Math.round(net * 18 / 118 * 100) / 100;
+      return Promise.resolve(J({ message: { name: s.name, customer: s.customer, customer_name: s.customer_name, village: "Sihora", posting_date: s.posting_date, status: s.status, docstatus: s.docstatus == null ? 1 : s.docstatus, is_pos: 1, net_total: Math.round((net - tax) * 100) / 100, total_taxes_and_charges: tax, grand_total: net, rounded_total: Math.round(net), outstanding_amount: s.outstanding_amount || 0, remarks: "POS PWA sale", items: its, taxes: [{ account_head: "Output Tax CGST - VAC", tax_amount: Math.round(tax / 2 * 100) / 100 }, { account_head: "Output Tax SGST - VAC", tax_amount: Math.round(tax / 2 * 100) / 100 }], payments: s.payments || [] } }));
+    }
     if (url.indexOf("vac_pos_create_invoice") >= 0) {
       var b = body();
       if (seen[b.pwa_client_id]) return Promise.resolve(J({ message: { duplicate: true, name: seen[b.pwa_client_id], docstatus: 1, grand_total: 0, outstanding_amount: 0 } }));
@@ -775,7 +861,10 @@ var STR = {
 		price_saved: "Price list updated", price_upd_q: "Change the saved list price from {old} to {new}?", price_upd_yes: "Update price",
 		uom_p: "Unit", uom_pick: "Choose unit", uom_stock: "stock unit", uom_other: "Other units — rename (1:1)", no_match: "No matches",
 		disc: "Disc", disc_title: "Discount", list: "List", net: "Net", disc_remove: "Remove discount", disc_big: "Discount exceeds price",
-		recent: "Recent", recent_sales: "Bills", recent_pay: "Payments & receipts", recent_jrnl: "Journal entries", print: "Print", printing: "Preparing print…", print_fail: "Could not print", none_recent: "Nothing yet", loading_r: "Loading…",
+		recent: "Recent", recent_sales: "Bills", recent_pay: "Payments & receipts", recent_jrnl: "Journal entries", print: "Print", printing: "Preparing print…", print_fail: "Could not print", none_recent: "Nothing yet", loading_r: "Loading…", more_items: "more",
+		item: "Item", amount: "Amount", invoice: "Invoice", f_all: "All", f_draft: "Draft", f_paid: "Paid", f_unpaid: "Unpaid",
+		report: "Report", r_today: "Today", r_yday: "Yesterday", r_week: "7 days", r_month: "This month", rep_sales: "Sales", rep_bills: "Bills", rep_qty: "Qty sold", rep_items: "Items", rep_cash: "Cash in hand", rep_sold: "Items sold", rep_qtyh: "Qty", rep_chrono: "Sales — who & when", rep_when: "Time", status_h: "Status",
+		m_sell: "Sell", m_buy: "Buy", buy_pick_sup: "Choose supplier", buy_add: "Add items that arrived", buy_create: "Create draft receipt", buy_draft_note: "Saves as a DRAFT for review", buy_done: "Draft receipt — ", buy_total_qty: "Total qty", sup_name: "Supplier name", batch: "Batch",
 		st_pend: "Waiting", st_send: "Sending…", st_fail: "Failed", st_done: "Sent",
 		retry: "Retry", discard: "Delete", reprint: "Print", print: "Print",
 		discard_q: "Delete this bill forever? It has NOT reached ERPNext.",
@@ -825,7 +914,10 @@ var STR = {
 		price_saved: "मूल्य सूची अपडेट हुई", price_upd_q: "सहेजा हुआ दाम {old} से {new} करें?", price_upd_yes: "दाम अपडेट करें",
 		uom_p: "इकाई", uom_pick: "इकाई चुनें", uom_stock: "स्टॉक इकाई", uom_other: "अन्य इकाइयाँ — नाम बदलें (1:1)", no_match: "कुछ नहीं मिला",
 		disc: "छूट", disc_title: "छूट", list: "सूची दाम", net: "नेट", disc_remove: "छूट हटाएँ", disc_big: "छूट दाम से ज़्यादा है",
-		recent: "हाल का", recent_sales: "बिल", recent_pay: "भुगतान व जमा", recent_jrnl: "जर्नल एंट्री", print: "प्रिंट", printing: "प्रिंट तैयार हो रहा…", print_fail: "प्रिंट नहीं हुआ", none_recent: "अभी कुछ नहीं", loading_r: "लोड हो रहा…",
+		recent: "हाल का", recent_sales: "बिल", recent_pay: "भुगतान व जमा", recent_jrnl: "जर्नल एंट्री", print: "प्रिंट", printing: "प्रिंट तैयार हो रहा…", print_fail: "प्रिंट नहीं हुआ", none_recent: "अभी कुछ नहीं", loading_r: "लोड हो रहा…", more_items: "और",
+		item: "सामान", amount: "रकम", invoice: "बिल", f_all: "सभी", f_draft: "ड्राफ्ट", f_paid: "पेड", f_unpaid: "बकाया",
+		report: "रिपोर्ट", r_today: "आज", r_yday: "कल", r_week: "7 दिन", r_month: "इस माह", rep_sales: "बिक्री", rep_bills: "बिल", rep_qty: "बिकी मात्रा", rep_items: "आइटम", rep_cash: "नकद शेष", rep_sold: "बिके सामान", rep_qtyh: "मात्रा", rep_chrono: "बिक्री — किसे व कब", rep_when: "समय", status_h: "स्थिति",
+		m_sell: "बिक्री", m_buy: "खरीद", buy_pick_sup: "सप्लायर चुनें", buy_add: "आया हुआ सामान जोड़ें", buy_create: "ड्राफ्ट रसीद बनाएँ", buy_draft_note: "समीक्षा हेतु ड्राफ्ट सेव होगा", buy_done: "ड्राफ्ट रसीद — ", buy_total_qty: "कुल मात्रा", sup_name: "सप्लायर का नाम", batch: "बैच",
 		st_pend: "प्रतीक्षा में", st_send: "भेज रहे हैं…", st_fail: "असफल", st_done: "भेज दिया",
 		retry: "फिर भेजें", discard: "हटाएँ", reprint: "प्रिंट", print: "प्रिंट",
 		discard_q: "यह बिल हमेशा के लिए हटाएँ? यह ERPNext नहीं पहुँचा है।",
@@ -875,7 +967,10 @@ var STR = {
 		price_saved: "दरसूची अपडेट झाली", price_upd_q: "साठवलेला दर {old} वरून {new} करायचा?", price_upd_yes: "दर अपडेट करा",
 		uom_p: "एकक", uom_pick: "एकक निवडा", uom_stock: "स्टॉक एकक", uom_other: "इतर एकके — नाव बदला (1:1)", no_match: "काही सापडले नाही",
 		disc: "सूट", disc_title: "सूट", list: "यादी दर", net: "नेट", disc_remove: "सूट काढा", disc_big: "सूट दरापेक्षा जास्त",
-		recent: "अलीकडील", recent_sales: "बिले", recent_pay: "पेमेंट व जमा", recent_jrnl: "जर्नल नोंदी", print: "प्रिंट", printing: "प्रिंट तयार होत आहे…", print_fail: "प्रिंट झाले नाही", none_recent: "अजून काही नाही", loading_r: "लोड होत आहे…",
+		recent: "अलीकडील", recent_sales: "बिले", recent_pay: "पेमेंट व जमा", recent_jrnl: "जर्नल नोंदी", print: "प्रिंट", printing: "प्रिंट तयार होत आहे…", print_fail: "प्रिंट झाले नाही", none_recent: "अजून काही नाही", loading_r: "लोड होत आहे…", more_items: "अजून",
+		item: "वस्तू", amount: "रक्कम", invoice: "बिल", f_all: "सर्व", f_draft: "ड्राफ्ट", f_paid: "पेड", f_unpaid: "थकीत",
+		report: "रिपोर्ट", r_today: "आज", r_yday: "काल", r_week: "7 दिवस", r_month: "या महिन्यात", rep_sales: "विक्री", rep_bills: "बिले", rep_qty: "विकलेली संख्या", rep_items: "वस्तू", rep_cash: "रोख शिल्लक", rep_sold: "विकलेल्या वस्तू", rep_qtyh: "संख्या", rep_chrono: "विक्री — कोणाला व केव्हा", rep_when: "वेळ", status_h: "स्थिती",
+		m_sell: "विक्री", m_buy: "खरेदी", buy_pick_sup: "पुरवठादार निवडा", buy_add: "आलेला माल जोडा", buy_create: "ड्राफ्ट पावती तयार करा", buy_draft_note: "पुनरावलोकनासाठी ड्राफ्ट सेव्ह होईल", buy_done: "ड्राफ्ट पावती — ", buy_total_qty: "एकूण संख्या", sup_name: "पुरवठादाराचे नाव", batch: "बॅच",
 		st_pend: "प्रतीक्षेत", st_send: "पाठवत आहे…", st_fail: "अयशस्वी", st_done: "पाठवले",
 		retry: "पुन्हा पाठवा", discard: "हटवा", reprint: "प्रिंट", print: "प्रिंट",
 		discard_q: "हे बिल कायमचे हटवायचे? हे ERPNext मध्ये गेलेले नाही.",
@@ -1271,18 +1366,148 @@ function render() {
 		'<button class="' + (VIEW === "pending" ? "on" : "") + '" onclick="go(\'pending\')">' + esc(T("pending")) +
 		(pendCount() ? '<span class="bub">' + pendCount() + "</span>" : "") + "</button>" +
 		'<button class="' + (VIEW === "recent" ? "on" : "") + '" onclick="go(\'recent\')">' + esc(T("recent")) + "</button>" +
+		'<button class="' + (VIEW === "report" ? "on" : "") + '" onclick="go(\'report\')">' + esc(T("report")) + "</button>" +
 		"</div>";
+	/* Sell / Buy switch — Buy books draft Purchase Receipts (only for staff with
+	   the POS Purchase role) */
+	if (canBuy() && (VIEW === "sell" || VIEW === "cart")) {
+		h += '<div class="modebar' + (MODE === "buy" ? " buy" : "") + '">' +
+			'<button class="' + (MODE === "sell" ? "on" : "") + '" onclick="setMode(\'sell\')">&#128722; ' + esc(T("m_sell")) + "</button>" +
+			'<button class="' + (MODE === "buy" ? "on" : "") + '" onclick="setMode(\'buy\')">&#128230; ' + esc(T("m_buy")) + "</button></div>";
+	}
 	if (two) h += '<div class="cols"><div class="colL">' + renderSell() + '</div><div class="colR">' + renderCart() + "</div></div>";
 	else if (VIEW === "sell") h += renderSell();
 	else if (VIEW === "cart") h += renderCart();
 	else if (VIEW === "pending") h += renderPending();
 	else if (VIEW === "recent") h += renderRecent();
+	else if (VIEW === "report") h += renderReport();
 	else if (VIEW === "settings") h += renderSettings();
 	$id("app").innerHTML = h;
 	if (VIEW === "sell" || two) { var q = $id("q"); if (q && searchQ) { q.focus(); q.setSelectionRange(q.value.length, q.value.length); } }
 	if (VIEW === "cart" || two) loadKhata();
 }
-function go(v) { VIEW = v; render(); if (v === "recent") loadRecent(); }
+function go(v) { VIEW = v; render(); if (v === "recent") loadRecent(); if (v === "report") loadReport(); }
+
+/* ---------- Buy mode: draft Purchase Receipts (incoming stock) ---------- */
+var MODE = "sell", pcart = [], PSUP = null;
+function canBuy() { return !!(AUTH && AUTH.can_purchase); }
+function setMode(m) { MODE = m; VIEW = "sell"; render(); }
+function pAdd(it) {
+	for (var i = 0; i < pcart.length; i++) if (pcart[i].code === it.name) { pcart[i].qty += 1; render(); return; }
+	pcart.push({ code: it.name, name: it.item_name, uom: it.stock_uom || "", conv: 1, qty: 1, batch: "", has_batch: !!it.has_batch_no });
+	if (!isWide()) VIEW = "cart";
+	render();
+}
+function pQ(i, d) { if (pcart[i]) { pcart[i].qty = Math.max(1, round2((pcart[i].qty || 1) + d)); render(); } }
+function pDel(i) { pcart.splice(i, 1); render(); }
+function editPQty(i) { if (!pcart[i]) return; openNum(pcart[i].name, T("qty_p"), qtyfmt(pcart[i].qty), function (q) { if (pcart[i]) { pcart[i].qty = q; render(); } }); }
+function renderBuyCart() {
+	var h = '<div class="backrow"><button onclick="go(\'sell\')">&larr; ' + esc(T("sell")) + "</button></div>";
+	h += '<div class="sec"><div class="sh">' + esc(T("fj_supplier")) + "</div>" +
+		'<div class="custcard"><div class="ci">' + initials(PSUP ? PSUP.label : "?") + "</div>" +
+		'<div class="grow"><div class="cn">' + esc(PSUP ? PSUP.label : T("buy_pick_sup")) + "</div></div>" +
+		'<button class="chg" onclick="openSup()">' + esc(T("change")) + "</button></div></div>";
+	h += '<div class="sec">';
+	if (!pcart.length) h += '<div class="nores">' + esc(T("buy_add")) + "</div>";
+	else {
+		for (var i = 0; i < pcart.length; i++) {
+			var l = pcart[i];
+			h += '<div class="cline"><div class="ln"><div class="lt">' + esc(l.name) + '</div><div class="lmeta">' +
+				'<span class="uomchip static">' + esc(l.uom || T("uom_p")) + "</span>" +
+				(l.has_batch ? '<input class="batchin" placeholder="' + esc(T("batch")) + '" value="' + esc(l.batch) + '" onchange="if(pcart[' + i + '])pcart[' + i + '].batch=this.value">' : "") +
+				"</div></div>" +
+				'<div class="qbox"><button aria-label="minus one" onclick="pQ(' + i + ',-1)">&minus;</button>' +
+				'<div class="qv" onclick="editPQty(' + i + ')">' + qtyfmt(l.qty) + "</div>" +
+				'<button aria-label="plus one" onclick="pQ(' + i + ',1)">+</button></div>' +
+				'<button class="del" onclick="pDel(' + i + ')">&#10005;</button></div>';
+		}
+		var n = 0; for (var k = 0; k < pcart.length; k++) n += pcart[k].qty;
+		h += '<div class="totrow"><div class="tl">' + esc(T("buy_total_qty")) + '</div><div class="tv">' + qtyfmt(n) + "</div></div>";
+	}
+	h += "</div>";
+	h += '<div class="sec"><button class="gobtn buy" id="pbtn" onclick="pBuy()"' + (pcart.length && PSUP && !BUSY ? "" : " disabled") + ">" + esc(T("buy_create")) + "</button>" +
+		'<div class="gohint">' + esc(!pcart.length ? T("buy_add") : (!PSUP ? T("buy_pick_sup") : T("buy_draft_note"))) + "</div></div>";
+	return h;
+}
+function pBuy() {
+	if (!pcart.length || !PSUP || BUSY) return;
+	if (!navigator.onLine) { toast(T("syncfail")); return; }
+	BUSY = true; render();
+	api("/api/method/vac_pos_purchase", { method: "POST", json: {
+		pwa_client_id: uidNew(), pos_profile: S.profile, supplier: PSUP.name, posting_date: today(),
+		items: pcart.map(function (l) { return { item_code: l.code, uom: l.uom, conversion_factor: l.conv || 1, qty: l.qty, batch_no: l.batch || "" }; })
+	} }).then(function (d) {
+		var m = d.message || {};
+		toast(T("buy_done") + (m.name || ""));
+		pcart = []; PSUP = null; BUSY = false; MODE = "sell"; VIEW = "sell"; render();
+	}).catch(function (e) {
+		BUSY = false; render();
+		toast((e && e.auth) ? T("fj_perm") : ((e && e.message) || "?"));
+	});
+}
+/* supplier picker reuses the party sheet in "purchase" mode */
+function openSup() { CUSTMODE = "purchase"; custQ = ""; showNew = false; renderCustSheet(); $id("custovl").classList.add("show"); var q = $id("cq"); if (q) q.focus(); }
+
+/* ---------- Report tab: items sold + cash balance ---------- */
+var REPORT = null, repRange = "today", repSort = "amount";
+function repDates(range) {
+	var now = new Date();
+	function d(dt) { return dt.getFullYear() + "-" + pad2(dt.getMonth() + 1) + "-" + pad2(dt.getDate()); }
+	if (range === "yesterday") { var y = new Date(now.getTime() - 86400000); return [d(y), d(y)]; }
+	if (range === "week") { return [d(new Date(now.getTime() - 6 * 86400000)), d(now)]; }
+	if (range === "month") { return [d(new Date(now.getFullYear(), now.getMonth(), 1)), d(now)]; }
+	return [d(now), d(now)];
+}
+function loadReport() {
+	if (!navigator.onLine) { REPORT = { off: true }; if (VIEW === "report") render(); return; }
+	REPORT = null; if (VIEW === "report") render();
+	var r = repDates(repRange);
+	api("/api/method/vac_pos_report?profile=" + encodeURIComponent(S.profile) + "&from=" + r[0] + "&to=" + r[1])
+		.then(function (d) { REPORT = d.message || {}; if (VIEW === "report") render(); })
+		.catch(function (e) { REPORT = { err: (e && e.message) || "?" }; if (VIEW === "report") render(); });
+}
+function setRepRange(r) { repRange = r; loadReport(); }
+function setRepSort(s) { repSort = s; render(); }
+function hhmm(ts) { var m = String(ts || "").match(/\s(\d{2}:\d{2})/); return m ? m[1] : ""; }
+function repCard(label, value, sub, cls) {
+	return '<div class="repcard ' + (cls || "") + '"><div class="rc-l">' + esc(label) + '</div><div class="rc-v">' + esc(value) + "</div>" + (sub ? '<div class="rc-s">' + esc(sub) + "</div>" : "") + "</div>";
+}
+function renderReport() {
+	var h = '<div class="rechead"><div class="rectitle">' + esc(T("report")) + '</div><button class="recref" aria-label="refresh" onclick="loadReport()">&#10227;</button></div>';
+	var ranges = [["today", T("r_today")], ["yesterday", T("r_yday")], ["week", T("r_week")], ["month", T("r_month")]];
+	h += '<div class="recfilters">';
+	for (var i = 0; i < ranges.length; i++) h += '<button class="' + (repRange === ranges[i][0] ? "on" : "") + '" onclick="setRepRange(\'' + ranges[i][0] + '\')">' + esc(ranges[i][1]) + "</button>";
+	h += "</div>";
+	if (!REPORT) return h + '<div class="nores">' + esc(T("loading_r")) + "</div>";
+	if (REPORT.off) return h + '<div class="nores">' + esc(T("offline")) + "</div>";
+	if (REPORT.err) return h + '<div class="nores">' + esc(REPORT.err) + "</div>";
+	h += '<div class="repcards">' +
+		repCard(T("rep_sales"), fmt(REPORT.total_sales), T("rep_bills") + ": " + REPORT.bill_count) +
+		repCard(T("rep_qty"), qtyfmt(REPORT.qty_total), T("rep_items") + ": " + (REPORT.items_sold || []).length) +
+		((REPORT.total_udhaar || 0) > 0.5 ? repCard(T("udhaar"), fmt(REPORT.total_udhaar), "", "due") : "") + "</div>";
+	if (REPORT.can_cash && (REPORT.cash || []).length) {
+		h += '<div class="repsec">' + esc(T("rep_cash")) + '</div><div class="repcards">';
+		for (var c = 0; c < REPORT.cash.length; c++) h += repCard(REPORT.cash[c].label, fmt(REPORT.cash[c].balance), "", "cash");
+		h += "</div>";
+	}
+	/* FLAT itemised table — one row per item line, newest first: Bill · Time ·
+	   Customer · Item · Qty · Rate · Amount · Status (matches the desk report) */
+	h += '<div class="repsec">' + esc(T("rep_sold")) + "</div>";
+	var lines = (REPORT.lines || []).slice().sort(function (a, b) { return (a.time < b.time) ? 1 : (a.time > b.time) ? -1 : 0; });
+	if (!lines.length) return h + '<div class="nores">' + esc(T("none_recent")) + "</div>";
+	h += '<div class="invtblwrap"><table class="invtbl repflat"><thead><tr>' +
+		"<th>" + esc(T("invoice")) + "</th><th>" + esc(T("rep_when")) + "</th><th>" + esc(T("cust")) + "</th><th>" + esc(T("item")) + "</th>" +
+		'<th class="r">' + esc(T("rep_qtyh")) + '</th><th class="r">' + esc(T("rate_p")) + '</th><th class="r">' + esc(T("amount")) + "</th><th>" + esc(T("status_h")) + "</th></tr></thead><tbody>";
+	for (var j = 0; j < lines.length; j++) {
+		var ln = lines[j];
+		h += '<tr data-nm="' + esc(ln.invoice) + '" onclick="openInvoice(this.dataset.nm)">' +
+			"<td>" + esc(ln.invoice) + '</td><td class="nowrap">' + esc(niceDate(ln.date)) + (hhmm(ln.time) ? " " + esc(hhmm(ln.time)) : "") + "</td>" +
+			"<td>" + esc(ln.customer_name) + "</td><td>" + esc(ln.item_name) + "</td>" +
+			'<td class="r">' + qtyfmt(ln.qty) + (ln.uom ? " " + esc(ln.uom) : "") + '</td><td class="r">' + fmt(ln.rate) + '</td><td class="r">' + fmt(ln.amount) + "</td>" +
+			'<td><span class="rec-pill ' + statusCls(ln.status) + '">' + esc(ln.status) + "</span></td></tr>";
+	}
+	return h + "</tbody></table></div>";
+}
 function renderHdr() {
 	var who = AUTH && AUTH.full_name ? AUTH.full_name : "";
 	return '<div class="hdr">' +
@@ -1423,6 +1648,7 @@ function addItem(code, ev) {
 	var it = findItem(code);
 	if (!it) return;
 	flashPlusOne(ev);
+	if (MODE === "buy") { pAdd(it); return; }   /* Buy mode: goes to the purchase cart */
 	for (var i = 0; i < cart.length; i++) {
 		if (cart[i].code === code) { cart[i].qty += 1; render(); return; }
 	}
@@ -1444,6 +1670,7 @@ function addItem(code, ev) {
 
 /* ---------- cart ---------- */
 function renderCart() {
+	if (MODE === "buy") return renderBuyCart();
 	var h = '<div class="backrow"><button onclick="go(\'sell\')">&larr; ' + esc(T("sell")) + "</button></div>";
 	var cd = CUST || { customer_name: walkinName(), name: walkinName(), _walkin: true };
 	h += '<div class="sec"><div class="sh">' + esc(T("cust")) + "</div>" +
@@ -1958,14 +2185,16 @@ function renderRecent() {
 	h += '<div class="recseg">' + recSeg("sales", T("recent_sales"), RECENT.sales.length);
 	if (RECENT.can_journal) h += recSeg("payments", T("recent_pay"), RECENT.payments.length) + recSeg("journals", T("recent_jrnl"), RECENT.journals.length);
 	h += "</div>";
+	if (RECTAB === "sales") h += recFilterBar();
 	var list = RECENT[RECTAB] || [];
+	if (RECTAB === "sales") list = filterSales(list, recFilter);
 	if (!list.length) return h + '<div class="nores">' + esc(T("none_recent")) + "</div>";
 	h += '<div class="reclist">';
 	for (var i = 0; i < list.length; i++) {
 		var r = list[i];
 		if (RECTAB === "sales") {
 			var out = r.outstanding_amount > 0.5;
-			h += recRow("Sales Invoice", r.name, r.customer_name || r.customer, out ? T("khata") + " " + fmt(r.outstanding_amount) : "", r.rounded_total || r.grand_total, r.posting_date, statusCls(r.status), r.status);
+			h += recRow("Sales Invoice", r.name, r.customer_name || r.customer, out ? T("khata") + " " + fmt(r.outstanding_amount) : "", r.rounded_total || r.grand_total, r.posting_date, statusCls(r.status), r.status, itemsPreview(r.items));
 		} else if (RECTAB === "payments") {
 			h += recRow("Payment Entry", r.name, r.party, r.remark, r.amount, r.date, r.kind === "Receive" ? "ok" : "warn", r.kind === "Receive" ? T("recv") : T("fj_payment"));
 		} else {
@@ -1984,14 +2213,99 @@ function statusCls(st) {
 	if (st.indexOf("paid") >= 0) return "ok";
 	return "muted";
 }
-/* one compact, tappable row — tap prints (opens the format picker) */
-function recRow(doctype, name, primary, sub, amount, date, pillCls, pillTxt) {
-	return '<div class="recrow" data-dt="' + esc(doctype) + '" data-nm="' + esc(name) + '" onclick="printMenu(this.dataset.dt,this.dataset.nm)">' +
+/* one compact, tappable row — tap prints (opens the format picker). `preview`
+   is an optional third line (the item list, for sales) so you can see what sold
+   and to whom at a glance, like the ERPNext POS recent panel. */
+function recRow(doctype, name, primary, sub, amount, date, pillCls, pillTxt, preview) {
+	return '<div class="recrow" data-dt="' + esc(doctype) + '" data-nm="' + esc(name) + '" onclick="recTap(this.dataset.dt,this.dataset.nm)">' +
 		'<div class="rec-main"><div class="rec-ref">' + esc(name) + (pillTxt ? ' <span class="rec-pill ' + pillCls + '">' + esc(pillTxt) + "</span>" : "") + "</div>" +
-		'<div class="rec-sub">' + esc(primary || "") + (sub ? " · " + esc(sub) : "") + "</div></div>" +
+		'<div class="rec-sub">' + esc(primary || "") + (sub ? " · " + esc(sub) : "") + "</div>" +
+		(preview ? '<div class="rec-items">&#128722; ' + esc(preview) + "</div>" : "") + "</div>" +
 		'<div class="rec-r"><div class="rec-amt">' + fmt(amount) + '</div><div class="rec-date">' + esc(niceDate(date)) + "</div></div>" +
 		'<div class="rec-pr">&#128424;</div></div>';
 }
+/* "DAP 50 KG ×2 · Navratna · +2 more" — first few line items of a sale */
+function itemsPreview(items) {
+	items = items || [];
+	var parts = items.map(function (it) { return (it.item_name || "") + (it.qty && Number(it.qty) !== 1 ? " ×" + qtyfmt(it.qty) : ""); });
+	var s = parts.slice(0, 3).join(" · ");
+	if (parts.length > 3) s += " +" + (parts.length - 3) + " " + T("more_items");
+	return s;
+}
+/* ---------- Recent: status filter ---------- */
+var recFilter = "all";
+function setRecFilter(f) { recFilter = f; render(); }
+function isCashSale(r) { return (r.payments || []).some(function (p) { return /cash/i.test(p.mode || ""); }); }
+function filterSales(list, f) {
+	f = f || "all";
+	if (f === "all") return list;
+	return list.filter(function (r) {
+		var st = String(r.status || "").toLowerCase();
+		if (f === "draft") return r.docstatus === 0;
+		if (f === "paid") return r.docstatus === 1 && st === "paid";
+		if (f === "unpaid") return st.indexOf("unpaid") >= 0 || st.indexOf("overdue") >= 0;
+		if (f === "udhaar") return (r.outstanding_amount || 0) > 0.5;
+		if (f === "cash") return isCashSale(r);
+		return true;
+	});
+}
+function recFilterBar() {
+	var fs = [["all", T("f_all")], ["draft", T("f_draft")], ["paid", T("f_paid")], ["unpaid", T("f_unpaid")], ["udhaar", T("udhaar")], ["cash", T("cash")]];
+	var all = (RECENT && RECENT.sales) || [];
+	var h = '<div class="recfilters">';
+	for (var i = 0; i < fs.length; i++) {
+		var n = filterSales(all, fs[i][0]).length;
+		h += '<button class="' + (recFilter === fs[i][0] ? "on" : "") + '" onclick="setRecFilter(\'' + fs[i][0] + '\')">' + esc(fs[i][1]) + " <b>" + n + "</b></button>";
+	}
+	return h + "</div>";
+}
+
+/* ---------- Recent: structured detail pane ---------- */
+var INV = null, INVERR = "";
+function recTap(dt, nm) { if (dt === "Sales Invoice") openInvoice(nm); else printMenu(dt, nm); }
+function openInvoice(nm) {
+	INV = null; INVERR = "";
+	renderInvoice();
+	$id("invovl").classList.add("show");
+	api("/api/method/vac_pos_invoice?name=" + encodeURIComponent(nm))
+		.then(function (d) { INV = d.message || null; renderInvoice(); })
+		.catch(function (e) { INVERR = (e && e.message) || "?"; renderInvoice(); });
+}
+function closeInvoice() { INV = null; INVERR = ""; var o = $id("invovl"); if (o) o.classList.remove("show"); }
+function renderInvoice() {
+	var el = $id("invovl"); if (!el) return;
+	if (!INV) {
+		el.innerHTML = '<div class="sheet invsheet" onclick="event.stopPropagation()">' +
+			'<div class="shh"><div class="t">' + esc(T("invoice")) + '</div><button class="x" aria-label="Close" onclick="closeInvoice()">&#10005;</button></div>' +
+			'<div class="nores">' + esc(INVERR || T("loading_r")) + "</div></div>";
+		return;
+	}
+	var v = INV, draft = v.docstatus === 0;
+	var stTxt = draft ? T("f_draft") : v.status;
+	var rows = "";
+	for (var i = 0; i < (v.items || []).length; i++) {
+		var it = v.items[i];
+		var disc = it.discount_percentage ? qtyfmt(it.discount_percentage) + "%" : (it.discount_amount ? fmt(it.discount_amount) : "—");
+		rows += "<tr><td>" + esc(it.item_name) + '</td><td class="c">' + qtyfmt(it.qty) + (it.uom ? " " + esc(it.uom) : "") +
+			'</td><td class="r">' + fmt(it.price_list_rate || it.rate) + '</td><td class="r">' + disc +
+			'</td><td class="r">' + fmt(it.rate) + '</td><td class="r">' + fmt(it.amount) + "</td></tr>";
+	}
+	var tax = (v.taxes || []).reduce(function (a, t) { return a + (t.tax_amount || 0); }, 0);
+	var payLines = (v.payments || []).map(function (p) { return '<div class="invkv"><span>' + esc(p.mode || T("cash")) + "</span><b>" + fmt(p.amount) + "</b></div>"; }).join("");
+	var out = (v.outstanding_amount || 0) > 0.5 ? '<div class="invkv due"><span>' + esc(T("khata")) + "</span><b>" + fmt(v.outstanding_amount) + "</b></div>" : "";
+	el.innerHTML = '<div class="sheet invsheet" onclick="event.stopPropagation()">' +
+		'<div class="shh"><div class="t">' + esc(v.name) + ' <span class="rec-pill ' + (draft ? "muted" : statusCls(v.status)) + '">' + esc(stTxt) + '</span></div><button class="x" aria-label="Close" onclick="closeInvoice()">&#10005;</button></div>' +
+		'<div class="invmeta"><div class="im-cust"><b>' + esc(v.customer_name || v.customer) + "</b>" + (v.village ? " · " + esc(v.village) : "") + '</div><div class="rec-date">' + esc(niceDate(v.posting_date)) + "</div></div>" +
+		'<div class="invtblwrap"><table class="invtbl"><thead><tr><th>' + esc(T("item")) + '</th><th class="c">' + esc(T("qty_p")) + '</th><th class="r">' + esc(T("list")) + '</th><th class="r">' + esc(T("disc")) + '</th><th class="r">' + esc(T("net")) + '</th><th class="r">' + esc(T("amount")) + "</th></tr></thead><tbody>" + rows + "</tbody></table></div>" +
+		'<div class="invtotals">' +
+		'<div class="invkv"><span>' + esc(T("to_cart")) + "</span><b>" + fmt(v.net_total) + "</b></div>" +
+		(tax ? '<div class="invkv"><span>GST</span><b>' + fmt(tax) + "</b></div>" : "") +
+		'<div class="invkv grand"><span>' + esc(T("final_note")) + "</span><b>" + fmt(v.rounded_total || v.grand_total) + "</b></div>" +
+		payLines + out + "</div>" +
+		(v.remarks ? '<div class="invrem">' + esc(v.remarks) + "</div>" : "") +
+		'<div class="invactions"><button class="setbtn act" onclick="var n=' + esc(JSON.stringify(v.name)) + ';closeInvoice();printMenu(\'Sales Invoice\',n)">&#128424; ' + esc(T("print")) + "</button></div></div>";
+}
+
 /* print-format picker (reuses the ask overlay as a generic sheet) */
 function printMenu(doctype, name) {
 	var fmts = PRINT_FORMATS[doctype] || [{ fmt: "Standard", lbl: T("print") }];
@@ -2139,6 +2453,7 @@ function closeCust() { var o = $id("custovl"); if (o) o.classList.remove("show")
    Customer list; in FJ mode it follows the FJ voucher type (receipt=Customer,
    payment=Supplier, employee advance=Employee). */
 function partySource() {
+	if (CUSTMODE === "purchase") return { list: (CATALOG && CATALOG.suppliers) || [], label: "supplier_name", pt: "Supplier", purchase: true };
 	if (CUSTMODE === "fj") {
 		var pt = fjPartyType();
 		/* interparty expense draws from the config's curated related-party list,
@@ -2170,6 +2485,7 @@ function matchCust() {
 	return out;
 }
 function partyHeading() {
+	if (CUSTMODE === "purchase") return T("fj_supplier");
 	if (CUSTMODE !== "fj") return T("cust");
 	if (FJ && FJ.type === "interparty_expense") return T("fj_ip_party");
 	var pt = fjPartyType();
@@ -2177,9 +2493,9 @@ function partyHeading() {
 }
 function renderCustSheet() {
 	var src = partySource();
-	/* quick-add is Customer-only (cart, or an FJ receipt) — never for suppliers/
-	   employees, and never for the curated interparty list */
-	var canAdd = src.pt === "Customer" && !src.interparty;
+	/* quick-add: new Customer (cart / FJ receipt) or new Supplier (Buy mode) —
+	   never for the curated interparty list */
+	var canAdd = (src.pt === "Customer" && !src.interparty) || src.purchase;
 	var h = '<div class="sheet" onclick="event.stopPropagation()">' +
 		'<div class="shh"><div class="t">' + esc(partyHeading()) + '</div><button class="x" aria-label="Close" onclick="closeCust()">&#10005;</button></div>' +
 		'<div class="sq"><input id="cq" placeholder="' + esc(T("search_ph")) + '" value="' + esc(custQ) + '" oninput="onCQ(this.value)"></div>';
@@ -2187,7 +2503,11 @@ function renderCustSheet() {
 	h += '<div class="newc">';
 	if (canAdd && !showNew) h += '<button class="setbtn act" onclick="toggleNew()">' + esc(T("cust_new")) + "</button>";
 	h += "</div>";
-	if (canAdd && showNew) {
+	if (canAdd && showNew && src.purchase) {
+		h += '<div class="newform">' +
+			'<input id="nsn" placeholder="' + esc(T("sup_name")) + ' *" value="">' +
+			'<button class="setbtn act" onclick="createSup()">' + esc(T("cust_make")) + "</button></div>";
+	} else if (canAdd && showNew) {
 		var groups = (CATALOG && CATALOG.customer_groups) || [];
 		var vils = (CATALOG && CATALOG.villages) || [];
 		var dg = commonGroup();
@@ -2213,8 +2533,8 @@ function renderCustSheet() {
 function custListHtml() {
 	var src = partySource(), rows = matchCust(), h = "";
 	var w = walkinName();
-	/* walk-in row only for a cart sale — a khata receipt or any FJ party needs a real party */
-	if (CUSTMODE !== "fj") {
+	/* walk-in row only for a cart SALE — an FJ party or a purchase supplier needs a real party */
+	if (CUSTMODE === "cart") {
 		h += '<div class="crow" onclick="pickWalkin()"><div class="ci2">₹</div><div class="cm"><div class="cn2">' + esc(w) + '</div><div class="cd2">' + esc(T("walkin")) + "</div></div></div>";
 	}
 	for (var i = 0; i < rows.length; i++) {
@@ -2233,6 +2553,7 @@ function pickCust(i) {
 	var src = partySource(), rows = matchCust();
 	var c = rows[i];
 	if (!c) return;
+	if (CUSTMODE === "purchase") { PSUP = { name: c.name, label: partyLabelOf(c, src) }; closeCust(); render(); return; }
 	if (CUSTMODE === "fj") {
 		/* store a normalized {name, label} so FJ display + posting work for any party type */
 		if (FJ) { FJ.cust = { name: c.name, label: partyLabelOf(c, src) }; renderFJ(); }
@@ -2251,6 +2572,18 @@ function commonGroup() {
 	var best = "", bn = 0;
 	for (var k in gc) if (gc[k] > bn) { bn = gc[k]; best = k; }
 	return best || "Individual";
+}
+function createSup() {
+	var nm = (($id("nsn") || {}).value || "").trim();
+	if (!nm) { toast(T("need_name")); return; }
+	api("/api/resource/Supplier", { method: "POST", json: { supplier_name: nm } }).then(function (d) {
+		var doc = d.data || {};
+		var c = { name: doc.name, supplier_name: doc.supplier_name || nm };
+		if (CATALOG) { CATALOG.suppliers = (CATALOG.suppliers || []).concat([c]); idbKPut("catalog", CATALOG).catch(function () { }); }
+		PSUP = { name: c.name, label: c.supplier_name };
+		toast(T("cust_made"));
+		closeCust(); render();
+	}).catch(function (e) { toast((e && e.message) || "?"); });
 }
 function createCust() {
 	var nm = (($id("ncn") || {}).value || "").trim();
@@ -2591,9 +2924,10 @@ function boot() {
 	document.body.insertAdjacentHTML("beforeend", '<div class="ovl" id="fjovl" onclick="closeFJ()"></div>');
 	document.body.insertAdjacentHTML("beforeend", '<div class="ovl" id="uomovl" onclick="closeUom()"></div>');
 	document.body.insertAdjacentHTML("beforeend", '<div class="ovl" id="discovl" onclick="closeDisc()"></div>');
+	document.body.insertAdjacentHTML("beforeend", '<div class="ovl" id="invovl" onclick="closeInvoice()"></div>');
 	document.body.insertAdjacentHTML("beforeend", '<div class="ovl" id="numovl" onclick="closeNum()"></div>');
 	document.body.insertAdjacentHTML("beforeend", '<div class="ovl" id="askovl" onclick="closeAsk()"></div>');
-	["custovl", "fjovl", "uomovl", "discovl", "numovl", "askovl"].forEach(function (id) {
+	["custovl", "fjovl", "uomovl", "discovl", "invovl", "numovl", "askovl"].forEach(function (id) {
 		var old = document.querySelectorAll("#" + id);
 		for (var i = 0; i < old.length - 1; i++) old[i].parentNode.removeChild(old[i]);
 	});

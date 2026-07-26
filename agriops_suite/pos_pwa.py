@@ -40,12 +40,17 @@ def csrf():
 	# the Accounts profile sees it) — never a billing-only cashier. Kept in sync
 	# with the vac_pos_ping server script's list.
 	journal_roles = {"POS Journal", "Accounts User", "Accounts Manager", "System Manager", "Administrator"}
+	# can_purchase shows/hides the Buy mode (draft Purchase Receipts). Gate = the
+	# POS Purchase role or a purchase/manager profile; the real gate is
+	# vac_pos_purchase's insert (enforces Purchase Receipt create perm).
+	purchase_roles = {"POS Purchase", "Purchase User", "Purchase Manager", "Stock Manager", "System Manager", "Administrator"}
 	return {
 		"csrf_token": frappe.sessions.get_csrf_token(),
 		"user": user,
 		"full_name": frappe.db.get_value("User", user, "full_name") or user,
 		"is_cashier": "POS Cashier" in roles,
 		"can_journal": 1 if journal_roles.intersection(roles) else 0,
+		"can_purchase": 1 if purchase_roles.intersection(roles) else 0,
 	}
 
 

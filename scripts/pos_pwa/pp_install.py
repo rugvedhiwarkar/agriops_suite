@@ -26,6 +26,9 @@ from pp_lib import call, get_doc, rpc, upsert
 # already grants Fast Journal via standard Accounts roles, so we leave Payment
 # Entry / Journal Entry permissions untouched on production.
 SKIP_JOURNAL = os.environ.get("PP_SKIP_JOURNAL") == "yes"
+# PP_SKIP_PURCHASE=yes -> do NOT create the POS Purchase role / its perms / assign
+# it (skip the Purchase Receipt perm conversion on a site where it's not wanted).
+SKIP_PURCHASE = os.environ.get("PP_SKIP_PURCHASE") == "yes"
 
 FALLBACK_TAX_TEMPLATE = "Output GST In-state Inclusive - VAC"
 TEST_USER = "pos.cashier@example.com"
@@ -90,6 +93,22 @@ JOURNAL_USERS = [
     "hiwarkarnikita75@gmail.com",  # Nikita Hiwarkar
 ]
 
+# The POS "Buy" mode books DRAFT Purchase Receipts (never submitted). Separate
+# role so only named staff see it; PR/Supplier/Batch create for the draft path.
+PERM_MAP_PURCHASE = {
+    "Purchase Receipt": ["read", "write", "create"],
+    "Supplier": ["read", "write", "create"],
+    "Item": ["read"],
+    "Warehouse": ["read", "select"],
+    "UOM": ["read"],
+    "Batch": ["read", "write", "create"],
+    "Company": ["read"],
+}
+PURCHASE_USERS = [
+    "hiwarkarvijay@gmail.com",     # Vijay Hiwarkar (owner)
+    "hiwarkarnikita75@gmail.com",  # Nikita Hiwarkar
+]
+
 # ---------------------------------------------------------------- server scripts
 # Bodies run inside Frappe's safe_exec sandbox: no imports; frappe.get_all
 # bypasses perms (fine for catalog/outstanding), doc.insert/submit respect them.
@@ -128,7 +147,8 @@ price_list = profile.selling_price_list or "Standard Selling"
 items = frappe.get_all(
     "Item",
     filters={"disabled": 0, "is_sales_item": 1},
-    fields=["name", "item_name", "item_group", "stock_uom", "image", "gst_hsn_code"],
+    fields=["name", "item_name", "item_group", "stock_uom", "image", "gst_hsn_code",
+            "has_batch_no", "is_stock_item"],
     limit_page_length=0,
 )
 # alternate UOMs the owner has defined per item (real conversion factors),
@@ -279,10 +299,23 @@ else:
     # any other factor is a real conversion the owner defined on the item.
     line_items = []
     for i in items_in:
-        row = {"item_code": i["item_code"], "qty": i["qty"], "rate": i.get("rate")}
+        row = {"item_code": i["item_code"], "qty": i["qty"]}
         if i.get("uom"):
             row["uom"] = i["uom"]
             row["conversion_factor"] = i.get("conversion_factor") or 1
+        # a per-line discount: the client's `rate` is the LIST price; send it as
+        # price_list_rate + the discount and let ERPNext compute the net rate, so
+        # the bill can show List / Discount% / Discount Amount / Net (all exact).
+        dp = frappe.utils.flt(i.get("discount_percentage"))
+        da = frappe.utils.flt(i.get("discount_amount"))
+        if dp > 0:
+            row["price_list_rate"] = i.get("rate")
+            row["discount_percentage"] = dp
+        elif da > 0:
+            row["price_list_rate"] = i.get("rate")
+            row["discount_amount"] = da
+        else:
+            row["rate"] = i.get("rate")
         line_items.append(row)
 
     si = {
@@ -379,13 +412,40 @@ frappe.response["message"] = {
 # may post them. Read-only, ignore_permissions so a billing cashier's lack of
 # PE/JE read doesn't 403 the sales list — the money section is role-gated below.
 SCRIPT_RECENT = r"""
+# all POS-created invoices (pwa_client_id set) — captures cash, UPI, udhaar AND
+# drafts, not just is_pos=1 (udhaar sales are is_pos=0). Exclude cancelled.
 sales = frappe.get_all(
     "Sales Invoice",
-    filters={"is_pos": 1, "docstatus": 1},
+    filters={"pwa_client_id": ["is", "set"], "docstatus": ["<", 2]},
     fields=["name", "customer", "customer_name", "grand_total", "rounded_total",
-            "outstanding_amount", "status", "posting_date"],
-    order_by="creation desc", limit_page_length=20, ignore_permissions=True,
+            "outstanding_amount", "status", "docstatus", "posting_date"],
+    order_by="creation desc", limit_page_length=30, ignore_permissions=True,
 )
+# attach a compact item list + the payment modes per invoice so the Recent tab
+# can preview what sold and filter by draft / paid / udhaar / cash
+sale_names = [s.name for s in sales]
+items_by_inv = {}
+pays_by_inv = {}
+if sale_names:
+    irows = frappe.get_all(
+        "Sales Invoice Item",
+        filters={"parent": ["in", sale_names]},
+        fields=["parent", "item_name", "qty", "uom"],
+        order_by="idx", limit_page_length=0, ignore_permissions=True)
+    for ir in irows:
+        items_by_inv.setdefault(ir.parent, []).append(
+            {"item_name": ir.item_name, "qty": ir.qty, "uom": ir.uom})
+    prows = frappe.get_all(
+        "Sales Invoice Payment",
+        filters={"parent": ["in", sale_names]},
+        fields=["parent", "mode_of_payment", "amount"],
+        limit_page_length=0, ignore_permissions=True)
+    for pr in prows:
+        pays_by_inv.setdefault(pr.parent, []).append(
+            {"mode": pr.mode_of_payment, "amount": pr.amount})
+for s in sales:
+    s["items"] = items_by_inv.get(s.name, [])
+    s["payments"] = pays_by_inv.get(s.name, [])
 journal_roles = ["POS Journal", "Accounts User", "Accounts Manager", "System Manager", "Administrator"]
 role_rows = frappe.get_all("Has Role",
     filters={"parenttype": "User", "parent": frappe.session.user},
@@ -471,6 +531,195 @@ else:
     frappe.response["message"] = {"action": "created", "name": doc.name, "rate": rate, "uom": uom}
 """
 
+# Full structured detail for ONE invoice, for the Recent tab's detail pane.
+SCRIPT_INVOICE = r"""
+name = frappe.form_dict.get("name")
+if not name:
+    frappe.throw("name is required")
+doc = frappe.get_doc("Sales Invoice", name)
+frappe.response["message"] = {
+    "name": doc.name,
+    "customer": doc.customer,
+    "customer_name": doc.customer_name,
+    "village": frappe.db.get_value("Customer", doc.customer, "custom_village") or "",
+    "posting_date": str(doc.posting_date),
+    "status": doc.status,
+    "docstatus": doc.docstatus,
+    "is_pos": doc.is_pos,
+    "net_total": doc.net_total,
+    "total_taxes_and_charges": doc.total_taxes_and_charges,
+    "grand_total": doc.grand_total,
+    "rounded_total": doc.rounded_total,
+    "outstanding_amount": doc.outstanding_amount,
+    "remarks": doc.remarks,
+    "items": [
+        {"item_name": i.item_name, "item_code": i.item_code, "qty": i.qty, "uom": i.uom,
+         "price_list_rate": i.price_list_rate, "discount_percentage": i.discount_percentage,
+         "discount_amount": i.discount_amount, "rate": i.rate, "amount": i.amount}
+        for i in doc.items
+    ],
+    "taxes": [
+        {"account_head": t.account_head, "description": t.description, "tax_amount": t.tax_amount}
+        for t in doc.taxes
+    ],
+    "payments": [
+        {"mode": p.mode_of_payment, "amount": p.amount}
+        for p in doc.payments
+    ],
+}
+"""
+
+# Items-sold report + cash-drawer balances for a date range (default today), for
+# the in-POS Report tab. Item aggregation is visible to any cashier; the cash
+# balances are gated to accounts roles (same gate as the Recent journals).
+SCRIPT_REPORT = r"""
+frm = frappe.form_dict.get("from") or frappe.utils.nowdate()
+to = frappe.form_dict.get("to") or frm
+profile = frappe.get_doc("POS Profile", frappe.form_dict.get("profile") or "Main")
+
+# newest first so the chronology reads latest -> earliest (each row shows its time)
+inv = frappe.get_all(
+    "Sales Invoice",
+    filters={"pwa_client_id": ["is", "set"], "docstatus": 1,
+             "posting_date": ["between", [frm, to]]},
+    fields=["name", "customer", "customer_name", "grand_total", "rounded_total",
+            "outstanding_amount", "status", "creation", "posting_date"],
+    order_by="creation desc", limit_page_length=0, ignore_permissions=True)
+names = [i.name for i in inv]
+inv_meta = {}
+total_sales = 0.0
+total_udhaar = 0.0
+for i in inv:
+    inv_meta[i.name] = i
+    total_sales += (i.rounded_total or i.grand_total or 0)
+    total_udhaar += (i.outstanding_amount or 0)
+bill_count = len(inv)
+
+# FLAT itemised log — one row per item line (client sorts by time). Built in the
+# item loop so it doesn't depend on a nested dict lookup. Also aggregates by item.
+agg = {}
+lines = []
+qty_total = 0.0
+if names:
+    rows = frappe.get_all(
+        "Sales Invoice Item", filters={"parent": ["in", names]},
+        fields=["parent", "item_name", "qty", "amount", "uom", "rate"],
+        order_by="idx", limit_page_length=0, ignore_permissions=True)
+    for r in rows:
+        k = r.item_name
+        if k not in agg:
+            agg[k] = {"item_name": k, "uom": r.uom, "qty": 0.0, "amount": 0.0, "lines": 0}
+        e = agg[k]
+        e["qty"] = e["qty"] + (r.qty or 0)         # safe_exec blocks x[k] += y
+        e["amount"] = e["amount"] + (r.amount or 0)
+        e["lines"] = e["lines"] + 1
+        qty_total += (r.qty or 0)
+        im = inv_meta.get(r.parent)
+        if im is not None:
+            lines.append({
+                "invoice": r.parent, "date": str(im.posting_date), "time": str(im.creation),
+                "customer": im.customer, "customer_name": im.customer_name or im.customer,
+                "item_name": r.item_name, "qty": r.qty, "uom": r.uom,
+                "rate": r.rate, "amount": r.amount, "status": im.status,
+            })
+items_sold = []
+for k in agg:
+    items_sold.append(agg[k])
+bills = []
+
+journal_roles = ["POS Journal", "Accounts User", "Accounts Manager", "System Manager", "Administrator"]
+role_rows = frappe.get_all("Has Role",
+    filters={"parenttype": "User", "parent": frappe.session.user},
+    fields=["role"], limit_page_length=0, ignore_permissions=True)
+uroles = []
+for rr in role_rows:
+    uroles.append(rr["role"])
+can_cash = 0
+for rn in journal_roles:
+    if rn in uroles:
+        can_cash = 1
+        break
+cash = []
+if can_cash:
+    seen_acc = {}
+    for pay in profile.payments:
+        mode = pay.mode_of_payment
+        acc = frappe.db.get_value(
+            "Mode of Payment Account",
+            {"parent": mode, "company": profile.company}, "default_account")
+        if not acc or acc in seen_acc:
+            continue
+        seen_acc[acc] = 1
+        glrows = frappe.get_all(
+            "GL Entry", filters={"account": acc, "is_cancelled": 0},
+            fields=["debit", "credit"], limit_page_length=0)
+        bal = 0.0
+        for g in glrows:
+            bal += (g.debit or 0) - (g.credit or 0)
+        cash.append({"mode": mode, "account": acc,
+                     "label": (acc or mode).replace(" - VAC", ""), "balance": bal})
+
+frappe.response["message"] = {
+    "from": str(frm), "to": str(to),
+    "total_sales": total_sales, "total_udhaar": total_udhaar,
+    "bill_count": bill_count, "qty_total": qty_total,
+    "items_sold": items_sold, "bills": bills, "lines": lines,
+    "cash": cash, "can_cash": can_cash,
+}
+"""
+
+# Book incoming stock as a DRAFT Purchase Receipt (supplier + items + qty). Never
+# submitted — a manager reviews, adds rates/batches, and submits from the desk or
+# the POS. Idempotent via pwa_client_id. Batch is optional (provision for when
+# batch tracking is enabled — not required to save a draft).
+SCRIPT_PURCHASE = r"""
+body = frappe.form_dict
+client_id = body.get("pwa_client_id")
+if not client_id:
+    frappe.throw("pwa_client_id is required")
+existing = frappe.db.exists("Purchase Receipt", {"pwa_client_id": client_id})
+if existing:
+    doc = frappe.get_doc("Purchase Receipt", existing)
+    frappe.response["message"] = {"duplicate": True, "name": doc.name, "docstatus": doc.docstatus}
+else:
+    supplier = body.get("supplier")
+    if not supplier:
+        frappe.throw("supplier is required")
+    items_in = body.get("items")
+    if isinstance(items_in, str):
+        items_in = json.loads(items_in)
+    if not items_in:
+        frappe.throw("items is required")
+    profile = frappe.get_doc("POS Profile", body.get("pos_profile") or "Main")
+    warehouse = profile.warehouse
+    line_items = []
+    for i in items_in:
+        row = {"item_code": i["item_code"], "qty": i["qty"], "warehouse": warehouse,
+               "rate": frappe.utils.flt(i.get("rate"))}
+        if i.get("uom"):
+            row["uom"] = i["uom"]
+            row["conversion_factor"] = i.get("conversion_factor") or 1
+        if i.get("batch_no"):
+            row["batch_no"] = i["batch_no"]
+        line_items.append(row)
+    pr = {
+        "doctype": "Purchase Receipt",
+        "company": profile.company,
+        "supplier": supplier,
+        "set_warehouse": warehouse,
+        "pwa_client_id": client_id,
+        "remarks": body.get("remarks") or "POS PWA purchase (draft for review)",
+        "items": line_items,
+    }
+    if body.get("posting_date"):
+        pr["posting_date"] = body.get("posting_date")
+        pr["set_posting_time"] = 1
+    doc = frappe.get_doc(pr)
+    doc.insert()   # DRAFT ONLY — never .submit()
+    frappe.response["message"] = {"duplicate": False, "name": doc.name,
+        "docstatus": doc.docstatus, "supplier": doc.supplier, "total_qty": doc.total_qty}
+"""
+
 SERVER_SCRIPTS = {
     "vac_pos_ping": SCRIPT_PING,
     "vac_pos_catalog": SCRIPT_CATALOG,
@@ -480,25 +729,29 @@ SERVER_SCRIPTS = {
     "vac_pos_outstanding": SCRIPT_OUTSTANDING,
     "vac_pos_recent": SCRIPT_RECENT,
     "vac_pos_set_price": SCRIPT_SET_PRICE,
+    "vac_pos_invoice": SCRIPT_INVOICE,
+    "vac_pos_report": SCRIPT_REPORT,
+    "vac_pos_purchase": SCRIPT_PURCHASE,
 }
 
 
 def ensure_custom_field():
-    name = "Sales Invoice-pwa_client_id"
-    payload = {
-        "dt": "Sales Invoice",
-        "fieldname": "pwa_client_id",
-        "label": "PWA Client ID",
-        "fieldtype": "Data",
-        "insert_after": "remarks",
-        "unique": 1,
-        "hidden": 1,
-        "no_copy": 1,
-        "print_hide": 1,
-        "description": "Idempotency key set by the POS PWA; one per device sale.",
-    }
-    action, _ = upsert("Custom Field", name, payload)
-    print("[1] Custom Field pwa_client_id:", action)
+    for dt in ["Sales Invoice", "Purchase Receipt"]:
+        name = dt + "-pwa_client_id"
+        payload = {
+            "dt": dt,
+            "fieldname": "pwa_client_id",
+            "label": "PWA Client ID",
+            "fieldtype": "Data",
+            "insert_after": "remarks",
+            "unique": 1,
+            "hidden": 1,
+            "no_copy": 1,
+            "print_hide": 1,
+            "description": "Idempotency key set by the POS PWA; one per device doc.",
+        }
+        action, _ = upsert("Custom Field", name, payload)
+        print("[1] Custom Field %s.pwa_client_id: %s" % (dt, action))
 
 
 def ensure_role_named(role, desk_access=1):
@@ -576,14 +829,14 @@ def ensure_test_user():
             "first_name": "POS Test Cashier",
             "send_welcome_email": 0,
             "user_type": "System User",
-            "roles": [{"role": "POS Cashier"}, {"role": "POS Journal"}],
+            "roles": [{"role": "POS Cashier"}, {"role": "POS Journal"}, {"role": "POS Purchase"}],
         })
         r.raise_for_status()
         print("[5] test user: created")
         existing = get_doc("User", TEST_USER)
     else:
         roles = [x["role"] for x in existing.get("roles", [])]
-        need = [rl for rl in ["POS Cashier", "POS Journal"] if rl not in roles]
+        need = [rl for rl in ["POS Cashier", "POS Journal", "POS Purchase"] if rl not in roles]
         if need:
             merged = [{"role": rl} for rl in roles] + [{"role": rl} for rl in need]
             call("PUT", "/api/resource/User/" + pp_lib._q(TEST_USER),
@@ -634,6 +887,22 @@ def ensure_cashier_roles():
         print("[6] {}: POS Cashier role added ({} existing roles kept)".format(email, len(roles)))
 
 
+def ensure_purchase_users():
+    for email in PURCHASE_USERS:
+        user = get_doc("User", email)
+        if user is None:
+            print("[9] {}: MISSING — POS Purchase not assigned".format(email))
+            continue
+        roles = [r["role"] for r in user.get("roles", [])]
+        if "POS Purchase" in roles:
+            print("[9] {}: already has POS Purchase".format(email))
+            continue
+        merged = [{"role": r} for r in roles] + [{"role": "POS Purchase"}]
+        r = call("PUT", "/api/resource/User/" + pp_lib._q(email), json={"roles": merged})
+        r.raise_for_status()
+        print("[9] {}: POS Purchase role added".format(email))
+
+
 def smoke():
     msg = rpc("vac_pos_ping")
     print("[7] ping:", msg)
@@ -649,10 +918,17 @@ if __name__ == "__main__":
     else:
         ensure_role_named("POS Journal")
         ensure_perms("POS Journal", PERM_MAP_JOURNAL, tag="3J")
+    if SKIP_PURCHASE:
+        print("[*] PP_SKIP_PURCHASE=yes -> POS Purchase role/perms/assignment SKIPPED")
+    else:
+        ensure_role_named("POS Purchase")
+        ensure_perms("POS Purchase", PERM_MAP_PURCHASE, tag="3P")
     ensure_server_scripts()
     ensure_test_user()
     ensure_cashier_roles()
     if not SKIP_JOURNAL:
         ensure_journal_users()
+    if not SKIP_PURCHASE:
+        ensure_purchase_users()
     smoke()
     print("DONE — now run pp_test.py")
