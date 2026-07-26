@@ -152,7 +152,7 @@ uoms_all = [u.name for u in frappe.get_all("UOM", fields=["name"], limit_page_le
 prices = frappe.get_all(
     "Item Price",
     filters={"price_list": price_list, "selling": 1},
-    fields=["item_code", "price_list_rate"],
+    fields=["item_code", "price_list_rate", "uom"],
     limit_page_length=0,
 )
 customers = frappe.get_all(
@@ -405,19 +405,28 @@ frappe.response["message"] = {
 }
 """
 
-# Save a POS-typed rate to the selling price list. Client controls WHEN (fill an
-# unpriced item silently; update a priced one only after the cashier confirms) —
-# this endpoint just upserts one Item Price and reports what it did.
+# Save a POS-typed rate to the selling price list, PER UOM. Client controls WHEN
+# (fill an unpriced unit silently; update a priced one only after the cashier
+# confirms). An empty uom means the uom-less row ERPNext treats as the stock-unit
+# price; a non-empty uom upserts that unit's own Item Price row. Prices differ
+# per unit, so the uom is part of the row's identity.
 SCRIPT_SET_PRICE = r"""
 item_code = frappe.form_dict.get("item_code")
 rate = frappe.utils.flt(frappe.form_dict.get("rate"))
 price_list = frappe.form_dict.get("price_list") or "Standard Selling"
+uom = (frappe.form_dict.get("uom") or "").strip()
 if not item_code or rate <= 0:
     frappe.throw("item_code and a positive rate are required")
 if not frappe.db.exists("Item", item_code):
     frappe.throw("No such item: " + str(item_code))
+# ERPNext stores uom=stock_uom for the default Item Price row (it auto-fills it),
+# so an empty uom means "the stock-unit price". A non-stock uom must be one the
+# item actually defines (ERPNext rejects others with "UOM X not found in Item").
+if not uom:
+    uom = frappe.db.get_value("Item", item_code, "stock_uom")
 existing = frappe.db.get_value(
-    "Item Price", {"item_code": item_code, "price_list": price_list, "selling": 1},
+    "Item Price",
+    {"item_code": item_code, "price_list": price_list, "selling": 1, "uom": uom},
     ["name", "price_list_rate"], as_dict=True)
 if existing:
     if abs((existing.price_list_rate or 0) - rate) > 0.005:
@@ -425,14 +434,15 @@ if existing:
         doc.price_list_rate = rate
         doc.save()
         frappe.response["message"] = {"action": "updated", "name": existing.name,
-                                      "old": existing.price_list_rate, "rate": rate}
+                                      "old": existing.price_list_rate, "rate": rate, "uom": uom}
     else:
-        frappe.response["message"] = {"action": "unchanged", "name": existing.name, "rate": rate}
+        frappe.response["message"] = {"action": "unchanged", "name": existing.name, "rate": rate, "uom": uom}
 else:
     doc = frappe.get_doc({"doctype": "Item Price", "item_code": item_code,
-                          "price_list": price_list, "selling": 1, "price_list_rate": rate})
+                          "price_list": price_list, "selling": 1, "uom": uom,
+                          "price_list_rate": rate})
     doc.insert()
-    frappe.response["message"] = {"action": "created", "name": doc.name, "rate": rate}
+    frappe.response["message"] = {"action": "created", "name": doc.name, "rate": rate, "uom": uom}
 """
 
 SERVER_SCRIPTS = {

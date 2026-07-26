@@ -427,6 +427,7 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--green); out
 .crow .cd2 { font-size: .78rem; color: var(--muted); margin-top: 1px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .crow.on { border-color: var(--green); background: var(--green-soft); }
 .crow .tick { color: var(--green-dark); font-weight: 900; flex: none; font-size: 1.05rem; }
+.crow .uompr { font-weight: 800; font-size: .82rem; color: var(--green-dark); flex: none; }
 .ulsep { font-size: .72rem; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); margin: 10px 8px 6px; }
 .newc { margin: 2px 14px 12px; }
 .newc .setbtn { margin-top: 7px; }
@@ -601,8 +602,12 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--green); out
   var items = [], prices = [];
   ITEMS.forEach(function (r) {
     items.push({ name: r[0], item_name: r[0], item_group: r[1], stock_uom: r[2], image: null, gst_hsn_code: "", uoms: ALTU[r[0]] || [] });
-    if (r[3] != null) prices.push({ item_code: r[0], price_list_rate: r[3] });
+    if (r[3] != null) prices.push({ item_code: r[0], price_list_rate: r[3], uom: r[2] });  // default price under stock_uom (ERPNext auto-fills this)
   });
+  // a couple of genuinely per-UOM prices on DEFINED alternate units (only units
+  // the item defines can be priced — ERPNext rejects others)
+  prices.push({ item_code: "GI Fencing Wire 10 KG", price_list_rate: 100, uom: "Kg" });   // stock 10 KG @ 950, per-Kg @ 100
+  prices.push({ item_code: "18:46:00 DAP 50 KG", price_list_rate: 1360, uom: "Bag" });     // bag @ 1360
   // every UOM master the shop could relabel a line to (factor-1 rename)
   var UOMS = ["Nos", "Kg", "Bag", "Box", "Packet", "Piece", "Dozen", "Litre", "1 Litre",
     "500 ML", "30 ML", "200 GM", "500 GM", "10 GM", "36 GM", "60 GM", "2.5 GM",
@@ -681,11 +686,11 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--green); out
     if (url.indexOf("vac_pos_catalog") >= 0) return Promise.resolve(J({ message: CATALOG }));
     if (url.indexOf("vac_pos_outstanding") >= 0) return Promise.resolve(J({ message: { outstanding: 1250 } }));
     if (url.indexOf("vac_pos_set_price") >= 0) {
-      var bp = body();
-      var had = prices.some(function (p) { return p.item_code === bp.item_code; });
-      if (had) prices.forEach(function (p) { if (p.item_code === bp.item_code) p.price_list_rate = bp.rate; });
-      else prices.push({ item_code: bp.item_code, price_list_rate: bp.rate });
-      return Promise.resolve(J({ message: { action: had ? "updated" : "created", name: "IP-DEMO", rate: bp.rate } }));
+      var bp = body(); var u = bp.uom || "";
+      var had = prices.some(function (p) { return p.item_code === bp.item_code && (p.uom || "") === u; });
+      if (had) prices.forEach(function (p) { if (p.item_code === bp.item_code && (p.uom || "") === u) p.price_list_rate = bp.rate; });
+      else prices.push({ item_code: bp.item_code, price_list_rate: bp.rate, uom: u });
+      return Promise.resolve(J({ message: { action: had ? "updated" : "created", name: "IP-DEMO", rate: bp.rate, uom: u } }));
     }
     if (url.indexOf("fast_voucher_config") >= 0) return Promise.resolve(J({ message: FJCFG }));
     if (url.indexOf("vac_pos_recent") >= 0) return Promise.resolve(J({ message: RECENT }));
@@ -1029,35 +1034,60 @@ function toast(msg) {
 	toastTimer = setTimeout(function () { t.classList.remove("show"); }, 2600);
 }
 
-/* ---------- price write-back ----------
-   Keep the price list current from the counter: an unpriced item's typed rate
-   is saved silently (fill the gap); changing a rate that already has a saved
-   price asks first (never rewrite a real price by accident). Failures are
-   swallowed — the cart-line rate always stands regardless. */
+/* ---------- price write-back (UOM-aware) ----------
+   Prices are per (item, UOM): a bag rate is not a per-Kg rate. PRICES[code] is a
+   map { "": stockUnitRate, "Kg": rate, "Bag": rate, ... } where "" is the plain
+   (uom-less) Item Price row that ERPNext treats as the stock-unit price. The
+   stock unit writes back to "" ; any other unit gets its own UOM-specific row.
+   Fill an empty price silently; changing a saved one asks first. */
 function ppList() { return (PROFILE && PROFILE.selling_price_list) || "Standard Selling"; }
-function setPrice(code, rate, quiet) {
+/* stored key for a unit = its real UOM (ERPNext auto-fills uom=stock_uom for the
+   default Item Price row, so the "stock price" lives under the stock unit, not a
+   blank key) */
+function saveUomKey(code, uom) {
+	var it = findItem(code), su = it && it.stock_uom;
+	return uom || su || "";
+}
+/* price to show/charge for this unit — an exact per-UOM price wins; older data
+   may have a blank-uom row, kept as a fallback for the stock unit only */
+function priceFor(code, uom) {
+	var m = PRICES[code]; if (!m) return null;
+	var it = findItem(code), su = it && it.stock_uom, key = uom || su;
+	if (key && m[key] != null) return m[key];
+	if ((!uom || uom === su) && m[""] != null) return m[""];   /* legacy blank-uom row */
+	return null;
+}
+function setPrice(code, uom, rate, quiet) {
 	rate = round2(rate);
-	return api("/api/method/vac_pos_set_price", { method: "POST", json: { item_code: code, rate: rate, price_list: ppList() } })
+	var key = saveUomKey(code, uom);
+	return api("/api/method/vac_pos_set_price", { method: "POST", json: { item_code: code, uom: key, rate: rate, price_list: ppList() } })
 		.then(function (d) {
 			var m = (d && d.message) || {};
-			PRICES[code] = rate;
+			if (!PRICES[code]) PRICES[code] = {};
+			PRICES[code][key] = rate;
 			if (!quiet && (m.action === "created" || m.action === "updated")) toast(T("price_saved"));
 			return m;
 		})
-		.catch(function () { /* offline or no Item Price perm — line rate still applies */ });
+		.catch(function () { /* offline / no perm / non-priceable unit — line rate still applies */ });
 }
-function priceWriteback(code, name, rate) {
+function priceWriteback(code, name, uom, rate) {
 	if (!code) return;
 	rate = round2(rate);
 	if (!(rate > 0)) return;
-	var cur = PRICES[code];
-	if (cur == null) { setPrice(code, rate, true); return; }        /* fill the gap, silently */
+	/* ERPNext only allows an Item Price for a UOM defined on the item. A relabel
+	   unit (picked from the global list, not defined on the item) can't be priced
+	   — the line rate still applies, we just don't try to save it to the list. */
+	var defs = itemUomDefs(code), u = uom || defs.stock;
+	if (u && !defs.seen[u]) return;
+	var cur = priceFor(code, uom);
+	if (cur == null) { setPrice(code, uom, rate, true); return; }    /* fill the gap for this unit */
 	if (Math.abs(round2(cur) - rate) < 0.005) return;               /* unchanged */
+	var sfx = u ? (" /" + u) : "";
 	askConfirm({
-		title: name,
-		msg: T("price_upd_q").replace("{old}", fmt(cur)).replace("{new}", fmt(rate)),
+		title: name + (u ? " · " + u : ""),
+		msg: T("price_upd_q").replace("{old}", fmt(cur) + sfx).replace("{new}", fmt(rate) + sfx),
 		yes: T("price_upd_yes"),
-		onYes: function () { setPrice(code, rate); }
+		onYes: function () { setPrice(code, uom, rate); }
 	});
 }
 
@@ -1070,7 +1100,12 @@ function adoptCatalog(c) {
 	PROFILE = (c && c.profile) || {};
 	PRICES = {};
 	var pr = (c && c.prices) || [];
-	for (var i = 0; i < pr.length; i++) PRICES[pr[i].item_code] = pr[i].price_list_rate;
+	/* nested by UOM: PRICES[code][uom] = rate ("" = the uom-less / stock-unit row) */
+	for (var i = 0; i < pr.length; i++) {
+		var row = pr[i], pc = row.item_code, pu = row.uom || "";
+		if (!PRICES[pc]) PRICES[pc] = {};
+		PRICES[pc][pu] = row.price_list_rate;
+	}
 	/* which high-level categories actually have items, in CATDEFS order */
 	var present = {};
 	for (var j = 0; j < ITEMS.length; j++) present[groupCategory(ITEMS[j].item_group)] = true;
@@ -1260,7 +1295,7 @@ var CATDEFS = [
 ];
 function catClass(g) { return "c-" + groupCategory(g); }
 function tileHtml(it) {
-	var price = PRICES[it.name];
+	var price = priceFor(it.name, it.stock_uom);
 	var inner = it.image ?
 		'<img loading="lazy" src="' + esc(it.image) + '" alt="" onerror="this.outerHTML=\'<div class=mono>' + initials(it.item_name) + "</div>'\">" :
 		'<div class="mono">' + initials(it.item_name) + "</div>";
@@ -1329,18 +1364,19 @@ function addItem(code, ev) {
 	for (var i = 0; i < cart.length; i++) {
 		if (cart[i].code === code) { cart[i].qty += 1; render(); return; }
 	}
-	var rate = PRICES[code];
+	var su = it.stock_uom || "";
+	var rate = priceFor(code, su);
 	if (rate == null) {
-		/* no selling price on file: numpad sheet asks the rate (this cart
-		   line only — the price list itself is never written from here) */
+		/* no selling price for this unit: numpad asks the rate, then fill-gaps it
+		   into the price list for this unit (see priceWriteback) */
 		openNum(it.item_name, T("rate_p"), "", function (r) {
-			cart.push({ code: code, name: it.item_name, uom: it.stock_uom || "", qty: 1, rate: r });
+			cart.push({ code: code, name: it.item_name, uom: su, conv: 1, qty: 1, rate: r });
 			render();
-			priceWriteback(code, it.item_name, r);
+			priceWriteback(code, it.item_name, su, r);
 		});
 		return;
 	}
-	cart.push({ code: code, name: it.item_name, uom: it.stock_uom || "", qty: 1, rate: rate });
+	cart.push({ code: code, name: it.item_name, uom: su, conv: 1, qty: 1, rate: rate });
 	render();
 }
 
@@ -1445,7 +1481,7 @@ function editQty(i) {
 }
 function editRate(i) {
 	if (isWide()) { EDIT = { i: i, field: "rate" }; render(); focusEdit(); }
-	else openNum(cart[i].name, T("rate_p"), String(cart[i].rate), function (r) { cart[i].rate = r; render(); priceWriteback(cart[i].code, cart[i].name, r); });
+	else openNum(cart[i].name, T("rate_p"), String(cart[i].rate), function (r) { cart[i].rate = r; render(); priceWriteback(cart[i].code, cart[i].name, cart[i].uom, r); });
 }
 function focusEdit() { setTimeout(function () { var el = $id("editin"); if (el) { el.focus(); el.select(); } }, 0); }
 function editKey(e) { if (e.key === "Enter") { e.preventDefault(); commitEdit(e.target.value); } else if (e.key === "Escape") { e.preventDefault(); EDIT = null; render(); } }
@@ -1455,7 +1491,7 @@ function commitEdit(val) {
 	var e = EDIT; EDIT = null;
 	if (v > 0 && cart[e.i]) {
 		cart[e.i][e.field] = e.field === "rate" ? round2(v) : v;
-		if (e.field === "rate") priceWriteback(cart[e.i].code, cart[e.i].name, cart[e.i].rate);
+		if (e.field === "rate") priceWriteback(cart[e.i].code, cart[e.i].name, cart[e.i].uom, cart[e.i].rate);
 	}
 	render();
 }
@@ -1502,10 +1538,14 @@ function uomRow(o, cur, stock) {
 	var sub = (o.factor === 1)
 		? (o.uom === stock ? T("uom_stock") : "1 " + o.uom + " = 1 " + stock)
 		: ("1 " + o.uom + " = " + qtyfmt(o.factor) + " " + stock);
+	/* show this unit's own saved price, if any (prices differ per unit) */
+	var code = (UOMI != null && cart[UOMI]) ? cart[UOMI].code : null;
+	var p = code ? priceFor(code, o.uom) : null;
+	var pr = (p != null) ? '<div class="uompr">' + fmt(p) + "</div>" : "";
 	return '<div class="crow' + (on ? " on" : "") + '" onclick="pickUom(' + esc(JSON.stringify(o.uom)) + ',' + o.factor + ')">' +
 		'<div class="ci2">' + esc((o.uom || "?").slice(0, 2).toUpperCase()) + "</div>" +
 		'<div class="cm"><div class="cn2">' + esc(o.uom) + '</div><div class="cd2">' + esc(sub) + "</div></div>" +
-		(on ? '<div class="tick">&#10003;</div>' : "") + "</div>";
+		pr + (on ? '<div class="tick">&#10003;</div>' : "") + "</div>";
 }
 function uomListHtml() {
 	if (UOMI == null || !cart[UOMI]) return "";
@@ -1530,8 +1570,13 @@ function renderUomSheet() {
 function onUQ(v) { uomQ = v; var el = $id("ulist"); if (el) el.innerHTML = uomListHtml(); }
 function pickUom(uom, factor) {
 	if (UOMI == null || !cart[UOMI]) { closeUom(); return; }
-	cart[UOMI].uom = uom;
-	cart[UOMI].conv = Number(factor) || 1;
+	var l = cart[UOMI];
+	l.uom = uom;
+	l.conv = Number(factor) || 1;
+	/* prices change per unit: switch the line rate to this unit's saved price if
+	   there is one (else keep the current rate — editing it fill-gaps this unit) */
+	var p = priceFor(l.code, uom);
+	if (p != null) l.rate = round2(p);
 	closeUom();
 	render();
 }
