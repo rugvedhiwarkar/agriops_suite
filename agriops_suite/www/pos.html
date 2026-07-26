@@ -1027,6 +1027,14 @@ var split = { cash: 0, upi: 0 };
 
 /* ---------- render root ---------- */
 function isWide() { return window.innerWidth >= 1000; }
+/* a full render() rebuilds #app and destroys the focused field; on a phone that
+   drops the soft keyboard and it won't reopen on a programmatic refocus. So any
+   BACKGROUND re-render (net change, queue sync) must skip while the user types. */
+function isTyping() {
+	var a = document.activeElement; if (!a) return false;
+	var t = (a.tagName || "").toUpperCase();
+	return t === "INPUT" || t === "TEXTAREA" || a.isContentEditable === true;
+}
 function render() {
 	if (DISABLED) { renderDisabled(); return; }
 	if (!AUTHED) return;
@@ -1552,7 +1560,7 @@ function syncNow(manual) {
 	function fin() {
 		SYNCING = false;
 		var sb2 = $id("syncbtn"); if (sb2) sb2.classList.remove("spin");
-		render();
+		if (!isTyping()) render();   /* don't drop the keyboard if a sync lands mid-typing */
 	}
 	function step() {
 		if (idx >= work.length) { fin(); return; }
@@ -1565,7 +1573,7 @@ function syncNow(manual) {
 				pwa_client_id: sale.uid,
 				pos_profile: S.profile,
 				customer: sale.customer,
-				items: sale.items.map(function (l) { return { item_code: l.item_code, qty: l.qty, rate: l.rate }; }),
+				items: sale.items.map(function (l) { return { item_code: l.item_code, uom: l.uom, conversion_factor: l.conversion_factor || 1, qty: l.qty, rate: l.rate }; }),
 				payments: sale.payments,
 				posting_date: sale.date,
 				remarks: "POS PWA " + sale.ref
@@ -2236,7 +2244,9 @@ function doLogout() {
 function updateNet() {
 	var d = $id("netdot");
 	if (d) d.className = "netdot" + (navigator.onLine ? "" : " off");
-	if (AUTHED) render();
+	/* skip the re-render while typing — the dot is already updated above; the
+	   offline banner catches up on the next render (keeps the keyboard up) */
+	if (AUTHED && !isTyping()) render();
 }
 
 /* ---------- boot ---------- */
@@ -2282,10 +2292,20 @@ function boot() {
 
 window.addEventListener("online", function () { updateNet(); syncNow(false); });
 window.addEventListener("offline", updateNet);
-var _rz = null;
+var _rz = null, _wasWide = isWide();
 window.addEventListener("resize", function () {
 	clearTimeout(_rz);
-	_rz = setTimeout(function () { if (AUTHED && !DISABLED) render(); }, 150);
+	_rz = setTimeout(function () {
+		/* Re-render ONLY when the layout mode flips (mobile single-column <->
+		   desktop two-pane at the 1000px width breakpoint). The mobile soft
+		   keyboard opening shrinks the viewport HEIGHT — that fires resize too,
+		   but must NOT re-render, or it replaces the focused search input and the
+		   keyboard drops on every keystroke. The tile grid reflows via CSS
+		   auto-fill on its own, so no render is needed for width changes that stay
+		   within a mode. */
+		var w = isWide();
+		if (w !== _wasWide && AUTHED && !DISABLED) { _wasWide = w; render(); }
+	}, 150);
 });
 document.addEventListener("visibilitychange", function () { if (!document.hidden && AUTHED) syncNow(false); });
 setInterval(function () { if (AUTHED && queue.length) syncNow(false); }, 25000);
