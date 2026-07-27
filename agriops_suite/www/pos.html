@@ -167,12 +167,15 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--green); out
 	padding: 7px 12px; border-bottom: 1px solid #f0ddc2;
 }
 .offbar.err { background: var(--red-soft); color: var(--red); border-bottom-color: #f3cfcf; }
+.offbar.warn { background: var(--red-soft); color: var(--red); border-bottom-color: #f3cfcf; }
 
 /* tabs */
 .tabs { display: flex; background: var(--card); border-bottom: 1px solid var(--line); }
 .tabs button { flex: 1; padding: 12px 8px; font-weight: 700; font-size: .96rem; color: var(--muted); border-bottom: 3px solid transparent; }
 .tabs button.on { color: var(--ink); border-bottom-color: var(--green); }
 .tabs .bub { background: var(--amber); color: #fff; border-radius: 999px; font-size: .72rem; padding: 1px 7px; margin-left: 5px; font-weight: 800; }
+/* a REFUSED sale is not ordinary pending traffic — goods gone, no invoice */
+.tabs .bub.bad { background: var(--red); }
 
 /* sell view */
 .qwrap { padding: 10px 12px 4px; background: var(--card); border-bottom: 1px solid var(--line); }
@@ -657,6 +660,10 @@ var STR = {
 		discard_q: "Delete this bill forever? It has NOT reached ERPNext.",
 		sent_h: "Sent bills", pend_h: "Waiting to send",
 		pnote: "A waiting bill is safe on this device and goes in automatically when internet returns. The printed slip is provisional until the final GST bill number arrives.",
+		e_storage: "This device CANNOT save bills offline. Stay online — an offline bill would be lost.",
+		sending: "Saving to server…", nosave: "NOT saved — bill again:",
+		failed_alarm: "⚠ BILL REFUSED — no invoice made!", dupdraft: "Earlier bill is not submitted:",
+		nodiscard: "Could not delete — do NOT rely on this", khata_fail: "Khata not loaded — check before giving udhaar",
 		none_p: "Nothing waiting. All bills are in.",
 		set: "Settings", set_dev: "Counter code (on receipt ref)", set_prof: "POS Profile",
 		set_autop: "Print automatically after billing", set_lang: "Language",
@@ -710,6 +717,10 @@ var STR = {
 		discard_q: "यह बिल हमेशा के लिए हटाएँ? यह ERPNext नहीं पहुँचा है।",
 		sent_h: "भेजे गए बिल", pend_h: "भेजने बाकी",
 		pnote: "प्रतीक्षा वाला बिल इस डिवाइस पर सुरक्षित रहता है और इंटरनेट आते ही अपने आप चला जाता है। अंतिम GST बिल नंबर आने तक छपी रसीद अस्थायी है।",
+		e_storage: "यह डिवाइस ऑफ़लाइन बिल सुरक्षित नहीं रख सकता। ऑनलाइन रहें — ऑफ़लाइन बनाया बिल खो जाएगा।",
+		sending: "सर्वर पर सहेजा जा रहा है…", nosave: "सहेजा नहीं गया — फिर से बिल करें:",
+		failed_alarm: "⚠ बिल अस्वीकार — कोई इनवॉइस नहीं बना!", dupdraft: "पिछला बिल सबमिट नहीं है:",
+		nodiscard: "हटाया नहीं जा सका — इस पर भरोसा न करें", khata_fail: "खाता नहीं मिला — उधार देने से पहले जाँचें",
 		none_p: "कुछ बाकी नहीं। सभी बिल पहुँच गए।",
 		set: "सेटिंग्स", set_dev: "काउंटर कोड (रसीद क्र.)", set_prof: "POS प्रोफ़ाइल",
 		set_autop: "बिल के बाद अपने आप प्रिंट", set_lang: "भाषा",
@@ -763,6 +774,10 @@ var STR = {
 		discard_q: "हे बिल कायमचे हटवायचे? हे ERPNext मध्ये गेलेले नाही.",
 		sent_h: "पाठवलेली बिले", pend_h: "पाठवायची राहिलेली",
 		pnote: "प्रतीक्षेतले बिल या डिव्हाइसवर सुरक्षित असते व इंटरनेट आल्यावर आपोआप जाते. अंतिम GST बिल क्रमांक येईपर्यंत छापलेली पावती तात्पुरती असते.",
+		e_storage: "हे डिव्हाइस ऑफलाइन बिल साठवू शकत नाही. ऑनलाइन राहा — ऑफलाइन केलेले बिल हरवेल.",
+		sending: "सर्व्हरवर साठवत आहे…", nosave: "साठवले नाही — पुन्हा बिल करा:",
+		failed_alarm: "⚠ बिल नाकारले — इनव्हॉइस झालेच नाही!", dupdraft: "आधीचे बिल सबमिट नाही:",
+		nodiscard: "हटवता आले नाही — यावर विसंबून राहू नका", khata_fail: "खाते मिळाले नाही — उधारी देण्याआधी तपासा",
 		none_p: "काही प्रलंबित नाही. सर्व बिले पोहोचली.",
 		set: "सेटिंग्ज", set_dev: "काउंटर कोड (पावती क्र.)", set_prof: "POS प्रोफाइल",
 		set_autop: "बिल झाल्यावर आपोआप प्रिंट", set_lang: "भाषा",
@@ -854,12 +869,66 @@ applyScale();  /* apply immediately, before first paint */
 
 /* ---------- IndexedDB (kv + outbox queue) ---------- */
 var _db = null, _dbFailed = false, STORAGE_OK = true;
+/* STORAGE_OK false means the outbox is memory-only: a queued sale would not
+   survive a reload (service-worker activation, tab discard, pull-to-refresh,
+   power blip). Everything that persists a sale routes its failure here so the
+   cashier is told, the warning bar stays up, and checkout() refuses to take an
+   offline sale it cannot store. Silently continuing is how bills disappear
+   after the goods have gone out. */
+function storageFailed() {
+	if (!STORAGE_OK) return;
+	STORAGE_OK = false;
+	toast(T("e_storage"));
+	if (!isTyping()) render();
+}
+/* Only ever called after the outbox has been re-read — see rehydrateQueue.
+   Clearing the warning without that would tell the cashier "All bills are in"
+   over bills still sitting on disk that this session never loaded. */
+function storageOkAgain() {
+	if (STORAGE_OK) return;
+	STORAGE_OK = true;
+	if (!isTyping()) render();
+}
+/* The DB opened after boot's read had already failed and defaulted `queue` to
+   []. Anything queued on a previous run is on disk but invisible to this
+   session — and syncNow only ever walks the in-memory array, so those bills
+   would sit out of ERPNext for the whole session. Re-read and merge BEFORE
+   declaring storage healthy. */
+var REHYDRATING = false;
+function rehydrateQueue() {
+	if (REHYDRATING || STORAGE_OK) return;
+	REHYDRATING = true;
+	idbQAll().then(function (rows) {
+		var seen = {}, i;
+		for (i = 0; i < queue.length; i++) seen[queue[i].uid] = 1;
+		for (i = 0; i < done.length; i++) seen[done[i].uid] = 1;
+		for (i = 0; i < rows.length; i++) {
+			if (seen[rows[i].uid]) continue;
+			/* stuck mid-send from a killed tab -> retry it */
+			if (rows[i].status === "sending") rows[i].status = "pending";
+			queue.push(rows[i]);
+		}
+		queue.sort(function (a, b) { return a.ts < b.ts ? -1 : 1; });
+		REHYDRATING = false;
+		storageOkAgain();
+		syncNow(false);
+	}, function () { REHYDRATING = false; /* still unusable — leave the warning up */ });
+}
+/* STORAGE_OK must not be a one-way latch. A single slow commit (antivirus scan,
+   fsync stall, backgrounded tab) can trip the 6 s watchdog on a perfectly
+   healthy database; without a way back the red bar stays up all session and
+   checkout() refuses every offline sale until someone reloads the page — turning
+   a transient stall into a till that will not bill. Any later write or read that
+   actually succeeds proves storage works, so re-read the outbox and clear it. */
+function storageWorked() {
+	if (!STORAGE_OK && !REHYDRATING) rehydrateQueue();
+}
 function db() {
 	return new Promise(function (res, rej) {
 		if (_db) { res(_db); return; }
 		if (_dbFailed) { rej(new Error("idb unavailable")); return; }
 		var settled = false;
-		function fail(why) { if (settled) return; settled = true; _dbFailed = true; STORAGE_OK = false; rej(new Error(why)); }
+		function fail(why) { if (settled) return; settled = true; _dbFailed = true; storageFailed(); rej(new Error(why)); }
 		var r;
 		try { r = indexedDB.open("vacpos", 1); }
 		catch (e) { fail("open threw"); return; }
@@ -868,17 +937,40 @@ function db() {
 			if (!d.objectStoreNames.contains("queue")) d.createObjectStore("queue", { keyPath: "uid" });
 			if (!d.objectStoreNames.contains("kv")) d.createObjectStore("kv");
 		};
-		r.onsuccess = function () { if (settled) return; settled = true; _db = r.result; res(_db); };
+		r.onsuccess = function () {
+			/* a slow device can open AFTER the 5 s timeout fired; adopt it rather
+			   than staying storage-less for the whole life of the tab — but the
+			   boot-time read of the outbox has already failed and returned [],
+			   so re-hydrate before clearing the warning */
+			if (settled) { _db = r.result; _dbFailed = false; rehydrateQueue(); return; }
+			settled = true; _db = r.result; res(_db);
+		};
 		r.onerror = function () { fail("open error"); };
 		r.onblocked = function () { fail("open blocked"); };
 		setTimeout(function () { fail("open timed out"); }, 5000);
 	});
 }
-function idbQPut(v) { return db().then(function (d) { return new Promise(function (res, rej) { var t = d.transaction("queue", "readwrite"); t.objectStore("queue").put(v); t.oncomplete = function () { res(); }; t.onerror = function () { rej(t.error); }; }); }); }
-function idbQDel(k) { return db().then(function (d) { return new Promise(function (res, rej) { var t = d.transaction("queue", "readwrite"); t.objectStore("queue").delete(k); t.oncomplete = function () { res(); }; t.onerror = function () { rej(t.error); }; }); }); }
+function idbQPut(v) { return db().then(function (d) { return new Promise(function (res, rej) { var t = d.transaction("queue", "readwrite"); t.objectStore("queue").put(v); t.oncomplete = function () { storageWorked(); res(); }; t.onerror = function () { rej(t.error); }; }); }); }
+function idbQDel(k) { return db().then(function (d) { return new Promise(function (res, rej) { var t = d.transaction("queue", "readwrite"); t.objectStore("queue").delete(k); t.oncomplete = function () { storageWorked(); res(); }; t.onerror = function () { rej(t.error); }; }); }); }
 function idbQAll() { return db().then(function (d) { return new Promise(function (res, rej) { var q = d.transaction("queue").objectStore("queue").getAll(); q.onsuccess = function () { res(q.result || []); }; q.onerror = function () { rej(q.error); }; }); }); }
 function idbKGet(k) { return db().then(function (d) { return new Promise(function (res, rej) { var q = d.transaction("kv").objectStore("kv").get(k); q.onsuccess = function () { res(q.result); }; q.onerror = function () { rej(q.error); }; }); }); }
 function idbKPut(k, v) { return db().then(function (d) { return new Promise(function (res, rej) { var t = d.transaction("kv", "readwrite"); t.objectStore("kv").put(v, k); t.oncomplete = function () { res(); }; t.onerror = function () { rej(t.error); }; }); }); }
+
+/* checkout() now WAITS for the outbox write before clearing the counter, so a
+   stalled IndexedDB transaction would freeze the till with no way out. Never let
+   a storage promise hold the counter for more than a few seconds — on timeout we
+   fall through to the server path, and the server dedupes on pwa_client_id if
+   the write lands late. */
+function withTimeout(p, ms) {
+	return new Promise(function (res, rej) {
+		var settled = false;
+		var t = setTimeout(function () { if (!settled) { settled = true; rej(new Error("storage timeout")); } }, ms);
+		p.then(
+			function (v) { if (settled) return; settled = true; clearTimeout(t); res(v); },
+			function (e) { if (settled) return; settled = true; clearTimeout(t); rej(e); }
+		);
+	});
+}
 
 /* ---------- api (device token OR session cookie + CSRF) ---------- */
 function api(path, opts) {
@@ -938,10 +1030,10 @@ function niceDate(iso) { if (!iso) return ""; var p = String(iso).split("-"); re
 function norm(s) { return String(s || "").toLowerCase(); }
 function initials(s) { s = String(s || "?").trim(); return esc(s.slice(0, 1).toUpperCase()); }
 var toastTimer = null;
-function toast(msg) {
+function toast(msg, ms) {
 	var t = $id("toast"); t.textContent = msg; t.classList.add("show");
 	clearTimeout(toastTimer);
-	toastTimer = setTimeout(function () { t.classList.remove("show"); }, 2600);
+	toastTimer = setTimeout(function () { t.classList.remove("show"); }, ms || 2600);
 }
 
 /* ---------- price write-back (UOM-aware) ----------
@@ -1047,6 +1139,14 @@ function nextRef() {
 	return "POS-" + (S.device || "C1") + "-" + String(n).padStart(4, "0");
 }
 function pendCount() { return queue.length; }
+/* a sale the server REFUSED (locked out, no GST slab, validation) is not merely
+   "waiting" — the goods are gone and no invoice exists. Counted separately so
+   the tab bubble can shout instead of looking like ordinary pending traffic. */
+function failCount() {
+	var n = 0;
+	for (var i = 0; i < queue.length; i++) if (queue[i].status === "failed") n++;
+	return n;
+}
 
 /* ---------- held bills (park one customer's bill while another talks) ---------- */
 var HOLDS = [];
@@ -1060,6 +1160,7 @@ function parkCurrent() {
 	});
 	saveHolds();
 	cart = []; CUST = null; KHATA = null; payMode = "Cash"; cashMode = defaultCashMode(); split = { cash: 0, upi: 0 };
+	cartBumpGen();   /* this cart is over — never reuse its pwa_client_id */
 }
 function holdBill() {
 	if (!cart.length) return;
@@ -1077,6 +1178,7 @@ function resumeHold(id) {
 	cart = h.cart || []; CUST = h.cust || null; KHATA = null; payMode = h.payMode || "Cash";
 	cashMode = h.cashMode || defaultCashMode();
 	split = h.split ? { cash: h.split.cash || 0, upi: h.split.upi || 0 } : { cash: 0, upi: 0 };
+	cartBumpGen();   /* a different cart is on the counter now */
 	saveHolds();
 	if (!isWide()) VIEW = "cart";
 	render();
@@ -1105,6 +1207,32 @@ function holdsStrip() {
 /* ---------- state ---------- */
 var VIEW = "sell", searchQ = "", groupF = "", gridCap = 60;
 var cart = [], CUST = null, KHATA = null, payMode = "Cash", BUSY = false, SYNCING = false;
+/* The last checkout that could not be saved, so an immediate re-bill of the same
+   PHYSICAL cart reuses its pwa_client_id instead of double-posting (see
+   checkout). CARTGEN is what makes it "physical" rather than "identical
+   contents": two walk-in customers each buying one bag of the same item at the
+   same price produce byte-identical carts, and without a generation counter the
+   second sale would be swallowed by the server's dedupe and filed under the
+   first customer's invoice — money in the drawer, no bill, no stock issue, no
+   GST. Anything that ends the current cart bumps the counter, and a stash also
+   expires, so a stale uid can never outlive the failure it belongs to. */
+var RETRY = null, CARTGEN = 1;
+var RETRY_TTL = 90000;
+function cartBumpGen() { CARTGEN += 1; RETRY = null; }
+function cartSig() {
+	var s = CARTGEN + "|" + payMode + "|" + cashMode + "|" + (CUST ? CUST.name : "") +
+		"|" + (split.cash || 0) + "/" + (split.upi || 0) + "|";
+	for (var i = 0; i < cart.length; i++) {
+		var l = cart[i];
+		s += l.code + "×" + l.qty + "@" + l.rate + "/" + (l.uom || "") + "/" + (l.dpct || 0) + "/" + (l.damt || 0) + ";";
+	}
+	return s;
+}
+function retryUidFor(sig) {
+	if (!RETRY || RETRY.sig !== sig) return null;
+	if ((Date.now() - RETRY.at) > RETRY_TTL) { RETRY = null; return null; }
+	return RETRY.uid;
+}
 var split = { cash: 0, upi: 0 };
 /* which cash drawer a cash payment lands in (CASH 1 / CASH 2). The modes come
    from the POS Profile via the catalog; the toggle only shows when there are 2+ */
@@ -1148,10 +1276,11 @@ function render() {
 	var two = isWide() && (VIEW === "sell" || VIEW === "cart");
 	var h = renderHdr();
 	if (!navigator.onLine) h += '<div class="offbar">' + esc(T("offline")) + "</div>";
+	if (!STORAGE_OK) h += '<div class="offbar warn">' + esc(T("e_storage")) + "</div>";
 	h += '<div class="tabs">' +
 		'<button class="' + (VIEW === "sell" || VIEW === "cart" ? "on" : "") + '" onclick="go(\'sell\')">' + esc(T("sell")) + "</button>" +
 		'<button class="' + (VIEW === "pending" ? "on" : "") + '" onclick="go(\'pending\')">' + esc(T("pending")) +
-		(pendCount() ? '<span class="bub">' + pendCount() + "</span>" : "") + "</button>" +
+		(pendCount() ? '<span class="bub' + (failCount() ? " bad" : "") + '">' + pendCount() + "</span>" : "") + "</button>" +
 		'<button class="' + (VIEW === "recent" ? "on" : "") + '" onclick="go(\'recent\')">' + esc(T("recent")) + "</button>" +
 		'<button class="' + (VIEW === "report" ? "on" : "") + '" onclick="go(\'report\')">' + esc(T("report")) + "</button>" +
 		"</div>";
@@ -1557,8 +1686,10 @@ function setPay(m) {
 	if (m === "Udhaar" && !CUST) { toast(T("need_cust")); openCust(); }
 }
 function qUp(i) { cart[i].qty += 1; render(); }
-function qDown(i) { cart[i].qty -= 1; if (cart[i].qty <= 0) cart.splice(i, 1); render(); }
-function delLine(i) { cart.splice(i, 1); render(); }
+/* emptying the cart by hand ends it just as surely as billing it — bump the
+   generation so the next customer cannot inherit a stale pwa_client_id */
+function qDown(i) { cart[i].qty -= 1; if (cart[i].qty <= 0) cart.splice(i, 1); if (!cart.length) cartBumpGen(); render(); }
+function delLine(i) { cart.splice(i, 1); if (!cart.length) cartBumpGen(); render(); }
 /* On the counter PC, editing qty/rate happens INLINE (click → focused input,
    type, Enter) — no modal. Touch devices keep the numpad sheet. */
 var EDIT = null;
@@ -1805,9 +1936,16 @@ function renderDisc() {
 }
 function loadKhata() {
 	if (!CUST || KHATA != null || !navigator.onLine) return;
-	api("/api/method/vac_pos_outstanding?customer=" + encodeURIComponent(CUST.name)).then(function (d) {
+	/* profile is what scopes the khata to THIS company's books — the endpoint
+	   filters GL Entry by the profile's company, so sending it is not optional */
+	api("/api/method/vac_pos_outstanding?customer=" + encodeURIComponent(CUST.name) +
+		"&profile=" + encodeURIComponent(S.profile || "Main")).then(function (d) {
 		if (d.message && CUST) { KHATA = d.message.outstanding; if (VIEW === "cart") render(); }
-	}).catch(function () { });
+	}).catch(function () {
+		/* A khata that silently fails to load looks exactly like a zero balance,
+		   so the cashier extends fresh credit to someone who already owes. Say so. */
+		if (CUST) { KHATA = null; toast(T("khata_fail")); if (VIEW === "cart") render(); }
+	});
 }
 
 /* ---------- checkout ----------
@@ -1817,6 +1955,11 @@ function loadKhata() {
    (verified on staging: cash+upi rows, credit = outstanding). */
 function checkout() {
 	if (!cart.length || BUSY) return;
+	/* No storage AND no network: the sale could only live in memory and would be
+	   gone on the next reload, with the goods already handed over. Refuse it.
+	   Storage dead but online is still billable — see the commit block below,
+	   which holds the counter until ERPNext itself confirms the sale. */
+	if (!STORAGE_OK && !navigator.onLine) { toast(T("e_storage")); return; }
 	var total = cartTotal();
 	var pays, credit;
 	if (payMode === "Udhaar") { pays = []; credit = total; }
@@ -1832,8 +1975,15 @@ function checkout() {
 	/* any credit portion accrues receivable -> must be a named customer */
 	if (credit > 0.005 && !CUST) { toast(T("need_cust")); openCust(); return; }
 	BUSY = true; render();
+	/* Reuse the uid of an immediately-preceding attempt that failed to save, but
+	   only for the SAME physical cart and only within RETRY_TTL — see cartSig.
+	   The server dedupes on pwa_client_id, so the retry returns the existing
+	   invoice instead of billing twice. The failure direction is deliberate: a
+	   stale uid would silently suppress a real sale, a fresh one at worst makes
+	   a duplicate that is visible on the bill list and cancellable. */
+	var sig = cartSig();
 	var sale = {
-		uid: uidNew(),
+		uid: retryUidFor(sig) || uidNew(),
 		ref: nextRef(),
 		ts: nowStamp(),
 		date: today(),
@@ -1849,13 +1999,97 @@ function checkout() {
 		wantPrint: navigator.onLine,
 		status: "pending", err: "", result: null
 	};
-	queue.push(sale);
-	idbQPut(sale).catch(function () { toast("storage!"); });
-	cart = []; CUST = null; KHATA = null; payMode = "Cash"; cashMode = defaultCashMode(); split = { cash: 0, upi: 0 }; BUSY = false; VIEW = "sell";
-	render();
-	toast(T("queued") + " " + sale.ref);
-	if (S.autoprint) printSale(sale);
-	syncNow(false);
+	/* ---- COMMIT ----
+	   Clearing the counter, printing a slip and saying "queued" are all promises
+	   to the cashier that the bill is safe, so NONE of them may happen before it
+	   actually is. A sale is safe once it reaches one of two durable homes:
+	     - the IndexedDB outbox (normal path), or
+	     - ERPNext itself, when storage is dead — post now and hold the cart until
+	       the invoice number comes back. (`done` lives in localStorage, a
+	       separate store that survives an IndexedDB failure, so the record of it
+	       survives too.)
+	   Offline with no storage was already refused above, so those are the only
+	   two cases. Note idbQPut is awaited now: it used to be fire-and-forget, so
+	   the very first sale after storage broke was cleared and printed before the
+	   write rejected — the warning only ever protected the NEXT sale. */
+	function counterClear() {
+		cart = []; CUST = null; KHATA = null; payMode = "Cash";
+		cashMode = defaultCashMode(); split = { cash: 0, upi: 0 };
+		cartBumpGen();   /* clears RETRY and retires this cart's uid */
+		BUSY = false; VIEW = "sell"; render();
+	}
+	/* leave the cart exactly as it is — nothing printed, nothing lost, and the
+	   cashier can simply bill again (same uid, so no double-post) */
+	function counterKeep(msg) {
+		RETRY = { sig: sig, uid: sale.uid, at: Date.now() };
+		BUSY = false; render(); toast(msg);
+	}
+	function postDirect() {
+		toast(T("sending"));
+		/* Bound the wait. api() uses a bare fetch with no timeout, so a half-open
+		   link (captive-portal reauth, router black-holing after a WAN flap) never
+		   settles — and because BUSY is only cleared inside these handlers, that
+		   would freeze the till with the Bill button disabled for the life of the
+		   tab. On timeout the invoice may still have been created; that is exactly
+		   what the pwa_client_id retry above is for. */
+		withTimeout(postSale(sale), 20000).then(function (d) {
+			var m = d.message || {};
+			/* same rule as syncNow: a dedupe hit against a cancelled or draft
+			   invoice is not a completed bill, so do not clear the counter on it */
+			if (m.duplicate && m.docstatus !== 1) {
+				counterKeep(T("dupdraft") + " " + (m.name || ""));
+				return;
+			}
+			sale.status = "done"; sale.result = m;
+			done.unshift(sale); saveDone();
+			counterClear();
+			toast(T("billno") + " " + (m.name || ""));
+			if (S.autoprint) printSale(sale);
+			if (sale.wantPrint && m.name && !m.duplicate) { sale.wantPrint = false; printMenu("Sales Invoice", m.name); }
+		}, function (e) {
+			/* second arg, not .catch: a throw inside the success handler above must
+			   not be reported to the cashier as "bill not saved" when it was */
+			if (e && e.auth) { counterKeep(T("nosave") + " " + T("login_bad")); needLogin(); return; }
+			if (e && e.notfound) { counterKeep(T("nosave")); disabledCheck(); return; }
+			counterKeep(T("nosave") + " " + ((e && e.message) || T("syncfail")));
+		});
+	}
+	if (STORAGE_OK) {
+		withTimeout(idbQPut(sale), 6000).then(function () {
+			queue.push(sale);
+			counterClear();
+			toast(T("queued") + " " + sale.ref);
+			if (S.autoprint) printSale(sale);
+			syncNow(false);
+		}, function () {
+			/* second arg, not .catch: an exception thrown in the success handler
+			   above must not be misread as a storage failure and latch the bar */
+			storageFailed();
+			/* not on disk after all: ERPNext can still be the durable copy */
+			if (navigator.onLine) postDirect(); else counterKeep(T("e_storage"));
+		});
+	} else {
+		postDirect();
+	}
+}
+
+/* The ONE place a sale is posted to ERPNext. Used by syncNow's outbox loop and
+   by checkout's hold-the-counter path when local storage is unavailable. The
+   server is idempotent on pwa_client_id, so re-posting the same uid returns the
+   existing invoice with duplicate:true rather than billing twice. */
+function postSale(sale) {
+	return api("/api/method/vac_pos_create_invoice", {
+		method: "POST",
+		json: {
+			pwa_client_id: sale.uid,
+			pos_profile: S.profile,
+			customer: sale.customer,
+			items: sale.items.map(function (l) { return { item_code: l.item_code, uom: l.uom, conversion_factor: l.conversion_factor || 1, qty: l.qty, rate: l.rate, discount_percentage: l.discount_percentage || 0, discount_amount: l.discount_amount || 0 }; }),
+			payments: sale.payments,
+			posting_date: sale.date,
+			remarks: "POS PWA " + sale.ref
+		}
+	});
 }
 
 /* ---------- sync ---------- */
@@ -1879,37 +2113,51 @@ function syncNow(manual) {
 		var sale = work[idx];
 		sale.status = "sending"; sale.err = "";
 		if (VIEW === "pending") render();
-		api("/api/method/vac_pos_create_invoice", {
-			method: "POST",
-			json: {
-				pwa_client_id: sale.uid,
-				pos_profile: S.profile,
-				customer: sale.customer,
-				items: sale.items.map(function (l) { return { item_code: l.item_code, uom: l.uom, conversion_factor: l.conversion_factor || 1, qty: l.qty, rate: l.rate, discount_percentage: l.discount_percentage || 0, discount_amount: l.discount_amount || 0 }; }),
-				payments: sale.payments,
-				posting_date: sale.date,
-				remarks: "POS PWA " + sale.ref
-			}
-		}).then(function (d) {
+		postSale(sale).then(function (d) {
 			var m = d.message || {};
+			/* A duplicate hit is only proof of a real bill when that bill is
+			   SUBMITTED. The server's dedupe lookup has no docstatus filter, so a
+			   match against a cancelled or still-draft invoice would otherwise be
+			   announced as a completed sale and the outbox row deleted. */
+			if (m.duplicate && m.docstatus !== 1) {
+				sale.status = "failed";
+				sale.err = T("dupdraft") + " " + (m.name || "");
+				idbQPut(sale).catch(function () { storageFailed(); });
+				saleFailedAlarm(sale);
+				idx += 1; step();
+				return;
+			}
 			sale.status = "done"; sale.result = m;
 			done.unshift(sale); saveDone();
 			for (var k = 0; k < queue.length; k++) if (queue[k].uid === sale.uid) { queue.splice(k, 1); break; }
-			idbQDel(sale.uid).catch(function () { });
+			idbQDel(sale.uid).catch(function () { storageFailed(); });
 			toast(T("billno") + " " + (m.name || ""));
 			/* saved in ERPNext -> ask which invoice format to print (once, fresh sales only) */
 			if (sale.wantPrint && m.name && !m.duplicate) { sale.wantPrint = false; printMenu("Sales Invoice", m.name); }
 			idx += 1; step();
-		}).catch(function (e) {
-			if (e && e.auth) { sale.status = "pending"; idbQPut(sale).catch(function () { }); fin(); needLogin(); return; }
-			if (e && e.net) { sale.status = "pending"; idbQPut(sale).catch(function () { }); fin(); return; }
-			if (e && e.notfound) { sale.status = "pending"; idbQPut(sale).catch(function () { }); fin(); disabledCheck(); return; }
+		}, function (e) {
+			if (e && e.auth) { sale.status = "pending"; idbQPut(sale).catch(function () { storageFailed(); }); fin(); needLogin(); return; }
+			if (e && e.net) { sale.status = "pending"; idbQPut(sale).catch(function () { storageFailed(); }); fin(); return; }
+			if (e && e.notfound) { sale.status = "pending"; idbQPut(sale).catch(function () { storageFailed(); }); fin(); disabledCheck(); return; }
+			/* TERMINAL: the server refused this sale outright — no permission, no
+			   GST slab, a validation error. The goods have already gone out and no
+			   invoice exists. Every branch above takes a visible action; this one
+			   used to fall through silently, so the only trace was a line the
+			   cashier would see solely by opening the Pending tab. */
 			sale.status = "failed"; sale.err = (e && e.message) || "?";
-			idbQPut(sale).catch(function () { });
+			idbQPut(sale).catch(function () { storageFailed(); });
+			saleFailedAlarm(sale);
 			idx += 1; step();
 		});
 	}
 	step();
+}
+
+/* A refused sale must be impossible to miss: the customer has the goods and
+   ERPNext has no bill. Loud, and it names the ref so the slip can be found. */
+function saleFailedAlarm(sale) {
+	toast(T("failed_alarm") + " " + sale.ref + ": " + (sale.err || "?"), 8000);
+	if (!isTyping()) render();
 }
 
 /* ---------- pending ---------- */
@@ -1925,7 +2173,8 @@ function renderPending() {
 		h += '<div class="psec">' + esc(T("sent_h")) + "</div>";
 		for (var j = 0; j < done.length; j++) h += pcardHtml(done[j], true);
 	}
-	h += '<div class="pnote">' + esc(T("pnote")) + "</div>";
+	/* never promise "safe on this device" when the device cannot store it */
+	h += '<div class="pnote">' + esc(STORAGE_OK ? T("pnote") : T("e_storage")) + "</div>";
 	return h;
 }
 
@@ -2162,14 +2411,20 @@ function pcardHtml(s, isDone) {
 	return h;
 }
 function retrySale(uid) {
-	for (var i = 0; i < queue.length; i++) if (queue[i].uid === uid) { queue[i].status = "pending"; queue[i].err = ""; idbQPut(queue[i]).catch(function () { }); }
+	for (var i = 0; i < queue.length; i++) if (queue[i].uid === uid) { queue[i].status = "pending"; queue[i].err = ""; idbQPut(queue[i]).catch(function () { storageFailed(); }); }
 	render(); syncNow(true);
 }
 function discardSale(uid) {
 	askConfirm({ msg: T("discard_q"), yes: T("discard"), danger: true, onYes: function () {
-		for (var i = 0; i < queue.length; i++) if (queue[i].uid === uid) { queue.splice(i, 1); break; }
-		idbQDel(uid).catch(function () { });
-		render();
+		/* Remove from disk FIRST. If the delete aborts and we have already spliced
+		   the row out of the in-memory queue, the row survives on disk, boot()
+		   reloads it, syncNow posts it, and ERPNext raises a real invoice for a
+		   bill the cashier explicitly voided — stock issued and GST booked on a
+		   sale that never happened. */
+		idbQDel(uid).then(function () {
+			for (var i = 0; i < queue.length; i++) if (queue[i].uid === uid) { queue.splice(i, 1); break; }
+			render();
+		}, function () { storageFailed(); toast(T("nodiscard")); });
 	} });
 }
 function reprint(uid, isDone) {

@@ -25,10 +25,20 @@ from pp_lib import call, get_doc, rpc, upsert
 # assign it. Used for the prod promotion (owner 2026-07-25): the can_journal gate
 # already grants Fast Journal via standard Accounts roles, so we leave Payment
 # Entry / Journal Entry permissions untouched on production.
-SKIP_JOURNAL = os.environ.get("PP_SKIP_JOURNAL") == "yes"
+#
+# These now default to ON for production rather than relying on whoever runs the
+# script remembering the env var. Deploying a server-script change means re-running
+# this installer, and __main__ would otherwise grant Payment Entry and Journal
+# Entry create+submit on the live books as a side effect — the exact perms the
+# owner decided on 2026-07-25 to leave untouched on production. ensure_test_user()
+# already guards itself this way; the pattern simply was not applied here.
+# Set PP_FORCE_JOURNAL=yes / PP_FORCE_PURCHASE=yes to override deliberately.
+SKIP_JOURNAL = os.environ.get("PP_SKIP_JOURNAL") == "yes" or (
+    pp_lib.TARGET == "prod" and os.environ.get("PP_FORCE_JOURNAL") != "yes")
 # PP_SKIP_PURCHASE=yes -> do NOT create the POS Purchase role / its perms / assign
 # it (skip the Purchase Receipt perm conversion on a site where it's not wanted).
-SKIP_PURCHASE = os.environ.get("PP_SKIP_PURCHASE") == "yes"
+SKIP_PURCHASE = os.environ.get("PP_SKIP_PURCHASE") == "yes" or (
+    pp_lib.TARGET == "prod" and os.environ.get("PP_FORCE_PURCHASE") != "yes")
 
 FALLBACK_TAX_TEMPLATE = "Output GST In-state Inclusive - VAC"
 TEST_USER = "pos.cashier@example.com"
@@ -111,7 +121,45 @@ PURCHASE_USERS = [
 
 # ---------------------------------------------------------------- server scripts
 # Bodies run inside Frappe's safe_exec sandbox: no imports; frappe.get_all
-# bypasses perms (fine for catalog/outstanding), doc.insert/submit respect them.
+# bypasses perms, doc.insert/submit respect them.
+#
+# ACCESS GATE — read this before adding an endpoint.
+# A Server Script has NO role field. ServerScript.execute_method() checks exactly
+# one thing: session.user == "Guest" vs allow_guest. Inside safe_exec, get_doc
+# does no read-permission check and get_all always runs ignore_permissions. So
+# the ONLY access control on an API script is what its own body enforces —
+# "allow_guest: 0" just means "any account with a password on this site".
+# Code review 2026-07-26 confirmed on staging that a Website User whose only role
+# is Driver could fetch the entire customer master (3,575 rows with mobile
+# numbers and villages) from vac_pos_catalog. Every data-bearing POS endpoint
+# now opens with GATE. Note RestrictedPython rejects identifiers starting with
+# an underscore, hence the gate_/gr/gn names.
+# The role list MUST stay a superset of every role the client uses to decide what
+# to show. agriops_suite/pos_pwa.py's can_purchase admits Purchase User /
+# Purchase Manager / Stock Manager, and pos.html canBuy() shows the Sell/Buy
+# toggle on that flag — omitting them here advertises Buy mode to users that
+# vac_pos_purchase then refuses.
+GATE = r"""
+gate_roles = ["POS Cashier", "POS Journal", "POS Purchase",
+              "Purchase User", "Purchase Manager", "Stock Manager",
+              "Accounts User", "Accounts Manager", "System Manager"]
+gate_ok = 0
+if frappe.session.user == "Administrator":
+    gate_ok = 1
+else:
+    gate_rows = frappe.get_all("Has Role",
+        filters={"parenttype": "User", "parent": frappe.session.user},
+        fields=["role"], limit_page_length=0, ignore_permissions=True)
+    gate_mine = []
+    for gr in gate_rows:
+        gate_mine.append(gr["role"])
+    for gn in gate_roles:
+        if gn in gate_mine:
+            gate_ok = 1
+            break
+if not gate_ok:
+    frappe.throw("Not permitted — POS access required")
+"""
 
 SCRIPT_PING = r"""
 # can_journal shows/hides the Fast Journal ⚡ (the real gate is at post time —
@@ -365,6 +413,54 @@ else:
         })
 
     doc.insert()
+
+    # GST SLAB GUARD. Our tax rows are appended at rate 0 with
+    # included_in_print_rate=1, so the real split comes from each item's RESOLVED
+    # Item Tax Template — ERPNext walks the item's own tax table and then its
+    # Item Group ancestry. Six Item Group Item Tax rows are load-bearing here
+    # (VAC Hardware 18%, Fertilizer Bags 5%, Plant Nutrition 5%, Plant Protection
+    # 18%, Plant Growth Regulators 18%, Seed Nil-Rated) and are the only reason
+    # some sellable items resolve at all — do not delete them.
+    # When an item resolves to NO template, _get_tax_rate falls back to the row's
+    # own rate (0) and nothing backs tax out of the inclusive price: a 1,050 bag
+    # bills as net 1,050 / CGST 0 / SGST 0, the customer pays in full, zero
+    # output GST is booked, and this script would auto-submit that into a filed
+    # GSTR-1. India Compliance cannot catch it — the shop legitimately sells
+    # nil-rated goods, so a 0.00 tax line looks normal. Genuinely exempt items
+    # carry a nil-rated template and pass.
+    #
+    # Only the rate-0 inclusive shape is checked. An exclusive template (e.g. an
+    # interstate IGST 18% profile) charges its own rate regardless of the item's
+    # template, so a missing ITT there is harmless and must not stop the counter.
+    if doc.taxes_and_charges and not doc.get("taxes"):
+        # the inverse hole: a named template that produced no rows would skip the
+        # check below entirely and auto-submit with no GST at all
+        frappe.throw("Tax template " + doc.taxes_and_charges
+                     + " produced no tax rows — refusing to bill without GST.")
+    inclusive_zero = 0
+    for t in doc.get("taxes") or []:
+        if frappe.utils.flt(t.rate) == 0 and t.included_in_print_rate:
+            inclusive_zero = 1
+    if inclusive_zero:
+        # Instruction FIRST and the list capped: api() truncates the message to
+        # 220 chars, and a long list of 25-char item codes would cut off the only
+        # part that tells the cashier what to do.
+        no_slab = ""
+        n_slab = 0
+        for it in doc.items:
+            if not it.item_tax_template:
+                n_slab = n_slab + 1
+                if n_slab <= 2:
+                    if no_slab:
+                        no_slab = no_slab + ", "
+                    no_slab = no_slab + it.item_code
+        if n_slab:
+            more = ""
+            if n_slab > 2:
+                more = " +" + str(n_slab - 2) + " more"
+            frappe.throw("Set a GST slab (Item Tax Template) on the item before "
+                         "billing it. Missing on: " + no_slab + more)
+
     doc.submit()
 
     frappe.response["message"] = {
@@ -388,11 +484,29 @@ SCRIPT_OUTSTANDING = r"""
 customer = frappe.form_dict.get("customer")
 if not customer:
     frappe.throw("customer is required")
+# Company filter is NOT optional: get_all bypasses User Permissions, so without
+# it this sums the party's balance across every company on the bench and shows
+# the counter a khata that does not exist in VAC's books.
+# The scope must not be caller-chosen either. `profile` is a free-text request
+# parameter, so honouring any POS Profile would let a caller name a sister
+# company's profile and read that party's balance in the other company's books —
+# exactly the cross-company read this filter exists to stop. Only a profile the
+# session user is actually assigned to is honoured; anything else falls back to
+# the site's canonical profile rather than trusting the request.
+profile_name = frappe.form_dict.get("profile") or "Main"
+if profile_name != "Main":
+    mine = frappe.get_all("POS Profile User",
+        filters={"parent": profile_name, "user": frappe.session.user},
+        fields=["name"], limit_page_length=1, ignore_permissions=True)
+    if not mine:
+        profile_name = "Main"
+profile = frappe.get_doc("POS Profile", profile_name)
 
 # v16 blocks SQL-function strings in get_all fields; sum in Python instead
 rows = frappe.get_all(
     "GL Entry",
-    filters={"party_type": "Customer", "party": customer, "is_cancelled": 0},
+    filters={"company": profile.company, "party_type": "Customer",
+             "party": customer, "is_cancelled": 0},
     fields=["debit", "credit"],
     limit_page_length=0,
 )
@@ -536,6 +650,13 @@ SCRIPT_INVOICE = r"""
 name = frappe.form_dict.get("name")
 if not name:
     frappe.throw("name is required")
+# POS-created invoices only. get_doc does no permission check inside safe_exec,
+# and the naming series is sequential, so without this any POS user could walk
+# SI-26-00001.. and read every wholesale bill's per-line rates and discounts.
+# The Recent tab only ever lists pwa_client_id invoices, so nothing legitimate
+# asks for anything else.
+if not frappe.db.get_value("Sales Invoice", name, "pwa_client_id"):
+    frappe.throw("Not permitted")
 doc = frappe.get_doc("Sales Invoice", name)
 frappe.response["message"] = {
     "name": doc.name,
@@ -720,18 +841,22 @@ else:
         "docstatus": doc.docstatus, "supplier": doc.supplier, "total_qty": doc.total_qty}
 """
 
+# vac_pos_ping is deliberately NOT gated: it returns only the caller's own
+# session (user, can_journal, timestamp) and the PWA uses it to tell "no access"
+# apart from "endpoints not installed on this site". Everything that returns
+# business data or writes a document is gated.
 SERVER_SCRIPTS = {
     "vac_pos_ping": SCRIPT_PING,
-    "vac_pos_catalog": SCRIPT_CATALOG,
-    "vac_pos_create_invoice": SCRIPT_CREATE_INVOICE.replace(
+    "vac_pos_catalog": GATE + SCRIPT_CATALOG,
+    "vac_pos_create_invoice": GATE + SCRIPT_CREATE_INVOICE.replace(
         "__FALLBACK_TAX_TEMPLATE__", FALLBACK_TAX_TEMPLATE
     ),
-    "vac_pos_outstanding": SCRIPT_OUTSTANDING,
-    "vac_pos_recent": SCRIPT_RECENT,
-    "vac_pos_set_price": SCRIPT_SET_PRICE,
-    "vac_pos_invoice": SCRIPT_INVOICE,
-    "vac_pos_report": SCRIPT_REPORT,
-    "vac_pos_purchase": SCRIPT_PURCHASE,
+    "vac_pos_outstanding": GATE + SCRIPT_OUTSTANDING,
+    "vac_pos_recent": GATE + SCRIPT_RECENT,
+    "vac_pos_set_price": GATE + SCRIPT_SET_PRICE,
+    "vac_pos_invoice": GATE + SCRIPT_INVOICE,
+    "vac_pos_report": GATE + SCRIPT_REPORT,
+    "vac_pos_purchase": GATE + SCRIPT_PURCHASE,
 }
 
 
@@ -884,7 +1009,19 @@ def ensure_cashier_roles():
         merged = [{"role": r} for r in roles] + [{"role": "POS Cashier"}]
         r = call("PUT", "/api/resource/User/" + pp_lib._q(email), json={"roles": merged})
         r.raise_for_status()
-        print("[6] {}: POS Cashier role added ({} existing roles kept)".format(email, len(roles)))
+        # A 200 does NOT mean the role stuck. Frappe's User.validate() repopulates
+        # `roles` from role_profile_name, so on a role-profile user the PUT
+        # succeeds and the role is silently discarded. Since the server scripts
+        # are now gated on exactly this role, printing an unconditional success
+        # here is how a cashier ends up locked out of the till with a green log.
+        after = get_doc("User", email) or {}
+        if "POS Cashier" in [x["role"] for x in after.get("roles", [])]:
+            print("[6] {}: POS Cashier role added ({} existing roles kept)".format(email, len(roles)))
+        else:
+            print("[6] !! {}: PUT returned 200 but POS Cashier did NOT stick "
+                  "(role_profile_name={!r}). This user is LOCKED OUT of the gated "
+                  "POS endpoints — add POS Cashier to that Role Profile."
+                  .format(email, after.get("role_profile_name")))
 
 
 def ensure_purchase_users():
@@ -906,6 +1043,16 @@ def ensure_purchase_users():
 def smoke():
     msg = rpc("vac_pos_ping")
     print("[7] ping:", msg)
+    # ping is deliberately UNGATED, so it cannot detect a lockout. Call a gated
+    # endpoint too, or a run that has locked every cashier out still exits 0.
+    try:
+        cat = rpc("vac_pos_catalog")
+        print("[7] catalog: OK ({} items, {} customers)".format(
+            len(cat.get("items") or []), len(cat.get("customers") or [])))
+    except Exception as exc:
+        print("[7] !! catalog FAILED for this key — the access gate is refusing a "
+              "caller that should pass. Check the roles above before using the POS.")
+        print("[7]    ", exc)
 
 
 if __name__ == "__main__":
@@ -923,12 +1070,15 @@ if __name__ == "__main__":
     else:
         ensure_role_named("POS Purchase")
         ensure_perms("POS Purchase", PERM_MAP_PURCHASE, tag="3P")
-    ensure_server_scripts()
+    # Role assignment MUST come before the scripts go live. The scripts are gated
+    # on these roles, so installing them first opens a window in which the
+    # endpoints are live and nobody can call them — a total counter outage.
     ensure_test_user()
     ensure_cashier_roles()
     if not SKIP_JOURNAL:
         ensure_journal_users()
     if not SKIP_PURCHASE:
         ensure_purchase_users()
+    ensure_server_scripts()
     smoke()
     print("DONE — now run pp_test.py")
