@@ -483,8 +483,14 @@ def ledger(kind, name, from_date, to_date, vtype=None, mode="rows", start=0, par
 	rng = params + [str(f), str(t)]
 	rng_sql = base + " and gl.posting_date between %s and %s"
 
+	# round(sum(...)) here vs round() PER ROW below would print a totals line that
+	# does not foot against the rows above it: three debits of 100.50 render as
+	# 101 each (running 303) but total as round(301.50) = 302. Every GST-bearing
+	# invoice puts paise on the Debtors row, so the divergence is a random walk of
+	# roughly +/- 0.29*sqrt(N) rupees. Sum the ALREADY-ROUNDED values so the
+	# register agrees with itself.
 	totals = frappe.db.sql(
-		f"select count(*), coalesce(round(sum(gl.debit)),0), coalesce(round(sum(gl.credit)),0) {rng_sql}",
+		f"select count(*), coalesce(sum(round(gl.debit)),0), coalesce(sum(round(gl.credit)),0) {rng_sql}",
 		rng,
 	)[0]
 
@@ -497,7 +503,7 @@ def ledger(kind, name, from_date, to_date, vtype=None, mode="rows", start=0, par
 		key = {"day": "gl.posting_date", "month": "date_format(gl.posting_date, '%%Y-%%m')",
 			"vtype": "gl.voucher_type"}[mode]
 		groups = frappe.db.sql(
-			f"select {key} as k, count(*), round(sum(gl.debit)), round(sum(gl.credit)) {rng_sql} "
+			f"select {key} as k, count(*), sum(round(gl.debit)), sum(round(gl.credit)) {rng_sql} "
 			f"group by {key} order by " + ("sum(gl.debit)+sum(gl.credit) desc" if mode == "vtype" else "k"),
 			rng,
 		)
@@ -505,7 +511,7 @@ def ledger(kind, name, from_date, to_date, vtype=None, mode="rows", start=0, par
 		return out
 
 	page_shift = frappe.db.sql(
-		f"""select coalesce(round(sum(x.debit - x.credit)), 0) from (
+		f"""select coalesce(sum(round(x.debit) - round(x.credit)), 0) from (
 			select gl.debit, gl.credit {rng_sql}
 			order by gl.posting_date, gl.creation limit {int(start)}
 		) x""",

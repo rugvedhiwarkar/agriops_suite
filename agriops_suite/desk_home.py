@@ -45,6 +45,14 @@ class WorkspaceHomeRedirect:
 		if not user or user == "Guest":
 			return False
 
+		# Website Users must fall through too. This renderer exists to fix a 404
+		# for System Users; get_landing_url() returns "/desk" when no default
+		# workspace is set, and Frappe refuses /desk to a Website User — so
+		# claiming bare "/" for them turns a landing page into a 403. Matters the
+		# moment /slip ships real drivers, who are Website Users by design.
+		if frappe.db.get_value("User", user, "user_type") == "Website User":
+			return False
+
 		self._target = get_landing_url()
 		return bool(self._target)
 

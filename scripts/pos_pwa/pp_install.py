@@ -339,7 +339,23 @@ else:
     if not customer:
         frappe.throw("customer is required")
 
+    # POSTING DATE CLAMP. The client always sends the DEVICE's local date, and
+    # set_posting_time=1 below is exactly what stops Frappe overwriting it with
+    # server time — so a tablet with a reset clock, or an outbox entry that sat
+    # unsynced past a filed GST return, books straight into a closed period.
+    # Verified 2026-07-26 that this site has NO other guard: Company
+    # accounts_frozen_till_date is unset, the Accounting Period list is empty and
+    # Stock Settings stock_frozen_upto is 0001-01-01, while four Period Closing
+    # Vouchers already exist — so a backdated invoice lands GL entries in a year
+    # whose closing entry has already been booked. A normal offline backlog still
+    # posts on its true date; a clock fault or a stale queue is refused loudly.
     posting_date = body.get("posting_date") or frappe.utils.nowdate()
+    if frappe.utils.date_diff(posting_date, frappe.utils.nowdate()) > 0:
+        frappe.throw("Posting date " + str(posting_date)
+                     + " is in the future — check this device's date and time.")
+    if frappe.utils.date_diff(frappe.utils.nowdate(), posting_date) > 7:
+        frappe.throw("Posting date " + str(posting_date)
+                     + " is more than 7 days old — post this bill from the office.")
     is_pos = 1 if pays else 0  # no payments -> udhaar as regular SI (house pattern)
 
     # a line may override its UOM (must be an existing UOM master); a
@@ -460,6 +476,28 @@ else:
                 more = " +" + str(n_slab - 2) + " more"
             frappe.throw("Set a GST slab (Item Tax Template) on the item before "
                          "billing it. Missing on: " + no_slab + more)
+
+    # ROUNDING SETTLEMENT. ERPNext's calculate_outstanding_amount() measures
+    # paid_amount against (rounded_total or grand_total), but the PWA tenders
+    # cartTotal() — i.e. grand_total. On any non-whole-rupee total (a per-line
+    # discount, a fractional qty, a cashier-typed rate) that leaves a few paise
+    # outstanding, so a fully-paid CASH sale posts as "Partly Paid" and then ages
+    # into the receivables report as a tiny phantom debt. Stock ERPNext POS avoids
+    # this only because it tenders the rounded figure.
+    # Adjust the CASH row only: physical cash really is settled to the rupee, but
+    # silently moving 50 paise onto a UPI row would misstate a digital payment and
+    # break its reconciliation. A card/UPI-only bill keeps its true residual.
+    if doc.payments:
+        target = doc.rounded_total or doc.grand_total
+        gap = frappe.utils.flt(target - doc.paid_amount, 2)
+        if gap and abs(gap) < 1:
+            cash_row = None
+            for p in doc.payments:
+                if frappe.db.get_value("Mode of Payment", p.mode_of_payment, "type") == "Cash":
+                    cash_row = p
+            if cash_row is not None:
+                cash_row.amount = cash_row.amount + gap
+                doc.save()
 
     doc.submit()
 
@@ -771,12 +809,16 @@ if can_cash:
         if not acc or acc in seen_acc:
             continue
         seen_acc[acc] = 1
-        glrows = frappe.get_all(
-            "GL Entry", filters={"account": acc, "is_cancelled": 0},
-            fields=["debit", "credit"], limit_page_length=0)
-        bal = 0.0
-        for g in glrows:
-            bal += (g.debit or 0) - (g.credit or 0)
+        # Aggregate in SQL, not in Python. Pulling every GL row per account was
+        # ~17,000 rows across the three drawers and grows ~7k/year.
+        # NOTE: deliberately NOT bounded by the report's date range — this is the
+        # cumulative drawer balance, and adding a posting_date filter would
+        # silently turn it into a period movement, i.e. a money bug.
+        balrow = frappe.db.sql(
+            "select ifnull(sum(debit) - sum(credit), 0) from `tabGL Entry` "
+            "where account = %s and company = %s and is_cancelled = 0",
+            (acc, profile.company))
+        bal = frappe.utils.flt(balrow[0][0], 2) if balrow else 0.0
         cash.append({"mode": mode, "account": acc,
                      "label": (acc or mode).replace(" - VAC", ""), "balance": bal})
 
@@ -833,7 +875,16 @@ else:
         "items": line_items,
     }
     if body.get("posting_date"):
-        pr["posting_date"] = body.get("posting_date")
+        # same clamp as the sales path — set_posting_time=1 defeats Frappe's own
+        # validate_posting_time(), so an unbounded client date lands wherever the
+        # device clock says
+        prd = body.get("posting_date")
+        if frappe.utils.date_diff(prd, frappe.utils.nowdate()) > 0:
+            frappe.throw("Posting date " + str(prd)
+                         + " is in the future — check this device's date and time.")
+        if frappe.utils.date_diff(frappe.utils.nowdate(), prd) > 7:
+            frappe.throw("Posting date " + str(prd) + " is more than 7 days old.")
+        pr["posting_date"] = prd
         pr["set_posting_time"] = 1
     doc = frappe.get_doc(pr)
     doc.insert()   # DRAFT ONLY — never .submit()

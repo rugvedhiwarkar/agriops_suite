@@ -105,7 +105,10 @@ doc_events = {
     "Party Link": {"validate": "agriops_suite.party.validate_party_link"},
     # POS "type the price at the register" safeguard: block completing a POS
     # (is_pos) sale that still has a zero-rate line. Non-POS invoices untouched.
-    "Sales Invoice": {"before_submit": "agriops_suite.pos.block_zero_rate_pos"},
+    # Lives in pos_guard (imports frappe only), NOT pos.py — pos.py pins ERPNext
+    # internals, and an ImportError there would propagate out of before_submit
+    # and block EVERY Sales Invoice submit on the site. See pos_guard.py.
+    "Sales Invoice": {"before_submit": "agriops_suite.pos_guard.block_zero_rate_pos"},
 }
 
 # ---------------------------------------------------------------------------

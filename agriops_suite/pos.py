@@ -15,14 +15,10 @@ from frappe.query_builder import DocType, Order
 from frappe.utils import cint, flt
 from frappe.utils.nestedset import get_root_of
 
-from erpnext.accounts.doctype.pos_invoice.pos_invoice import get_stock_availability
-from erpnext.selling.page.point_of_sale.point_of_sale import (
-    filter_result_items,
-    get_conditions,
-    get_item_group_condition,
-    search_by_term,
-)
-from erpnext.stock.get_item_details import get_conversion_factor
+# ERPNext internals are imported INSIDE get_items(), not at module scope. They
+# are non-API and move between releases; at module scope a rename would break
+# every importer of this module, and the bench auto-updates. Kept local so the
+# blast radius of an upstream rename is this one function.
 
 POPULARITY_JOIN = """
         LEFT JOIN (
@@ -39,6 +35,15 @@ POPULARITY_JOIN = """
 
 @frappe.whitelist()
 def get_items(start, page_length, price_list, item_group, pos_profile, search_term=""):
+    from erpnext.accounts.doctype.pos_invoice.pos_invoice import get_stock_availability
+    from erpnext.selling.page.point_of_sale.point_of_sale import (
+        filter_result_items,
+        get_conditions,
+        get_item_group_condition,
+        search_by_term,
+    )
+    from erpnext.stock.get_item_details import get_conversion_factor
+
     warehouse, hide_unavailable_items, company = frappe.db.get_value(
         "POS Profile", pos_profile, ["warehouse", "hide_unavailable_items", "company"]
     )
@@ -167,31 +172,3 @@ def get_items(start, page_length, price_list, item_group, pos_profile, search_te
         )
 
     return {"items": result}
-
-
-def block_zero_rate_pos(doc, method=None):
-    """Safeguard for the "cashier types the price at the register" POS change
-    (public/js/vac_pos.bundle.js): never let a POS sale be completed with a
-    zero-rate line. The JS lets an unpriced item into the cart at rate 0 so the
-    cashier can type the price on the spot; this catches the case where they
-    forgot. Scoped to POS invoices (is_pos) — regular Sales Invoices, which may
-    legitimately carry a zero-rate line (a free sample, a 100%-discount item),
-    are untouched. Wired via before_submit on Sales Invoice in hooks.py."""
-    if not getattr(doc, "is_pos", 0):
-        return
-    # Only the "forgot to price it" case: qty>0, net rate 0, AND no list price.
-    # An intentional 100%-discount on a PRICED item keeps price_list_rate>0, so
-    # it is allowed through.
-    zero = [
-        d.item_code
-        for d in (doc.items or [])
-        if flt(d.qty) and flt(d.rate) <= 0 and flt(d.price_list_rate) <= 0
-    ]
-    if zero:
-        frappe.throw(
-            frappe._("Set a price for these items before completing the sale: {0}").format(
-                ", ".join(frappe.bold(x) for x in zero)
-            ),
-            title=frappe._("Price not set"),
-        )
-

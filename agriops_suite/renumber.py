@@ -82,12 +82,28 @@ def _col_exists(table, col):
            WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME=%s AND COLUMN_NAME=%s LIMIT 1""",
         (f"tab{table}", col)))
 
-def _active_patch_targets():
-    """Filter PATCH_TARGETS to those that actually exist on this site."""
-    out = []
+def _active_patch_targets(strict=True):
+    """Filter PATCH_TARGETS to those that actually exist on this site.
+
+    strict=True (the default, and what the destructive path uses): a target we
+    cannot resolve is an ERROR, not something to quietly drop. Silently
+    shortening this list means a table whose column was renamed upstream simply
+    never gets patched, and its ledger rows are left pointing at voucher names
+    that no longer exist — with nothing in the output to say so.
+    """
+    out, missing = [], []
     for table, tcol, ncol in PATCH_TARGETS:
         if _col_exists(table, tcol) and _col_exists(table, ncol):
             out.append((table, tcol, ncol))
+        else:
+            missing.append(f"{table}.{tcol}/{ncol}")
+    if missing and strict:
+        frappe.throw(
+            "renumber: these PATCH_TARGETS do not resolve on this site: "
+            + ", ".join(missing)
+            + ". Renaming without patching them would orphan their ledger rows. "
+            "Update PATCH_TARGETS for this ERPNext version before running."
+        )
     return out
 
 
@@ -148,16 +164,29 @@ def snapshot():
     return snap
 
 def _orphan_counts():
-    """Ledger rows whose voucher_no has no matching parent document — must stay 0."""
+    """Ledger rows whose voucher reference has no matching parent doc — must stay 0.
+
+    Derived from _active_patch_targets() rather than a hardcoded three-table
+    list: this check previously scanned GL Entry / Stock Ledger Entry / Payment
+    Ledger Entry on `voucher_no` only — 3 of the 13 (table, type_col, name_col)
+    triples the rename actually mutates. GL Entry.against_voucher and Payment
+    Ledger Entry.against_voucher_no were patched but never verified, and seven
+    tables were not checked at all, so the gate could report PASS while ledger
+    references dangled. The other invariants (GL sums, per-type row counts,
+    stored outstanding_amount) cannot detect a bad rename at all — a rename
+    changes none of them — so this is the only check that actually tests the
+    thing being done.
+    """
     out = {}
-    for table in ("GL Entry", "Stock Ledger Entry", "Payment Ledger Entry"):
+    for table, tcol, ncol in _active_patch_targets(strict=False):
         n = 0
         for dt, _pfx in SPEC:
             n += frappe.db.sql(
                 f"""SELECT COUNT(*) FROM `tab{table}` le
-                    LEFT JOIN `tab{dt}` d ON d.name = le.voucher_no
-                    WHERE le.voucher_type=%s AND d.name IS NULL""", dt)[0][0]
-        out[table] = n
+                    LEFT JOIN `tab{dt}` d ON d.name = le.`{ncol}`
+                    WHERE le.`{tcol}`=%s AND le.`{ncol}` IS NOT NULL
+                      AND le.`{ncol}` != '' AND d.name IS NULL""", dt)[0][0]
+        out[f"{table}.{ncol}"] = n
     return out
 
 def verify(before=None):
@@ -232,7 +261,17 @@ def run(dry_run=True):
     frappe.db.commit()
     print(f"[apply] DONE {done} renamed, {ledger} ledger rows patched "
           f"({time.time()-t0:.0f}s)")
-    verify(before)
+    # RAISE on failure. This return value used to be discarded, so `bench execute`
+    # exited 0 on a FAIL and the run looked clean. Everything is already committed
+    # by this point (chunked commits are deliberate, for resumability), so this
+    # cannot roll anything back — it exists to make a failed verify impossible to
+    # miss and to point at rollback() while the map file is still on disk.
+    if not verify(before):
+        frappe.throw(
+            "renumber: post-rename verification FAILED (see [verify] lines above). "
+            f"The rename is already committed. Roll back NOW with rollback() while "
+            f"{MAP_FILE} still exists, or restore the backup taken before this run."
+        )
 
 def rollback():
     """Swap new -> old using the persisted map (same patch logic, reversed)."""
@@ -261,3 +300,10 @@ def rollback():
                 frappe.db.commit()
     frappe.db.commit()
     print(f"[rollback] restored {done} documents to original names")
+    # A rollback that leaves the ledgers dangling is worse than no rollback, and
+    # this path had no verification at all.
+    if not verify():
+        frappe.throw(
+            "renumber: rollback completed but verification FAILED — ledger rows "
+            "still reference names that do not exist. Restore from backup."
+        )

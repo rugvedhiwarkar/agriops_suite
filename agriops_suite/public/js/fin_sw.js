@@ -5,18 +5,37 @@
  * page stamps "as of" from the payload itself, so a stale-served snapshot is
  * visibly stale, never silently wrong. Bump VERSION to invalidate.
  */
-var VERSION = "fin-v2";  // bumped: cache is now partitioned per user (see userCache)
+var VERSION = "fin-v3";  // bumped: no caching at all where the user cannot be identified
 var DATA_PREFIX = "/api/method/agriops_suite.fin_api.";
 var CACHEABLE = ["snapshot", "acct", "tree", "bootstrap", "outstanding", "stock_balance"];
 
-// Per-user cache name so a SHARED browser never serves one user's financials to
-// the next. user_id is a non-HttpOnly Frappe cookie readable from the worker; on
-// logout it clears -> "anon" bucket -> the previous user's data is unreachable.
+// Cache name for THIS user, or null meaning "do not cache, do not serve".
+//
+// cookieStore is Chromium-only inside a service worker. Where it is absent
+// (Safari, Firefox) we cannot tell one principal from another, and the previous
+// version fell back to a single shared "anon" bucket — so on a shared counter
+// machine the next person to open /fin, logged in or not, could switch on
+// airplane mode and be served the complete company snapshot: P&L, balance sheet,
+// party-by-party receivables and stock valuation. fin_api._guard() never runs on
+// that path because nothing is fetched, and the cache survived logout.
+//
+// Refusing to cache is the only safe answer where the principal is unknown:
+// /fin then simply reports no offline data. An unauthenticated or Guest session
+// is likewise never cached.
 function userCache() {
-	if (!(self.cookieStore && self.cookieStore.get)) return Promise.resolve(VERSION + ":anon");
+	if (!(self.cookieStore && self.cookieStore.get)) return Promise.resolve(null);
 	return self.cookieStore.get("user_id").then(function (c) {
-		return VERSION + ":" + ((c && c.value) ? decodeURIComponent(c.value) : "anon");
-	}).catch(function () { return VERSION + ":anon"; });
+		var u = (c && c.value) ? decodeURIComponent(c.value) : "";
+		if (!u || u === "Guest") return null;
+		return VERSION + ":" + u;
+	}).catch(function () { return null; });
+}
+
+function offlineResponse() {
+	return new Response(
+		JSON.stringify({ offline: true }),
+		{ status: 503, headers: { "Content-Type": "application/json" } }
+	);
 }
 
 self.addEventListener("install", function (e) {
@@ -27,7 +46,8 @@ self.addEventListener("activate", function (e) {
 	e.waitUntil(
 		caches.keys().then(function (keys) {
 			return Promise.all(keys.filter(function (k) {
-				return k.indexOf(VERSION + ":") !== 0;  // drop old versions + any global cache
+				// drops every fin-v2 bucket too, including the shared "anon" one
+				return k.indexOf(VERSION + ":") !== 0;
 			}).map(function (k) { return caches.delete(k); }));
 		}).then(function () { return self.clients.claim(); })
 	);
@@ -52,6 +72,7 @@ self.addEventListener("fetch", function (e) {
 				// tie the write to the event lifetime (was fire-and-forget) and store
 				// it ONLY in the current user's cache
 				e.waitUntil(userCache().then(function (name) {
+					if (!name) return;   // unidentifiable principal -> store nothing
 					return caches.open(name).then(function (c) { return c.put(e.request, copy); });
 				}));
 			}
@@ -59,12 +80,10 @@ self.addEventListener("fetch", function (e) {
 		}).catch(function () {
 			// offline: serve only from THIS user's cache, never a shared one
 			return userCache().then(function (name) {
+				if (!name) return offlineResponse();
 				return caches.open(name).then(function (c) {
 					return c.match(e.request).then(function (hit) {
-						return hit || new Response(
-							JSON.stringify({ offline: true }),
-							{ status: 503, headers: { "Content-Type": "application/json" } }
-						);
+						return hit || offlineResponse();
 					});
 				});
 			});

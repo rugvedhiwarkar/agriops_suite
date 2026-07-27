@@ -3,3 +3,19 @@ __pycache__/
 *.egg-info/
 .DS_Store
 node_modules/
+
+# Secrets. scripts/pos_pwa/pp_lib.py resolves ENV_PATH to THIS repo's root and
+# pp_install.py rewrites it with freshly minted live API keys, so an unguarded
+# `git add -A` would publish a production key into history permanently. The
+# parent "ERPNext Connect" repo has always covered these; this one did not.
+.env
+.env.*
+*.key
+*.pem
+site_config.json
+
+# database dumps / backups — never in git
+*.sql
+*.sql.gz
+*.tar
+backups/
