@@ -18,6 +18,11 @@
 // ============================================================================
 (function () {
 	const PARTY_MASTERS = ["Customer", "Supplier", "Employee", "Shareholder"];
+	// Who a document can be sent TO. Same list as PARTY_MASTERS today, but it is
+	// a different question — "is this form a party master?" vs "may I address
+	// this kind of party?" — so keep them separate. Mirrors MOBILE_FIELD in
+	// whatsapp.py, which is what actually authorises the lookup.
+	const PARTY_TYPES = PARTY_MASTERS.slice();
 	// mirrors PARTY_FIELDS/party_type in whatsapp.py — keep the two in step
 	const PARTY_FIELDS = ["customer", "supplier", "employee", "shareholder", "party"];
 	const PAYROLL_DOCTYPES = ["Salary Slip"];
@@ -67,17 +72,40 @@
 		if (!target) return;
 
 		const formats = target.print_formats || [];
-		const who = target.party_name || target.party || __("this document");
+		// "Send to" options: the document's own party first (the common case, one
+		// click), then any other party of any type, then a raw number.
+		const doc_option = target.party
+			? __("{0} — on this document", [target.party_name || target.party])
+			: null;
+		const OTHER = __("Another number");
+		const options = (doc_option ? [doc_option] : []).concat(PARTY_TYPES, [OTHER]);
+
 		const d = new frappe.ui.Dialog({
 			title: __("Send on WhatsApp"),
 			fields: [
 				{
 					fieldtype: "HTML",
-					fieldname: "who",
+					fieldname: "heading",
 					options:
 						`<div class="text-muted" style="margin-bottom:8px">${__("Sending")} ` +
-						`<b>${frappe.utils.escape_html(doc.name)}</b> ${__("to")} ` +
-						`<b>${frappe.utils.escape_html(who)}</b></div>`,
+						`<b>${frappe.utils.escape_html(doc.name)}</b></div>`,
+				},
+				{
+					fieldname: "to_type",
+					label: __("Send to"),
+					fieldtype: "Select",
+					options: options.join("\n"),
+					default: options[0],
+					change: () => on_type_change(),
+				},
+				{
+					fieldname: "party",
+					label: __("Which one"),
+					fieldtype: "Link",
+					options: PARTY_TYPES[0],
+					// only meaningful once a party TYPE is chosen
+					depends_on: `eval:${JSON.stringify(PARTY_TYPES)}.indexOf(doc.to_type) >= 0`,
+					change: () => on_party_change(),
 				},
 				{
 					fieldname: "number",
@@ -86,8 +114,10 @@
 					reqd: 1,
 					default: target.mobile || "",
 					description: target.mobile
-						? __("From the {0} record — edit to send elsewhere.", [target.party_type || __("document")])
-						: __("No number on file for this party. Enter one, and add it to the record so it is there next time."),
+						? __("From the {0} record — edit to send elsewhere.", [
+								target.party_type || __("document"),
+						  ])
+						: __("No number on file. Enter one, and add it to the record so it is there next time."),
 				},
 				formats.length
 					? {
@@ -103,6 +133,7 @@
 			primary_action: async (v) => {
 				const btn = d.get_primary_btn();
 				btn.prop("disabled", true).text(__("Sending..."));
+				const chosen = chosen_party();
 				try {
 					const res = (
 						await frappe.call({
@@ -112,13 +143,15 @@
 								name: doc.name,
 								print_format: v.print_format || null,
 								to_number: v.number,
+								to_party_type: chosen ? chosen.party_type : null,
+								to_party: chosen ? chosen.party : null,
 							},
 						})
 					).message;
 					d.hide();
 					frappe.show_alert(
 						{
-							message: __("Sent to {0} ({1})", [res.party_name || who, res.to]),
+							message: __("Sent to {0} ({1})", [res.party_name || res.to, res.to]),
 							indicator: "green",
 						},
 						7
@@ -130,6 +163,69 @@
 				}
 			},
 		});
+
+		function chosen_party() {
+			const type = d.get_value("to_type");
+			const party = d.get_value("party");
+			if (PARTY_TYPES.indexOf(type) < 0 || !party) return null;
+			return { party_type: type, party: party };
+		}
+
+		function set_number_hint(text) {
+			const field = d.get_field("number");
+			if (field) field.set_description(text);
+		}
+
+		function on_type_change() {
+			const type = d.get_value("to_type");
+			if (type === doc_option) {
+				d.set_value("party", "");
+				d.set_value("number", target.mobile || "");
+				set_number_hint(
+					target.mobile
+						? __("From the {0} record — edit to send elsewhere.", [
+								target.party_type || __("document"),
+						  ])
+						: __("No number on file. Enter one, and add it to the record so it is there next time.")
+				);
+				return;
+			}
+			if (type === OTHER) {
+				d.set_value("party", "");
+				d.set_value("number", "");
+				set_number_hint(__("Type the number to send to — 10 digits, or with 91."));
+				return;
+			}
+			// a party type: repoint the Link field and wait for a pick
+			d.set_df_property("party", "options", type);
+			d.set_value("party", "");
+			d.set_value("number", "");
+			set_number_hint(__("Choose a {0} — their number fills in automatically.", [type]));
+		}
+
+		async function on_party_change() {
+			const chosen = chosen_party();
+			if (!chosen) return;
+			try {
+				const info = (
+					await frappe.call({
+						method: "agriops_suite.whatsapp.get_party_mobile",
+						args: chosen,
+					})
+				).message;
+				d.set_value("number", (info && info.mobile) || "");
+				set_number_hint(
+					info && info.mobile
+						? __("From the {0} record — edit to send elsewhere.", [chosen.party_type])
+						: __("No number on file for {0}. Type one, and add it to their record.", [
+								(info && info.party_name) || chosen.party,
+						  ])
+				);
+			} catch (e) {
+				console.error("vac_wa:", e);
+			}
+		}
+
 		d.show();
 	}
 

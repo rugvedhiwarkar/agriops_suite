@@ -449,20 +449,54 @@ def _print_formats(doctype):
 	return ordered
 
 
-@frappe.whitelist(methods=["POST"])
-def send(doctype, name, print_format=None, to_number=None):
-	"""Render this document and WhatsApp it to the party. Returns the log row.
+@frappe.whitelist()
+def get_party_mobile(party_type, party):
+	"""Name + mobile for any party, so the dialog can retarget a send.
 
-	`to_number` is optional — omitted, it resolves from the document/party. When
-	supplied (the user typed a different number) it is validated the same way; a
-	caller cannot bypass normalise() by passing something exotic.
+	Used when the user picks a recipient other than the one on the document —
+	an employee, a shareholder, a different customer. Read permission on the
+	party is required: this would otherwise be a way to dredge phone numbers
+	out of masters a user cannot open.
+	"""
+	if party_type not in MOBILE_FIELD:
+		frappe.throw(_("{0} is not a party type that can be messaged.").format(party_type))
+	if not frappe.has_permission(party_type, ptype="read", doc=party):
+		frappe.throw(
+			_("You are not permitted to read {0} {1}.").format(party_type, party),
+			frappe.PermissionError,
+		)
+	return {
+		"party_type": party_type,
+		"party": party,
+		"party_name": _party_label(party_type, party),
+		"mobile": resolve_mobile(party_type, party),
+	}
+
+
+@frappe.whitelist(methods=["POST"])
+def send(doctype, name, print_format=None, to_number=None, to_party_type=None, to_party=None):
+	"""Render this document and WhatsApp it. Returns the log row.
+
+	Recipient resolution, in order: an explicitly chosen party (to_party_type /
+	to_party — the dialog's "send to someone else" path), else an explicitly
+	typed number, else the document's own party. Whoever ends up receiving it is
+	the name greeted in the message and the party recorded in the log — the
+	document's own party stays discoverable through reference_doctype/name.
+
+	A typed number is always run through normalise(), so a caller cannot smuggle
+	something exotic past validation by passing it directly.
 	"""
 	token, pnid = _config()
 	doc = frappe.get_doc(doctype, name)
 	_check_permission(doc)
 
-	party_type, party = resolve_party(doc)
-	number = normalise(to_number) if to_number else resolve_mobile(party_type, party, doc)
+	if to_party_type and to_party:
+		target = get_party_mobile(to_party_type, to_party)
+		party_type, party = to_party_type, to_party
+		number = normalise(to_number) if to_number else target.get("mobile")
+	else:
+		party_type, party = resolve_party(doc)
+		number = normalise(to_number) if to_number else resolve_mobile(party_type, party, doc)
 	if not number:
 		frappe.throw(
 			_("No valid mobile number for {0}. Add one on the {1} record first.").format(
