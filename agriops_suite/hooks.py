@@ -218,6 +218,13 @@ fixtures = [
                     # the counter every permlevel-hidden book quantity.
                     "Stock Count Session",
                     "Stock Count Entry",
+                    # WhatsApp sender config (whatsapp.py). DEFINITION ONLY —
+                    # the single's VALUES hold this site's Phone Number ID and
+                    # access token and must never ship in the repo, same
+                    # boundary as StockPilot Settings above. Enabling it is a
+                    # per-site act, which is what keeps the shared prod+staging
+                    # bench from lighting this up on production.
+                    "WhatsApp Settings",
                     # Audit trail for the WhatsApp document sender (whatsapp.py).
                     # Definition only — the LOG ROWS are runtime records of real
                     # sends and must never ship in the repo. Read-only to every

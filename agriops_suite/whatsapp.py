@@ -19,17 +19,25 @@ transactional: since Apr 2025 Meta re-categorises at approval time, and the same
 template approved as MARKETING costs ~7.5x more per message (India: Rs 0.115 ->
 Rs 0.863).
 
-Configuration is per-site in site_config (NEVER in code, NEVER a fixture):
+Configuration lives in the **WhatsApp Settings** single, per site: enabled flag,
+Phone Number ID, and the access token as a Password field (Frappe encrypts it
+into __Auth). It is deliberately a DocType rather than site_config: prod and
+staging share one Frappe Cloud bench, bench SSH certificates expire every six
+hours, and the owner must be able to paste their own token without anyone else
+handling it. The Settings RECORD is per-site data and must never be exported as
+a fixture — only the definition is.
 
-    vac_whatsapp_enabled            1 to switch the feature on for this site
-    vac_whatsapp_token              permanent access token (System User token)
+site_config still wins where present, for bench-managed overrides:
+
+    vac_whatsapp_enabled            force the feature on for this site
+    vac_whatsapp_token              access token
     vac_whatsapp_phone_number_id    the sending number's Phone Number ID
-    vac_whatsapp_template           optional, defaults to DEFAULT_TEMPLATE
-    vac_whatsapp_graph_version      optional, defaults to GRAPH_VERSION
+    vac_whatsapp_template           template name
+    vac_whatsapp_graph_version      Graph API version, defaults to GRAPH_VERSION
 
-The enabled flag is the staging-first contract used elsewhere in this app (see
-`tools_enabled()` in party.py): shipping this code to the shared bench does not
-turn it on for a site until that site's config says so.
+Either way this is the staging-first contract used elsewhere in this app (see
+`tools_enabled()` in party.py): shipping the code to the shared bench does not
+turn it on for a site until that site is configured.
 """
 
 import re
@@ -77,22 +85,50 @@ PAYROLL_ROLES = ("HR Manager", "HR User", "System Manager")
 # ---------------------------------------------------------------------------
 
 
+def _settings():
+	"""The WhatsApp Settings single, or None if the DocType isn't installed yet.
+
+	Cached — this is read on every desk boot, so it must not be a query per page.
+	"""
+	try:
+		return frappe.get_cached_doc("WhatsApp Settings")
+	except Exception:
+		return None
+
+
 def enabled():
 	"""True when this site is configured to send. Cheap — used by the client to
-	decide whether to render the button at all."""
-	return bool(frappe.conf.get("vac_whatsapp_enabled"))
+	decide whether to render the button at all.
+
+	site_config wins over the Settings record so an operator can force the
+	feature off for a whole site without touching data.
+	"""
+	if frappe.conf.get("vac_whatsapp_enabled"):
+		return True
+	settings = _settings()
+	return bool(settings and settings.get("enabled"))
 
 
 def _config():
-	"""(token, phone_number_id) for this site, or throw with a useful message."""
+	"""(token, phone_number_id) for this site, or throw with a useful message.
+
+	Credentials live in the WhatsApp Settings single (token is a Password field,
+	so Frappe keeps it encrypted in __Auth). site_config is honoured first for
+	bench-managed deployments; neither ever appears in code or a fixture.
+	"""
 	if not enabled():
 		frappe.throw(_("WhatsApp sending is not enabled on this site."))
+	settings = _settings()
 	token = frappe.conf.get("vac_whatsapp_token")
-	pnid = frappe.conf.get("vac_whatsapp_phone_number_id")
+	if not token and settings:
+		token = settings.get_password("token", raise_exception=False)
+	pnid = frappe.conf.get("vac_whatsapp_phone_number_id") or (
+		settings.get("phone_number_id") if settings else None
+	)
 	if not token or not pnid:
 		frappe.throw(
-			_("WhatsApp is not configured: set vac_whatsapp_token and "
-			  "vac_whatsapp_phone_number_id in site config.")
+			_("WhatsApp is not configured. Set the Phone Number ID and access "
+			  "token in WhatsApp Settings.")
 		)
 	return token, pnid
 
@@ -266,8 +302,17 @@ def upload_media(pdf_bytes, filename, token, pnid):
 
 def send_template(to, media_id, filename, body_params, token, pnid):
 	"""Send the document template. Returns Meta's message ID."""
-	template = frappe.conf.get("vac_whatsapp_template") or DEFAULT_TEMPLATE
-	language = frappe.conf.get("vac_whatsapp_template_lang") or DEFAULT_LANG
+	settings = _settings()
+	template = (
+		frappe.conf.get("vac_whatsapp_template")
+		or (settings.get("template_name") if settings else None)
+		or DEFAULT_TEMPLATE
+	)
+	language = (
+		frappe.conf.get("vac_whatsapp_template_lang")
+		or (settings.get("template_language") if settings else None)
+		or DEFAULT_LANG
+	)
 	payload = {
 		"messaging_product": "whatsapp",
 		"recipient_type": "individual",
