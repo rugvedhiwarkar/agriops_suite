@@ -418,7 +418,18 @@ def get_target(doctype, name):
 
 
 def _print_formats(doctype):
-	"""Print formats available for this doctype, our own ones first."""
+	"""Print formats for this doctype, best default first.
+
+	The DocType's OWN configured default leads, because the site already sets
+	the right one per doctype via Property Setter (Sales Invoice -> "VAC Tax
+	Invoice A4", Purchase Invoice -> "VAC Purchase Voucher", Purchase Receipt ->
+	"VAC Goods Received Note"...). Ordering alphabetically instead made a Sales
+	Invoice default to "VAC Delivery Note A4" — offering a delivery note where
+	the customer should get their tax invoice.
+
+	Our other VAC formats come next so a user switching away still lands on a
+	house format, then everything else.
+	"""
 	rows = frappe.get_all(
 		"Print Format",
 		filters={"doc_type": doctype, "disabled": 0},
@@ -426,8 +437,16 @@ def _print_formats(doctype):
 		order_by="name",
 		pluck="name",
 	)
-	preferred = [r for r in rows if r.startswith("VAC ")]
-	return preferred + [r for r in rows if r not in preferred]
+	ordered = []
+	try:
+		default = frappe.get_meta(doctype).default_print_format
+	except Exception:
+		default = None
+	if default and default in rows:
+		ordered.append(default)
+	ordered += [r for r in rows if r.startswith("VAC ") and r not in ordered]
+	ordered += [r for r in rows if r not in ordered]
+	return ordered
 
 
 @frappe.whitelist(methods=["POST"])
