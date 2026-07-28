@@ -473,6 +473,71 @@ def get_party_mobile(party_type, party):
 	}
 
 
+@frappe.whitelist()
+def search_parties(party_type, query=None, limit=25):
+	"""Parties of one type matching a search string, with their flat number.
+
+	For the POS sheet, which has no Link control to lean on. Uses get_list, NOT
+	get_all, so the result is permission-filtered — a user only ever sees parties
+	they could open themselves.
+
+	The number here is the master's own field, which is cheap to select in bulk.
+	The full resolution (falling back to the linked Contact) happens in
+	get_party_mobile once a party is actually picked — one lookup instead of one
+	per row.
+	"""
+	if party_type not in MOBILE_FIELD:
+		frappe.throw(_("{0} is not a party type that can be messaged.").format(party_type))
+
+	label_field = {
+		"Customer": "customer_name",
+		"Supplier": "supplier_name",
+		"Employee": "employee_name",
+		"Shareholder": "title",
+	}[party_type]
+	mobile_field = MOBILE_FIELD.get(party_type)
+
+	fields = ["name", label_field]
+	if mobile_field:
+		fields.append(mobile_field)
+
+	# skip parties nobody should still be messaging
+	filters = {}
+	if party_type in ("Customer", "Supplier"):
+		filters["disabled"] = 0
+	elif party_type == "Employee":
+		filters["status"] = "Active"
+
+	or_filters = []
+	if query:
+		like = f"%{query}%"
+		or_filters = [["name", "like", like], [label_field, "like", like]]
+		if mobile_field:
+			or_filters.append([mobile_field, "like", like])
+
+	try:
+		page_length = max(1, min(int(limit), 50))
+	except (TypeError, ValueError):
+		page_length = 25
+
+	rows = frappe.get_list(
+		party_type,
+		fields=fields,
+		filters=filters,
+		or_filters=or_filters or None,
+		order_by=f"{label_field} asc",
+		limit_page_length=page_length,
+	)
+	return [
+		{
+			"name": row.get("name"),
+			"label": row.get(label_field) or row.get("name"),
+			"mobile": normalise(row.get(mobile_field)) if mobile_field else None,
+		}
+		for row in rows
+	]
+
+
 @frappe.whitelist(methods=["POST"])
 def send(doctype, name, print_format=None, to_number=None, to_party_type=None, to_party=None):
 	"""Render this document and WhatsApp it. Returns the log row.

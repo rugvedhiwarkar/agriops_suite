@@ -442,7 +442,24 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--green); out
 .wabtn { flex: 0 0 auto; width: 54px; border-radius: 12px; border: 1.6px solid var(--green); background: var(--card); color: var(--green-dark); font-size: 1.15rem; font-weight: 800; }
 .wabtn:active { background: var(--soft); }
 .wain { width: 100%; margin-top: 10px; border: 1.6px solid var(--line-2); border-radius: 10px; padding: 12px; font-size: 1rem; font-weight: 700; background: var(--card); color: var(--ink); }
-.wago { width: 100%; margin-top: 12px; padding: 13px; border-radius: 12px; border: 0; background: var(--green-dark); color: #fff; font-weight: 800; font-size: .98rem; }
+.wago { width: 100%; margin-top: 12px; padding: 13px; border-radius: 12px; border: 0; background: var(--green-dark); color: #fff; font-weight: 800; font-size: .98rem; display: flex; align-items: center; justify-content: center; gap: 8px; }
+/* the WhatsApp glyph itself — inline so it works offline and follows the
+   button's colour, unlike a remote brand asset */
+.waico { width: 20px; height: 20px; fill: currentColor; flex: 0 0 auto; }
+.wabtn .waico { width: 23px; height: 23px; }
+.wago .waico { width: 21px; height: 21px; }
+/* recipient picker: any party of any type, not just the one on the document */
+.walbl { margin-top: 14px; font-size: .82rem; font-weight: 700; color: var(--muted); }
+.wachips { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px; }
+.wachip { padding: 8px 11px; border-radius: 999px; border: 1.4px solid var(--line-2); background: var(--card); color: var(--ink); font-weight: 700; font-size: .82rem; }
+.wachip.on { border-color: var(--green); background: var(--soft); color: var(--green-dark); }
+.wasr { width: 100%; margin-top: 8px; border: 1.4px solid var(--line-2); border-radius: 10px; padding: 10px; font-size: .92rem; background: var(--card); color: var(--ink); }
+.walist { max-height: 168px; overflow: auto; margin-top: 8px; display: flex; flex-direction: column; gap: 6px; }
+.wares { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 10px; border-radius: 10px; border: 1.4px solid var(--line-2); background: var(--card); text-align: left; width: 100%; }
+.wares.on { border-color: var(--green); background: var(--soft); }
+.warl { font-weight: 700; color: var(--ink); font-size: .9rem; }
+.warm { color: var(--muted); font-size: .8rem; white-space: nowrap; }
+.waempty { color: var(--muted); font-size: .86rem; padding: 10px 2px; }
 
 /* settings */
 .setrow { margin-bottom: 12px; }
@@ -669,6 +686,9 @@ var STR = {
 		wa_btn: "WhatsApp", wa_title: "Send on WhatsApp", wa_num: "Mobile number",
 		wa_sending: "Sending on WhatsApp…", wa_sent: "Sent on WhatsApp", wa_fail: "Could not send on WhatsApp",
 		wa_nonum: "No number on file — type one below.",
+		wa_other: "Or send to someone else", wa_search: "Search by name or number", wa_none: "Nothing found",
+		wa_nonum_s: "no number",
+		pt_Customer: "Customer", pt_Supplier: "Supplier", pt_Employee: "Employee", pt_Shareholder: "Shareholder",
 		discard_q: "Delete this bill forever? It has NOT reached ERPNext.",
 		sent_h: "Sent bills", pend_h: "Waiting to send",
 		pnote: "A waiting bill is safe on this device and goes in automatically when internet returns. The printed slip is provisional until the final GST bill number arrives.",
@@ -729,6 +749,9 @@ var STR = {
 		wa_btn: "व्हॉट्सऐप", wa_title: "व्हॉट्सऐप पर भेजें", wa_num: "मोबाइल नंबर",
 		wa_sending: "व्हॉट्सऐप पर भेज रहे हैं…", wa_sent: "व्हॉट्सऐप पर भेज दिया", wa_fail: "व्हॉट्सऐप पर नहीं भेज सके",
 		wa_nonum: "नंबर दर्ज नहीं — नीचे लिखें।",
+		wa_other: "या किसी और को भेजें", wa_search: "नाम या नंबर से खोजें", wa_none: "कुछ नहीं मिला",
+		wa_nonum_s: "नंबर नहीं",
+		pt_Customer: "ग्राहक", pt_Supplier: "सप्लायर", pt_Employee: "कर्मचारी", pt_Shareholder: "शेयरधारक",
 		discard_q: "यह बिल हमेशा के लिए हटाएँ? यह ERPNext नहीं पहुँचा है।",
 		sent_h: "भेजे गए बिल", pend_h: "भेजने बाकी",
 		pnote: "प्रतीक्षा वाला बिल इस डिवाइस पर सुरक्षित रहता है और इंटरनेट आते ही अपने आप चला जाता है। अंतिम GST बिल नंबर आने तक छपी रसीद अस्थायी है।",
@@ -789,6 +812,9 @@ var STR = {
 		wa_btn: "व्हॉट्सॲप", wa_title: "व्हॉट्सॲपवर पाठवा", wa_num: "मोबाइल नंबर",
 		wa_sending: "व्हॉट्सॲपवर पाठवत आहे…", wa_sent: "व्हॉट्सॲपवर पाठवले", wa_fail: "व्हॉट्सॲपवर पाठवता आले नाही",
 		wa_nonum: "नंबर नोंद नाही — खाली लिहा.",
+		wa_other: "किंवा दुसऱ्याला पाठवा", wa_search: "नाव किंवा नंबरने शोधा", wa_none: "काही सापडले नाही",
+		wa_nonum_s: "नंबर नाही",
+		pt_Customer: "ग्राहक", pt_Supplier: "पुरवठादार", pt_Employee: "कर्मचारी", pt_Shareholder: "भागधारक",
 		discard_q: "हे बिल कायमचे हटवायचे? हे ERPNext मध्ये गेलेले नाही.",
 		sent_h: "पाठवलेली बिले", pend_h: "पाठवायची राहिलेली",
 		pnote: "प्रतीक्षेतले बिल या डिव्हाइसवर सुरक्षित असते व इंटरनेट आल्यावर आपोआप जाते. अंतिम GST बिल क्रमांक येईपर्यंत छापलेली पावती तात्पुरती असते.",
@@ -2373,7 +2399,8 @@ function printMenu(doctype, name) {
 		var d = ' data-dt="' + esc(doctype) + '" data-nm="' + esc(name) + '" data-fmt="' + esc(fmts[i].fmt) + '"';
 		body += '<div class="prrow">' +
 			'<button class="prbtn"' + d + ' onclick="printDoc(this.dataset.dt, this.dataset.nm, this.dataset.fmt)">' + esc(fmts[i].lbl) + "</button>" +
-			'<button class="wabtn"' + d + ' title="' + esc(T("wa_btn")) + '" onclick="waAsk(this.dataset.dt, this.dataset.nm, this.dataset.fmt)">&#128172;</button>' +
+			'<button class="wabtn"' + d + ' title="' + esc(T("wa_btn")) + '" aria-label="' + esc(T("wa_btn")) +
+				'" onclick="waAsk(this.dataset.dt, this.dataset.nm, this.dataset.fmt)">' + waIcon() + "</button>" +
 			"</div>";
 	}
 	ASK = { print: true };
@@ -2420,39 +2447,153 @@ function printDoc(doctype, name, fmt) {
    for a known customer: get_target resolves it from the document, and the box
    is only there to correct it or to fill one in when the party has none.
    Nothing is uploaded to /files — the server hands the PDF straight to Meta. */
+var WA = null, waTimer = null;
+var WA_TYPES = ["Customer", "Supplier", "Employee", "Shareholder"];
+
+/* the WhatsApp glyph, inline: it renders offline and inherits the button's
+   colour, which a remote brand asset would not */
+function waIcon() {
+	return '<svg class="waico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12.04 2.02c-5.46 0-9.9 4.44-9.9 9.9 0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.37a9.86 9.86 0 0 0 4.74 1.21h.01c5.45 0 9.9-4.44 9.9-9.9 0-2.65-1.03-5.14-2.9-7.01a9.82 9.82 0 0 0-7.01-2.91zm0 1.67c2.2 0 4.26.86 5.82 2.42a8.19 8.19 0 0 1 2.41 5.82c0 4.54-3.7 8.23-8.24 8.23-1.48 0-2.93-.4-4.19-1.15l-.3-.18-3.12.82.83-3.04-.2-.31a8.2 8.2 0 0 1-1.26-4.38c0-4.53 3.7-8.23 8.25-8.23zM8.53 7.35c-.16 0-.43.06-.66.31-.22.25-.86.85-.86 2.07 0 1.22.88 2.39 1 2.56.14.16 1.75 2.67 4.25 3.73.59.26 1.05.42 1.41.53.59.19 1.13.16 1.56.1.48-.07 1.46-.6 1.67-1.18.2-.58.2-1.07.14-1.18-.06-.1-.22-.16-.47-.28-.25-.13-1.47-.72-1.7-.8-.22-.09-.39-.13-.55.12-.16.24-.63.8-.78.96-.14.17-.28.19-.53.07-.25-.13-1.06-.39-2.01-1.24-.74-.66-1.24-1.47-1.39-1.72-.14-.25-.01-.38.11-.5.11-.11.25-.29.37-.44.13-.15.17-.25.25-.42.09-.16.04-.31-.02-.43-.06-.12-.55-1.34-.76-1.84-.2-.48-.4-.42-.55-.42h-.5z"/></svg>';
+}
+
+/* ---------- WhatsApp send sheet ----------
+   Mirrors the desk dialog: send to the party on the document, or to any other
+   Customer / Supplier / Employee / Shareholder. The list is searched on the
+   server (whatsapp.search_parties) rather than from the offline catalogue —
+   a WhatsApp send needs the network anyway, and this way the POS and the desk
+   offer exactly the same party types. */
 function waAsk(doctype, name, fmt) {
 	closeAsk();
 	api("/api/method/agriops_suite.whatsapp.get_target?doctype=" + encodeURIComponent(doctype) +
 		"&name=" + encodeURIComponent(name))
 		.then(function (r) {
 			var t = (r && r.message) || {};
-			var num = t.mobile || "";
-			var who = t.party_name || t.party || "";
+			WA = {
+				dt: doctype, nm: name, fmt: fmt,
+				docWho: t.party_name || t.party || "",
+				num: t.mobile || "",
+				pt: null, party: null, who: "", rows: null, loading: false
+			};
 			ASK = { wa: true };
-			$id("askovl").innerHTML = '<div class="askbox" onclick="event.stopPropagation()">' +
-				'<div class="askt">' + esc(T("wa_title")) + "</div>" +
-				'<div class="askm" style="margin-bottom:4px">' + esc(name) + (who ? " &bull; " + esc(who) : "") + "</div>" +
-				'<input id="wanum" class="wain" type="tel" inputmode="numeric" autocomplete="off" value="' +
-					esc(num) + '" placeholder="' + esc(T("wa_num")) + '">' +
-				(num ? "" : '<div class="askm" style="margin-top:8px;margin-bottom:0">' + esc(T("wa_nonum")) + "</div>") +
-				'<button class="wago" data-dt="' + esc(doctype) + '" data-nm="' + esc(name) + '" data-fmt="' + esc(fmt) +
-					'" onclick="waSend(this.dataset.dt, this.dataset.nm, this.dataset.fmt)">' + esc(T("wa_btn")) + "</button>" +
-				'<button class="askno" style="width:100%;margin-top:8px" onclick="closeAsk()">' + esc(T("btn_cancel")) + "</button></div>";
+			renderWa();
 			$id("askovl").classList.add("show");
 			var el = $id("wanum");
-			if (el && !num) el.focus();
+			if (el && !WA.num) el.focus();
 		})
 		.catch(function (e) { toast((e && e.message) || T("wa_fail")); });
 }
-function waSend(doctype, name, fmt) {
+
+function renderWa() {
+	if (!WA) return;
+	var chips = "";
+	for (var i = 0; i < WA_TYPES.length; i++) {
+		var t = WA_TYPES[i];
+		chips += '<button class="wachip' + (WA.pt === t ? " on" : "") + '" data-pt="' + esc(t) +
+			'" onclick="waPickType(this.dataset.pt)">' + esc(T("pt_" + t)) + "</button>";
+	}
+	var picker = "";
+	if (WA.pt) {
+		picker =
+			'<input id="wasr" class="wasr" type="search" autocomplete="off" placeholder="' + esc(T("wa_search")) +
+				'" oninput="waSearchSoon()">' +
+			'<div class="walist" id="walist">' + waListHtml() + "</div>";
+	}
+	var sub = WA.who ? WA.who : WA.docWho;
+	$id("askovl").innerHTML = '<div class="askbox" onclick="event.stopPropagation()">' +
+		'<div class="askt">' + esc(T("wa_title")) + "</div>" +
+		'<div class="askm" style="margin-bottom:4px">' + esc(WA.nm) + (sub ? " • " + esc(sub) : "") + "</div>" +
+		'<input id="wanum" class="wain" type="tel" inputmode="numeric" autocomplete="off" value="' +
+			esc(WA.num) + '" placeholder="' + esc(T("wa_num")) + '">' +
+		(WA.num ? "" : '<div class="askm" style="margin-top:8px;margin-bottom:0">' + esc(T("wa_nonum")) + "</div>") +
+		'<div class="walbl">' + esc(T("wa_other")) + "</div>" +
+		'<div class="wachips">' + chips + "</div>" +
+		picker +
+		'<button class="wago" onclick="waSend()">' + waIcon() + "<span>" + esc(T("wa_btn")) + "</span></button>" +
+		'<button class="askno" style="width:100%;margin-top:8px" onclick="closeAsk()">' + esc(T("btn_cancel")) + "</button></div>";
+}
+
+function waListHtml() {
+	if (!WA) return "";
+	if (WA.loading) return '<div class="waempty">…</div>';
+	var rows = WA.rows || [];
+	if (!rows.length) return '<div class="waempty">' + esc(T("wa_none")) + "</div>";
+	var h = "";
+	for (var i = 0; i < rows.length; i++) {
+		h += '<button class="wares' + (WA.party === rows[i].name ? " on" : "") + '" data-nm="' + esc(rows[i].name) +
+			'" onclick="waPickParty(this.dataset.nm)">' +
+			'<span class="warl">' + esc(rows[i].label) + "</span>" +
+			'<span class="warm">' + esc(rows[i].mobile || T("wa_nonum_s")) + "</span></button>";
+	}
+	return h;
+}
+
+function waPickType(pt) {
+	if (!WA) return;
+	/* tapping the active chip clears it — back to the document's own party */
+	if (WA.pt === pt) { WA.pt = null; WA.party = null; WA.who = ""; WA.rows = null; renderWa(); return; }
+	WA.pt = pt; WA.party = null; WA.who = ""; WA.rows = null;
+	renderWa();
+	waSearch("");
+	var el = $id("wasr"); if (el) el.focus();
+}
+
+function waSearchSoon() {
+	clearTimeout(waTimer);
+	waTimer = setTimeout(function () {
+		var el = $id("wasr");
+		waSearch(el ? el.value : "");
+	}, 250);
+}
+
+/* only the list is redrawn — a full renderWa() here would blow away the search
+   box the user is typing in */
+function waSearch(q) {
+	if (!WA || !WA.pt) return;
+	var pt = WA.pt;
+	WA.loading = true;
+	var box = $id("walist"); if (box) box.innerHTML = waListHtml();
+	api("/api/method/agriops_suite.whatsapp.search_parties?party_type=" + encodeURIComponent(pt) +
+		"&query=" + encodeURIComponent(q || ""))
+		.then(function (r) {
+			if (!WA || WA.pt !== pt) return;  /* type changed mid-flight */
+			WA.loading = false;
+			WA.rows = (r && r.message) || [];
+			var b = $id("walist"); if (b) b.innerHTML = waListHtml();
+		})
+		.catch(function () {
+			if (!WA || WA.pt !== pt) return;
+			WA.loading = false; WA.rows = [];
+			var b = $id("walist"); if (b) b.innerHTML = waListHtml();
+		});
+}
+
+function waPickParty(name) {
+	if (!WA || !WA.pt) return;
+	var pt = WA.pt;
+	WA.party = name;
+	api("/api/method/agriops_suite.whatsapp.get_party_mobile?party_type=" + encodeURIComponent(pt) +
+		"&party=" + encodeURIComponent(name))
+		.then(function (r) {
+			if (!WA || WA.party !== name) return;
+			var info = (r && r.message) || {};
+			WA.who = info.party_name || name;
+			WA.num = info.mobile || "";
+			renderWa();
+			if (!WA.num) toast(T("wa_nonum"));
+		})
+		.catch(function (e) { toast((e && e.message) || T("wa_fail")); });
+}
+
+function waSend() {
+	if (!WA) return;
 	var el = $id("wanum");
 	var num = el ? el.value : "";
+	var payload = { doctype: WA.dt, name: WA.nm, print_format: WA.fmt, to_number: num };
+	if (WA.pt && WA.party) { payload.to_party_type = WA.pt; payload.to_party = WA.party; }
 	closeAsk();
+	WA = null;
 	toast(T("wa_sending"));
-	api("/api/method/agriops_suite.whatsapp.send", {
-		method: "POST",
-		json: { doctype: doctype, name: name, print_format: fmt, to_number: num }
-	})
+	api("/api/method/agriops_suite.whatsapp.send", { method: "POST", json: payload })
 		.then(function (r) {
 			var m = (r && r.message) || {};
 			/* toast() is textContent — a literal bullet, not an HTML entity */
