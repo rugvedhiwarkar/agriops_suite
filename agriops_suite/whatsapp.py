@@ -398,6 +398,18 @@ def _recent_duplicate(doctype, name, to_number):
 
 
 @frappe.whitelist()
+def is_enabled():
+	"""Whether this site can send, as a plain boolean.
+
+	The desk reads this from bootinfo, but the POS PWA has no bootinfo — and it
+	runs the same code on every site, so without this it would show a send button
+	on production before production is configured. A button that can only fail is
+	worse than no button. Reveals nothing beyond the flag itself.
+	"""
+	return 1 if enabled() else 0
+
+
+@frappe.whitelist()
 def get_target(doctype, name):
 	"""Who this document would go to, for the dialog's default.
 

@@ -2399,8 +2399,10 @@ function printMenu(doctype, name) {
 		var d = ' data-dt="' + esc(doctype) + '" data-nm="' + esc(name) + '" data-fmt="' + esc(fmts[i].fmt) + '"';
 		body += '<div class="prrow">' +
 			'<button class="prbtn"' + d + ' onclick="printDoc(this.dataset.dt, this.dataset.nm, this.dataset.fmt)">' + esc(fmts[i].lbl) + "</button>" +
-			'<button class="wabtn"' + d + ' title="' + esc(T("wa_btn")) + '" aria-label="' + esc(T("wa_btn")) +
-				'" onclick="waAsk(this.dataset.dt, this.dataset.nm, this.dataset.fmt)">' + waIcon() + "</button>" +
+			(WA_ON
+				? '<button class="wabtn"' + d + ' title="' + esc(T("wa_btn")) + '" aria-label="' + esc(T("wa_btn")) +
+					'" onclick="waAsk(this.dataset.dt, this.dataset.nm, this.dataset.fmt)">' + waIcon() + "</button>"
+				: "") +
 			"</div>";
 	}
 	ASK = { print: true };
@@ -2447,8 +2449,18 @@ function printDoc(doctype, name, fmt) {
    for a known customer: get_target resolves it from the document, and the box
    is only there to correct it or to fill one in when the party has none.
    Nothing is uploaded to /files — the server hands the PDF straight to Meta. */
-var WA = null, waTimer = null;
+var WA = null, waTimer = null, WA_ON = false;
 var WA_TYPES = ["Customer", "Supplier", "Employee", "Shareholder"];
+
+/* Does THIS site have WhatsApp configured? The same POS code runs on staging
+   and production, so without this the button would appear on a site with no
+   token and could only fail. Fails closed: an older site without the endpoint,
+   or a probe that never answers, simply shows no WhatsApp action. */
+function waProbe() {
+	api("/api/method/agriops_suite.whatsapp.is_enabled")
+		.then(function (r) { WA_ON = !!(r && r.message); })
+		.catch(function () { WA_ON = false; });
+}
 
 /* the WhatsApp glyph, inline: it renders offline and inherits the button's
    colour, which a remote brand asset would not */
@@ -3194,6 +3206,7 @@ function boot() {
 	ensureAuth().then(function (authed) {
 		if (DISABLED) { renderDisabled(); return; }
 		if (!authed) { renderLogin(""); return; }
+		waProbe();
 		Promise.all([
 			idbKGet("catalog").catch(function () { return null; }),
 			idbQAll().catch(function () { return []; })

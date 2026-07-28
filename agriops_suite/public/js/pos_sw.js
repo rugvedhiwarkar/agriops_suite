@@ -18,9 +18,10 @@
  */
 /* v2: WhatsApp send added to the print sheet (new markup, CSS and strings).
    v3: WhatsApp glyph + any-party recipient picker in that sheet.
+   v4: the send button is hidden unless the SITE has WhatsApp configured.
    Without the bump, stale-while-revalidate serves the old shell on the first
    open after a deploy and the change only appears on the second. */
-var SHELL = "vacpos-shell-v3";
+var SHELL = "vacpos-shell-v4";
 var IMGS = "vacpos-img-v1";
 
 self.addEventListener("install", function (e) {
