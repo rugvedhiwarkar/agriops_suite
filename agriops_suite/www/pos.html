@@ -434,6 +434,15 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--green); out
 .prlist { display: flex; flex-direction: column; gap: 8px; margin-top: 4px; }
 .prbtn { padding: 13px; border-radius: 12px; border: 1.6px solid var(--line-2); background: var(--card); font-weight: 800; font-size: .96rem; color: var(--ink); }
 .prbtn:active { background: var(--soft); }
+/* each print-format row carries BOTH actions: print it, or WhatsApp it. Putting
+   the WhatsApp action here means every doctype in PRINT_FORMATS gets it for
+   free — no new call site per transaction type. */
+.prrow { display: flex; gap: 8px; align-items: stretch; }
+.prrow .prbtn { flex: 1; }
+.wabtn { flex: 0 0 auto; width: 54px; border-radius: 12px; border: 1.6px solid var(--green); background: var(--card); color: var(--green-dark); font-size: 1.15rem; font-weight: 800; }
+.wabtn:active { background: var(--soft); }
+.wain { width: 100%; margin-top: 10px; border: 1.6px solid var(--line-2); border-radius: 10px; padding: 12px; font-size: 1rem; font-weight: 700; background: var(--card); color: var(--ink); }
+.wago { width: 100%; margin-top: 12px; padding: 13px; border-radius: 12px; border: 0; background: var(--green-dark); color: #fff; font-weight: 800; font-size: .98rem; }
 
 /* settings */
 .setrow { margin-bottom: 12px; }
@@ -657,6 +666,9 @@ var STR = {
 		m_sell: "Sell", m_buy: "Buy", buy_pick_sup: "Choose supplier", buy_add: "Add items that arrived", buy_create: "Create draft receipt", buy_draft_note: "Saves as a DRAFT for review", buy_done: "Draft receipt — ", buy_total_qty: "Total qty", sup_name: "Supplier name", batch: "Batch",
 		st_pend: "Waiting", st_send: "Sending…", st_fail: "Failed", st_done: "Sent",
 		retry: "Retry", discard: "Delete", reprint: "Print", print: "Print",
+		wa_btn: "WhatsApp", wa_title: "Send on WhatsApp", wa_num: "Mobile number",
+		wa_sending: "Sending on WhatsApp…", wa_sent: "Sent on WhatsApp", wa_fail: "Could not send on WhatsApp",
+		wa_nonum: "No number on file — type one below.",
 		discard_q: "Delete this bill forever? It has NOT reached ERPNext.",
 		sent_h: "Sent bills", pend_h: "Waiting to send",
 		pnote: "A waiting bill is safe on this device and goes in automatically when internet returns. The printed slip is provisional until the final GST bill number arrives.",
@@ -714,6 +726,9 @@ var STR = {
 		m_sell: "बिक्री", m_buy: "खरीद", buy_pick_sup: "सप्लायर चुनें", buy_add: "आया हुआ सामान जोड़ें", buy_create: "ड्राफ्ट रसीद बनाएँ", buy_draft_note: "समीक्षा हेतु ड्राफ्ट सेव होगा", buy_done: "ड्राफ्ट रसीद — ", buy_total_qty: "कुल मात्रा", sup_name: "सप्लायर का नाम", batch: "बैच",
 		st_pend: "प्रतीक्षा में", st_send: "भेज रहे हैं…", st_fail: "असफल", st_done: "भेज दिया",
 		retry: "फिर भेजें", discard: "हटाएँ", reprint: "प्रिंट", print: "प्रिंट",
+		wa_btn: "व्हॉट्सऐप", wa_title: "व्हॉट्सऐप पर भेजें", wa_num: "मोबाइल नंबर",
+		wa_sending: "व्हॉट्सऐप पर भेज रहे हैं…", wa_sent: "व्हॉट्सऐप पर भेज दिया", wa_fail: "व्हॉट्सऐप पर नहीं भेज सके",
+		wa_nonum: "नंबर दर्ज नहीं — नीचे लिखें।",
 		discard_q: "यह बिल हमेशा के लिए हटाएँ? यह ERPNext नहीं पहुँचा है।",
 		sent_h: "भेजे गए बिल", pend_h: "भेजने बाकी",
 		pnote: "प्रतीक्षा वाला बिल इस डिवाइस पर सुरक्षित रहता है और इंटरनेट आते ही अपने आप चला जाता है। अंतिम GST बिल नंबर आने तक छपी रसीद अस्थायी है।",
@@ -771,6 +786,9 @@ var STR = {
 		m_sell: "विक्री", m_buy: "खरेदी", buy_pick_sup: "पुरवठादार निवडा", buy_add: "आलेला माल जोडा", buy_create: "ड्राफ्ट पावती तयार करा", buy_draft_note: "पुनरावलोकनासाठी ड्राफ्ट सेव्ह होईल", buy_done: "ड्राफ्ट पावती — ", buy_total_qty: "एकूण संख्या", sup_name: "पुरवठादाराचे नाव", batch: "बॅच",
 		st_pend: "प्रतीक्षेत", st_send: "पाठवत आहे…", st_fail: "अयशस्वी", st_done: "पाठवले",
 		retry: "पुन्हा पाठवा", discard: "हटवा", reprint: "प्रिंट", print: "प्रिंट",
+		wa_btn: "व्हॉट्सॲप", wa_title: "व्हॉट्सॲपवर पाठवा", wa_num: "मोबाइल नंबर",
+		wa_sending: "व्हॉट्सॲपवर पाठवत आहे…", wa_sent: "व्हॉट्सॲपवर पाठवले", wa_fail: "व्हॉट्सॲपवर पाठवता आले नाही",
+		wa_nonum: "नंबर नोंद नाही — खाली लिहा.",
 		discard_q: "हे बिल कायमचे हटवायचे? हे ERPNext मध्ये गेलेले नाही.",
 		sent_h: "पाठवलेली बिले", pend_h: "पाठवायची राहिलेली",
 		pnote: "प्रतीक्षेतले बिल या डिव्हाइसवर सुरक्षित असते व इंटरनेट आल्यावर आपोआप जाते. अंतिम GST बिल क्रमांक येईपर्यंत छापलेली पावती तात्पुरती असते.",
@@ -1824,6 +1842,11 @@ function closeAsk() { ASK = null; var el = $id("askovl"); if (el) el.classList.r
 function askYes() { var fn = ASK && ASK.onYes; closeAsk(); if (fn) fn(); }
 function renderAsk() {
 	if (!ASK) return;
+	/* The print-format and WhatsApp sheets reuse this overlay but write their own
+	   markup. Re-rendering them from ASK would replace the sheet with an empty
+	   confirm box, so leave them alone — a render() can fire under an open sheet
+	   whenever a background sync finishes. */
+	if (ASK.print || ASK.wa) return;
 	$id("askovl").innerHTML =
 		'<div class="askbox" onclick="event.stopPropagation()">' +
 		(ASK.title ? '<div class="askt">' + esc(ASK.title) + "</div>" : "") +
@@ -2346,8 +2369,13 @@ function renderInvoice() {
 function printMenu(doctype, name) {
 	var fmts = PRINT_FORMATS[doctype] || [{ fmt: "Standard", lbl: T("print") }];
 	var body = "";
-	for (var i = 0; i < fmts.length; i++)
-		body += '<button class="prbtn" data-dt="' + esc(doctype) + '" data-nm="' + esc(name) + '" data-fmt="' + esc(fmts[i].fmt) + '" onclick="printDoc(this.dataset.dt, this.dataset.nm, this.dataset.fmt)">' + esc(fmts[i].lbl) + "</button>";
+	for (var i = 0; i < fmts.length; i++) {
+		var d = ' data-dt="' + esc(doctype) + '" data-nm="' + esc(name) + '" data-fmt="' + esc(fmts[i].fmt) + '"';
+		body += '<div class="prrow">' +
+			'<button class="prbtn"' + d + ' onclick="printDoc(this.dataset.dt, this.dataset.nm, this.dataset.fmt)">' + esc(fmts[i].lbl) + "</button>" +
+			'<button class="wabtn"' + d + ' title="' + esc(T("wa_btn")) + '" onclick="waAsk(this.dataset.dt, this.dataset.nm, this.dataset.fmt)">&#128172;</button>' +
+			"</div>";
+	}
 	ASK = { print: true };
 	$id("askovl").innerHTML = '<div class="askbox" onclick="event.stopPropagation()">' +
 		'<div class="askt">' + esc(name) + "</div>" +
@@ -2384,6 +2412,53 @@ function printDoc(doctype, name, fmt) {
 			setTimeout(function () { URL.revokeObjectURL(u); if (ifr.parentNode) ifr.parentNode.removeChild(ifr); }, 90000);
 		})
 		.catch(function () { toast(T("print_fail")); });
+}
+
+/* ---------- WhatsApp ----------
+   Same PDF the print button would produce, sent through the Cloud API instead
+   of a printer (agriops_suite/whatsapp.py). The counter never types a number
+   for a known customer: get_target resolves it from the document, and the box
+   is only there to correct it or to fill one in when the party has none.
+   Nothing is uploaded to /files — the server hands the PDF straight to Meta. */
+function waAsk(doctype, name, fmt) {
+	closeAsk();
+	api("/api/method/agriops_suite.whatsapp.get_target?doctype=" + encodeURIComponent(doctype) +
+		"&name=" + encodeURIComponent(name))
+		.then(function (r) {
+			var t = (r && r.message) || {};
+			var num = t.mobile || "";
+			var who = t.party_name || t.party || "";
+			ASK = { wa: true };
+			$id("askovl").innerHTML = '<div class="askbox" onclick="event.stopPropagation()">' +
+				'<div class="askt">' + esc(T("wa_title")) + "</div>" +
+				'<div class="askm" style="margin-bottom:4px">' + esc(name) + (who ? " &bull; " + esc(who) : "") + "</div>" +
+				'<input id="wanum" class="wain" type="tel" inputmode="numeric" autocomplete="off" value="' +
+					esc(num) + '" placeholder="' + esc(T("wa_num")) + '">' +
+				(num ? "" : '<div class="askm" style="margin-top:8px;margin-bottom:0">' + esc(T("wa_nonum")) + "</div>") +
+				'<button class="wago" data-dt="' + esc(doctype) + '" data-nm="' + esc(name) + '" data-fmt="' + esc(fmt) +
+					'" onclick="waSend(this.dataset.dt, this.dataset.nm, this.dataset.fmt)">' + esc(T("wa_btn")) + "</button>" +
+				'<button class="askno" style="width:100%;margin-top:8px" onclick="closeAsk()">' + esc(T("btn_cancel")) + "</button></div>";
+			$id("askovl").classList.add("show");
+			var el = $id("wanum");
+			if (el && !num) el.focus();
+		})
+		.catch(function (e) { toast((e && e.message) || T("wa_fail")); });
+}
+function waSend(doctype, name, fmt) {
+	var el = $id("wanum");
+	var num = el ? el.value : "";
+	closeAsk();
+	toast(T("wa_sending"));
+	api("/api/method/agriops_suite.whatsapp.send", {
+		method: "POST",
+		json: { doctype: doctype, name: name, print_format: fmt, to_number: num }
+	})
+		.then(function (r) {
+			var m = (r && r.message) || {};
+			/* toast() is textContent — a literal bullet, not an HTML entity */
+			toast(T("wa_sent") + (m.to ? " • " + m.to : ""));
+		})
+		.catch(function (e) { toast((e && e.message) || T("wa_fail")); });
 }
 function payLabel(s) {
 	if (s.mode === "Udhaar") return T("udhaar");

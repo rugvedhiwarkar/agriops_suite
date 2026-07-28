@@ -16,7 +16,10 @@
  *
  * NB: bump SHELL to evict an old shell after structural changes.
  */
-var SHELL = "vacpos-shell-v1";
+/* v2: WhatsApp send added to the print sheet (new markup, CSS and strings).
+   Without the bump, stale-while-revalidate serves the old shell on the first
+   open after a deploy and the button only appears on the second. */
+var SHELL = "vacpos-shell-v2";
 var IMGS = "vacpos-img-v1";
 
 self.addEventListener("install", function (e) {
