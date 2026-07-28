@@ -149,13 +149,23 @@
 		const orig = Form.prototype.refresh;
 		Form.prototype.refresh = function (...args) {
 			const out = orig.apply(this, args);
-			try {
-				if (should_show(this)) {
-					this.add_custom_button(__("Send on WhatsApp"), () => send_dialog(this.doc));
+			const frm = this;
+			// Deferred by a tick on purpose. Adding the button synchronously here
+			// still lands inside the refresh chain, and a LATER handler (the "VAC
+			// Print Buttons" Client Script) then creates its "Print" button group
+			// and swallows ours into that dropdown — verified on staging, where
+			// the button existed in frm.custom_buttons but rendered inside Print.
+			// Once the chain has settled, add_custom_button renders standalone.
+			setTimeout(() => {
+				try {
+					if (!should_show(frm)) return;
+					const label = __("Send on WhatsApp");
+					if (frm.custom_buttons && frm.custom_buttons[label]) return;
+					frm.add_custom_button(label, () => send_dialog(frm.doc));
+				} catch (e) {
+					console.warn("vac_wa: button injection failed", e);
 				}
-			} catch (e) {
-				console.warn("vac_wa: button injection failed", e);
-			}
+			}, 0);
 			return out;
 		};
 		return true;
