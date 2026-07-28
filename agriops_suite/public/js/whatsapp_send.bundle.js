@@ -200,7 +200,8 @@
 			d.set_df_property("party", "options", type);
 			d.set_value("party", "");
 			d.set_value("number", "");
-			set_number_hint(__("Choose a {0} — their number fills in automatically.", [type]));
+			// no article — "a Employee" / "a Shareholder" both read wrong
+			set_number_hint(__("Choose from {0} records — the number fills in automatically.", [type]));
 		}
 
 		async function on_party_change() {
