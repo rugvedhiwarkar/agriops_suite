@@ -9,6 +9,11 @@ def extend_bootinfo(bootinfo):
 	redeploy: bench --site <site> set-config vac_theme_enabled 1
 	"""
 	bootinfo.vac_theme_enabled = frappe.conf.get("vac_theme_enabled") or 0
+	# Same staging-first switch for the WhatsApp document sender (whatsapp.py).
+	# The desk button renders only where this is on, so the code can ship to the
+	# shared bench without surfacing a send action on a site that has no token:
+	#   bench --site <site> set-config vac_whatsapp_enabled 1
+	bootinfo.vac_whatsapp_enabled = frappe.conf.get("vac_whatsapp_enabled") or 0
 	# which palette: "1"/"claude" (default), "leaf", or "nature" (website-matched)
 	bootinfo.vac_theme_variant = frappe.conf.get("vac_theme_variant") or "1"
 	# Standard ledger reports augmented IN-PLACE with the ledger features

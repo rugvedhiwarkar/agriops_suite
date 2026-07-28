@@ -50,6 +50,12 @@ app_include_js = [
     "/assets/agriops_suite/js/vac_desk.js",
     # POS order-summary: extra "Invoice A4" / "Delivery Slip" print buttons
     "/assets/agriops_suite/js/vac_pos_print.js",
+    # "Send on WhatsApp" on every document that has a party (customer, supplier,
+    # employee, shareholder). Defines window.vac_wa.send_dialog, which the POS
+    # button above and the "VAC Print Buttons - Sales Invoice" Client Script both
+    # call, so it must load desk-wide. Self-gating on boot.vac_whatsapp_enabled →
+    # inert on a site with no token configured. Content-hashed bundle.
+    "whatsapp_send.bundle.js",
     # POS: allow items with NO preset price to be billed (cashier types the rate)
     # instead of ERPNext's hard "Price is not set for the item." block. Paired
     # with the block_zero_rate_pos before_submit safeguard so nothing bills at 0.
@@ -212,6 +218,12 @@ fixtures = [
                     # the counter every permlevel-hidden book quantity.
                     "Stock Count Session",
                     "Stock Count Entry",
+                    # Audit trail for the WhatsApp document sender (whatsapp.py).
+                    # Definition only — the LOG ROWS are runtime records of real
+                    # sends and must never ship in the repo. Read-only to every
+                    # role: rows are written server-side with ignore_permissions,
+                    # and a delivery record nobody can edit is the point.
+                    "WhatsApp Send Log",
                 ],
             ]
         },
