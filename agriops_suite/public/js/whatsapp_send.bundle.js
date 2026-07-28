@@ -136,6 +136,36 @@
 	window.vac_wa = window.vac_wa || {};
 	window.vac_wa.send_dialog = send_dialog;
 
+	// --- WhatsApp Settings: let a long API token actually save ----------------
+	//
+	// `token` is a Password control, and Frappe runs a zxcvbn strength check on
+	// Password fields whenever the site password policy is on (it is here:
+	// enable_password_policy=1). A ~200-char random Meta token scores so highly
+	// that zxcvbn's `guesses` exceeds a 64-bit integer, orjson refuses to
+	// serialise the response, and the user gets a "TypeError: Integer exceeds
+	// 64-bit range" traceback instead of a saved token.
+	//
+	// Frappe exposes disable_password_checks() for exactly this. Scoped to this
+	// one field, so the password policy still applies everywhere it means
+	// something — which is not a machine-generated bearer token.
+	function relax_token_field(frm) {
+		try {
+			const field = frm && frm.get_field ? frm.get_field("token") : null;
+			if (field && typeof field.disable_password_checks === "function") {
+				field.disable_password_checks();
+			}
+		} catch (e) {
+			console.warn("vac_wa: could not relax token field", e);
+		}
+	}
+
+	if (window.frappe && frappe.ui && frappe.ui.form && frappe.ui.form.on) {
+		frappe.ui.form.on("WhatsApp Settings", {
+			onload: relax_token_field,
+			refresh: relax_token_field,
+		});
+	}
+
 	// --- desk-wide button ----------------------------------------------------
 	//
 	// Frappe has no "on every doctype" form event, so refresh is wrapped the same
