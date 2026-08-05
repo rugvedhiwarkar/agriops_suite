@@ -103,5 +103,22 @@
   "roles": [],
   "sidebar": null,
   "standard": 0
+ },
+ {
+  "app": "erpnext",
+  "bg_color": "gray",
+  "docstatus": 0,
+  "doctype": "Desktop Icon",
+  "hidden": 0,
+  "icon": "book-text",
+  "icon_type": "Link",
+  "label": "Compliance",
+  "link_to": "Compliance",
+  "link_type": "Workspace Sidebar",
+  "modified": "2026-07-30 22:36:10.672700",
+  "name": "Compliance",
+  "restrict_removal": 0,
+  "roles": [],
+  "standard": 0
  }
 ]

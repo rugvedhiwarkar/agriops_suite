@@ -284,6 +284,19 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--green); out
 .batchin { width: 100%; max-width: 130px; border: 1.6px solid var(--line); border-radius: 8px; padding: 4px 8px; font-size: .78rem; margin-top: 2px; background: var(--card); color: var(--ink); }
 .gobtn.buy { background: linear-gradient(150deg, var(--amber), var(--amber-dark)); }
 .discchip { display: inline-flex; align-items: center; margin-top: 2px; font-size: .74rem; font-weight: 700; color: var(--amber-dark); background: var(--amber-soft); border-radius: 999px; padding: 2px 9px; cursor: pointer; white-space: nowrap; }
+/* batch chip: neutral once chosen, loud while missing — the sale is refused
+   without it, so the cashier must see that on the line, not at the pay screen */
+.batchip { display: inline-flex; align-items: center; gap: 3px; margin-top: 2px; font-size: .74rem; font-weight: 700; border-radius: 999px; padding: 2px 9px; cursor: pointer; white-space: nowrap; max-width: 46vw; overflow: hidden; text-overflow: ellipsis; }
+.batchip.on { color: var(--green-dark); background: var(--green-soft); }
+.batchip.need { color: #fff; background: var(--red, #c0392b); }
+.batchip:active { filter: brightness(.96); }
+.crow.dead { opacity: .55; cursor: not-allowed; }
+.crow.dead .ci2 { background: var(--amber-soft); color: var(--amber-dark); }
+.cn2.struck { text-decoration: line-through; }
+.batadd { padding: 4px 16px 16px; }
+.batnote { font-size: .78rem; color: var(--muted); margin: 2px 0 14px; line-height: 1.45; }
+.bigbtn { width: 100%; padding: 13px; border: 0; border-radius: 12px; background: var(--green); color: #fff; font-size: 1rem; font-weight: 800; cursor: pointer; }
+.linkbtn { display: block; width: calc(100% - 32px); margin: 10px 16px 16px; padding: 11px; border: 1px dashed var(--line); border-radius: 12px; background: transparent; color: var(--green-dark); font-weight: 700; cursor: pointer; }
 .discchip:active { filter: brightness(.96); }
 .cline .lr.struck b { text-decoration: line-through; color: var(--muted); font-weight: 600; }
 .netlbl { margin-top: 2px; font-size: .8rem; font-weight: 800; color: var(--ink); }
@@ -672,7 +685,7 @@ var STR = {
 		cust: "Customer", walkin: "Cash Customer", change: "Change", khata: "Due",
 		cash: "Cash", upi: "UPI", udhaar: "Udhaar", to_cart: "Bill", items_n: "items",
 		empty: "Cart is empty — tap items to add", confirm: "Confirm Bill",
-		need_cust: "Pick the customer for udhaar", queued: "Queued", billno: "Bill",
+		need_cust: "Pick the customer for udhaar", queued: "Queued", billno: "Bill", bat_pick: "Pick batch", bat_need: "Batch?", bat_add: "Add a batch from the pack", bat_none: "No batch of this item in stock", bat_exp: "Exp", bat_noexp: "No expiry", bat_left: "left", bat_dead: "EXPIRED — cannot sell", bat_ph: "Batch number on the pack", bat_qty: "Quantity from this batch", bat_save: "Save batch", bat_saving: "Saving batch…", bat_added: "Batch added", bat_addnote: "Moves this quantity into the new batch. Total stock does not change.", back: "Back", cat_stale: "Go online once to load batch data — batch items cannot be billed until then", bat_offline: "Cannot add a batch while offline — it has to move stock on the server",
 		qty_p: "Quantity", rate_p: "Rate (₹)", bad_num: "Enter a valid number", num_hint: "Type or tap · Enter to confirm", btn_cancel: "Cancel", btn_ok: "OK", hint_items: "Add items to the bill",
 		price_saved: "Price list updated", price_upd_q: "Change the saved list price from {old} to {new}?", price_upd_yes: "Update price",
 		uom_p: "Unit", uom_pick: "Choose unit", uom_stock: "stock unit", uom_other: "Other units — rename (1:1)", no_match: "No matches",
@@ -735,7 +748,7 @@ var STR = {
 		cust: "ग्राहक", walkin: "नकद ग्राहक", change: "बदलें", khata: "बकाया",
 		cash: "नकद", upi: "UPI", udhaar: "उधार", to_cart: "बिल", items_n: "सामान",
 		empty: "बिल खाली है — सामान पर टैप करें", confirm: "पक्का बिल करें",
-		need_cust: "उधार के लिए ग्राहक चुनें", queued: "कतार में", billno: "बिल",
+		need_cust: "उधार के लिए ग्राहक चुनें", queued: "कतार में", billno: "बिल", bat_pick: "बैच चुनें", bat_need: "बैच?", bat_add: "पैक से बैच जोड़ें", bat_none: "इस सामान का कोई बैच स्टॉक में नहीं", bat_exp: "एक्स", bat_noexp: "एक्सपायरी नहीं", bat_left: "बचा", bat_dead: "एक्सपायर — बेच नहीं सकते", bat_ph: "पैक पर बैच नंबर", bat_qty: "इस बैच से मात्रा", bat_save: "बैच सेव करें", bat_saving: "सेव हो रहा…", bat_added: "बैच जुड़ा", bat_addnote: "यह मात्रा नए बैच में जाएगी। कुल स्टॉक नहीं बदलेगा।", back: "पीछे", cat_stale: "बैच डेटा के लिए एक बार ऑनलाइन हों — तब तक बैच वाला सामान नहीं बिकेगा", bat_offline: "ऑफ़लाइन बैच नहीं जोड़ सकते — सर्वर पर स्टॉक बदलना होता है",
 		qty_p: "मात्रा", rate_p: "दाम (₹)", bad_num: "सही संख्या डालें", num_hint: "टाइप करें या टैप करें · Enter से पक्का", btn_cancel: "रद्द करें", btn_ok: "ठीक है", hint_items: "बिल में सामान जोड़ें",
 		price_saved: "मूल्य सूची अपडेट हुई", price_upd_q: "सहेजा हुआ दाम {old} से {new} करें?", price_upd_yes: "दाम अपडेट करें",
 		uom_p: "इकाई", uom_pick: "इकाई चुनें", uom_stock: "स्टॉक इकाई", uom_other: "अन्य इकाइयाँ — नाम बदलें (1:1)", no_match: "कुछ नहीं मिला",
@@ -798,7 +811,7 @@ var STR = {
 		cust: "ग्राहक", walkin: "रोख ग्राहक", change: "बदला", khata: "थकबाकी",
 		cash: "रोख", upi: "UPI", udhaar: "उधार", to_cart: "बिल", items_n: "वस्तू",
 		empty: "बिल रिकामे आहे — वस्तूवर टॅप करा", confirm: "पक्के बिल करा",
-		need_cust: "उधारीसाठी ग्राहक निवडा", queued: "रांगेत", billno: "बिल",
+		need_cust: "उधारीसाठी ग्राहक निवडा", queued: "रांगेत", billno: "बिल", bat_pick: "बॅच निवडा", bat_need: "बॅच?", bat_add: "पॅकवरून बॅच जोडा", bat_none: "या मालाचा कोणताही बॅच स्टॉकमध्ये नाही", bat_exp: "एक्स", bat_noexp: "एक्सपायरी नाही", bat_left: "शिल्लक", bat_dead: "एक्सपायर — विकू शकत नाही", bat_ph: "पॅकवरील बॅच नंबर", bat_qty: "या बॅचमधून संख्या", bat_save: "बॅच सेव्ह करा", bat_saving: "सेव्ह होत आहे…", bat_added: "बॅच जोडला", bat_addnote: "ही संख्या नवीन बॅचमध्ये जाईल. एकूण स्टॉक बदलणार नाही.", back: "मागे", cat_stale: "बॅच डेटासाठी एकदा ऑनलाईन व्हा — तोपर्यंत बॅचचा माल विकला जाणार नाही", bat_offline: "ऑफलाईन बॅच जोडता येणार नाही — सर्व्हरवर स्टॉक बदलावा लागतो",
 		qty_p: "नग / प्रमाण", rate_p: "दर (₹)", bad_num: "बरोबर आकडा टाका", num_hint: "टाइप करा किंवा टॅप करा · Enter ने पक्के", btn_cancel: "रद्द करा", btn_ok: "ठीक", hint_items: "बिलात वस्तू जोडा",
 		price_saved: "दरसूची अपडेट झाली", price_upd_q: "साठवलेला दर {old} वरून {new} करायचा?", price_upd_yes: "दर अपडेट करा",
 		uom_p: "एकक", uom_pick: "एकक निवडा", uom_stock: "स्टॉक एकक", uom_other: "इतर एकके — नाव बदला (1:1)", no_match: "काही सापडले नाही",
@@ -1161,9 +1174,40 @@ function adoptCatalog(c) {
 }
 function walkinName() { return PROFILE.customer || "Cash Customer"; }
 var CAT_TTL = 6 * 60 * 60 * 1000;
+/* Keys this build depends on. A catalog cached BEFORE the batch release has no
+   `batches`, and honouring its 6-hour TTL would leave the picker empty while
+   the checkout guard blocked every batch-tracked sale — a self-inflicted
+   counter outage for up to six hours after a deploy. A catalog missing a key
+   the running code needs is stale by definition, whatever its timestamp says.
+   Add to this list whenever the catalog gains something the UI relies on. */
+var CAT_REQUIRED = ["batches", "licences"];
+function catalogComplete(c) {
+	if (!c) return false;
+	for (var i = 0; i < CAT_REQUIRED.length; i++) {
+		if (c[CAT_REQUIRED[i]] === undefined) return false;
+	}
+	return true;
+}
+var catStaleWarned = false, catForced = false;
 function refreshCatalog(force) {
-	if (!force && CATALOG && CATALOG.ts && (Date.now() - CATALOG.ts < CAT_TTL)) return Promise.resolve(false);
-	if (!navigator.onLine) return Promise.resolve(false);
+	/* Force a refresh when the cached catalog predates this build — but AT MOST
+	   ONCE per session. If the refreshed catalog still lacks the keys, this
+	   site's Server Scripts are older than this page (an app deploy that did
+	   not carry the endpoint updates, or a site that was never updated). In
+	   that case the catalog can never satisfy the check, and forcing on every
+	   call would re-fetch it forever. Accept what the server gives and let the
+	   TTL govern again. */
+	var stale = !catalogComplete(CATALOG) && !catForced;
+	if (!force && !stale && CATALOG && CATALOG.ts && (Date.now() - CATALOG.ts < CAT_TTL)) return Promise.resolve(false);
+	if (stale) catForced = true;
+	if (!navigator.onLine) {
+		/* Offline with a pre-release catalog: batch-tracked sales cannot be
+		   completed because we do not know what batches exist. Say so once,
+		   plainly, instead of letting the cashier hit "No batch in stock" on
+		   every line and assume the app is broken. */
+		if (stale && CATALOG && !catStaleWarned) { catStaleWarned = true; toast(T("cat_stale"), 6000); }
+		return Promise.resolve(false);
+	}
 	return api("/api/method/vac_pos_catalog?profile=" + encodeURIComponent(S.profile)).then(function (data) {
 		var m = data.message || {};
 		m.ts = Date.now();
@@ -1220,6 +1264,16 @@ function resumeHold(id) {
 	HOLDS = rest;
 	if (cart.length) { parkCurrent(); toast(T("held_swap")); }
 	cart = h.cart || []; CUST = h.cust || null; KHATA = null; payMode = h.payMode || "Cash";
+	/* A bill parked BEFORE the batch release has lines with no `hasb`, so the
+	   checkout guard would skip them and the sale would fail server-side
+	   instead — after the cashier has taken the money. Re-derive it from the
+	   catalog rather than trusting what was stored. Cheap, and it also picks up
+	   an item that became batch-tracked while the bill was parked. */
+	for (var ri = 0; ri < cart.length; ri++) {
+		var rit = findItem(cart[ri].code);
+		if (rit) cart[ri].hasb = !!rit.has_batch_no;
+		if (cart[ri].batch === undefined) cart[ri].batch = "";
+	}
 	cashMode = h.cashMode || defaultCashMode();
 	split = h.split ? { cash: h.split.cash || 0, upi: h.split.upi || 0 } : { cash: 0, upi: 0 };
 	cartBumpGen();   /* a different cart is on the counter now */
@@ -1610,7 +1664,11 @@ function addItem(code, ev) {
 	flashPlusOne(ev);
 	if (MODE === "buy") { pAdd(it); return; }   /* Buy mode: goes to the purchase cart */
 	for (var i = 0; i < cart.length; i++) {
-		if (cart[i].code === code) { cart[i].qty += 1; render(); return; }
+		/* Same item added twice: merge ONLY while the line has no batch yet.
+		   Once a batch is chosen the second pack may be a different batch, and
+		   merging would silently attribute it to the first one — which is the
+		   whole failure this picker exists to prevent. */
+		if (cart[i].code === code && !cart[i].batch) { cart[i].qty += 1; render(); return; }
 	}
 	var su = it.stock_uom || "";
 	var rate = priceFor(code, su);
@@ -1618,13 +1676,13 @@ function addItem(code, ev) {
 		/* no selling price for this unit: numpad asks the rate, then fill-gaps it
 		   into the price list for this unit (see priceWriteback) */
 		openNum(it.item_name, T("rate_p"), "", function (r) {
-			cart.push({ code: code, name: it.item_name, uom: su, conv: 1, qty: 1, rate: r });
+			cart.push({ code: code, name: it.item_name, uom: su, conv: 1, qty: 1, rate: r, batch: "", hasb: !!it.has_batch_no });
 			render();
 			priceWriteback(code, it.item_name, su, r);
 		});
 		return;
 	}
-	cart.push({ code: code, name: it.item_name, uom: su, conv: 1, qty: 1, rate: rate });
+	cart.push({ code: code, name: it.item_name, uom: su, conv: 1, qty: 1, rate: rate, batch: "", hasb: !!it.has_batch_no });
 	render();
 }
 
@@ -1657,11 +1715,18 @@ function renderCart() {
 			var discCell = '<span class="discchip' + (discOn ? " on" : "") + '" onclick="editDisc(' + i + ')">' +
 				(discOn ? "&minus;" + (l.dpct ? qtyfmt(l.dpct) + "%" : fmt(l.damt)) : esc(T("disc"))) + "</span>";
 			var netCell = discOn ? '<span class="netlbl">= ' + fmt(net) + "</span>" : "";
+			/* Batch chip — only on batch-tracked items. Red until chosen, because
+			   the sale WILL be refused without it (vac_pos_create_invoice throws)
+			   and the cashier should see that before reaching the pay screen. */
+			var batCell = l.hasb
+				? '<span class="batchip' + (l.batch ? " on" : " need") + '" onclick="editBatch(' + i + ')">' +
+					(l.batch ? esc(l.batch) : esc(T("bat_need"))) + " &#9662;</span>"
+				: "";
 			var qvCell = edQ
 				? '<input id="editin" class="editin qedit" type="text" inputmode="decimal" value="' + esc(qtyfmt(l.qty)) + '" onblur="commitEdit(this.value)" onkeydown="editKey(event)">'
 				: '<div class="qv" onclick="editQty(' + i + ')">' + qtyfmt(l.qty) + "</div>";
 			h += '<div class="cline">' +
-				'<div class="ln"><div class="lt">' + esc(l.name) + '</div><div class="lmeta">' + rateCell + uomCell + discCell + netCell + "</div></div>" +
+				'<div class="ln"><div class="lt">' + esc(l.name) + '</div><div class="lmeta">' + rateCell + uomCell + discCell + netCell + batCell + "</div></div>" +
 				'<div class="qbox"><button aria-label="minus one" onclick="qDown(' + i + ')">&minus;</button>' +
 				qvCell +
 				'<button aria-label="plus one" onclick="qUp(' + i + ')">+</button></div>' +
@@ -2023,6 +2088,18 @@ function checkout() {
 	} else { pays = [{ mode_of_payment: payMode === "Cash" ? cashMode : payMode, amount: total }]; credit = 0; }
 	/* any credit portion accrues receivable -> must be a named customer */
 	if (credit > 0.005 && !CUST) { toast(T("need_cust")); openCust(); return; }
+	/* Stop a batch-tracked line reaching the server without a batch. The server
+	   refuses it anyway (vac_pos_create_invoice throws), but failing here opens
+	   the picker on the offending line instead of dumping a raw error on the
+	   cashier — and an offline sale would otherwise sit in the outbox and only
+	   fail on sync, long after the customer has gone. */
+	for (var bi = 0; bi < cart.length; bi++) {
+		if (cart[bi].hasb && !cart[bi].batch) {
+			toast(T("bat_need") + " — " + cart[bi].name);
+			editBatch(bi);
+			return;
+		}
+	}
 	BUSY = true; render();
 	/* Reuse the uid of an immediately-preceding attempt that failed to save, but
 	   only for the SAME physical cart and only within RETRY_TTL — see cartSig.
@@ -2041,7 +2118,7 @@ function checkout() {
 		mode: pays.length && credit > 0.005 ? "Split" : (pays.length ? payMode : "Udhaar"),
 		total: total,
 		credit: round2(credit),
-		items: cart.map(function (l) { return { item_code: l.code, item_name: l.name, uom: l.uom, conversion_factor: l.conv || 1, qty: l.qty, rate: l.rate, discount_percentage: l.dpct || 0, discount_amount: l.damt || 0 }; }),
+		items: cart.map(function (l) { return { item_code: l.code, item_name: l.name, uom: l.uom, conversion_factor: l.conv || 1, qty: l.qty, rate: l.rate, discount_percentage: l.dpct || 0, discount_amount: l.damt || 0, batch_no: l.batch || "" }; }),
 		payments: pays,
 		/* prompt the print-format picker once it saves — but only online, so an
 		   offline sale that syncs later (customer long gone) doesn't pop a sheet */
@@ -2660,6 +2737,132 @@ function reprint(uid, isDone) {
 	for (var i = 0; i < list.length; i++) if (list[i].uid === uid) { printSale(list[i]); return; }
 }
 
+/* ---------- batch picker ----------
+   This shop does NOT operate FEFO. Staff sell whichever pack comes to hand and
+   read the batch off its label, so the batch has to be CHOSEN, not inferred.
+   Left unset, ERPNext would auto-pick the earliest-expiring batch and record a
+   lot that never left the shop — a traceability record that is confidently
+   wrong, which is worse than none (it would point a recall at the wrong lot).
+
+   The list is ordered earliest-expiry-first as a nudge toward selling the
+   oldest stock, but nothing forces it. Expired batches are shown struck out
+   and cannot be picked (Insecticides Rule 10A). */
+var BATI = null, batQ = "", batAdding = false;
+function editBatch(i) {
+	if (!cart[i]) return;
+	BATI = i; batQ = ""; batAdding = false;
+	renderBatchSheet();
+	$id("batovl").classList.add("show");
+	var q = $id("bq"); if (q) q.focus();
+}
+function closeBatch() { BATI = null; batAdding = false; var o = $id("batovl"); if (o) o.classList.remove("show"); }
+function batchesFor(code) {
+	var all = (CATALOG && CATALOG.batches) || [], out = [];
+	for (var i = 0; i < all.length; i++) if (all[i].item === code) out.push(all[i]);
+	/* catalog already sorts by expiry, but a locally added batch is appended */
+	out.sort(function (a, b) { return String(a.expiry || "9999").localeCompare(String(b.expiry || "9999")); });
+	return out;
+}
+function batExpired(b) {
+	return !!(b.expiry && String(b.expiry) < today());
+}
+function batchRow(b, cur) {
+	var on = b.batch === cur, dead = batExpired(b);
+	var sub = (b.expiry ? esc(T("bat_exp")) + " " + esc(b.expiry) : esc(T("bat_noexp"))) +
+		"  &middot;  " + qtyfmt(b.qty) + " " + esc(T("bat_left"));
+	return '<div class="crow' + (on ? " on" : "") + (dead ? " dead" : "") + '"' +
+		(dead ? '' : ' onclick="pickBatch(' + esc(JSON.stringify(b.batch)) + ')"') + '>' +
+		'<div class="ci2">' + (dead ? "&#9888;" : esc(String(b.batch).slice(0, 2).toUpperCase())) + "</div>" +
+		'<div class="cm"><div class="cn2' + (dead ? " struck" : "") + '">' + esc(b.batch) + '</div>' +
+		'<div class="cd2">' + sub + (dead ? " &middot; <b>" + esc(T("bat_dead")) + "</b>" : "") + "</div></div>" +
+		(on ? '<div class="tick">&#10003;</div>' : "") + "</div>";
+}
+function batchListHtml() {
+	if (BATI == null || !cart[BATI]) return "";
+	var l = cart[BATI], q = norm(batQ), h = "";
+	var list = batchesFor(l.code).filter(function (b) { return !q || norm(b.batch).indexOf(q) !== -1; });
+	for (var i = 0; i < list.length; i++) h += batchRow(list[i], l.batch);
+	if (!list.length) h += '<div class="nores">' + esc(T("bat_none")) + "</div>";
+	return h;
+}
+function renderBatchSheet() {
+	if (BATI == null || !cart[BATI]) return;
+	var l = cart[BATI];
+	var body = batAdding
+		? '<div class="batadd">' +
+			'<div class="setrow"><label>' + esc(T("batch")) + '</label>' +
+			'<input id="nb_id" placeholder="' + esc(T("bat_ph")) + '" autocapitalize="characters"></div>' +
+			'<div class="setrow"><label>' + esc(T("bat_exp")) + '</label>' +
+			'<input id="nb_exp" type="date"></div>' +
+			'<div class="setrow"><label>' + esc(T("bat_qty")) + '</label>' +
+			'<input id="nb_qty" type="text" inputmode="decimal" value="' + esc(qtyfmt(l.qty)) + '"></div>' +
+			'<div class="batnote">' + esc(T("bat_addnote")) + "</div>" +
+			'<button class="bigbtn" onclick="submitNewBatch()">' + esc(T("bat_save")) + "</button>" +
+			'<button class="linkbtn" onclick="batAdding=false;renderBatchSheet()">' + esc(T("back")) + "</button>" +
+			"</div>"
+		: '<div class="sq"><input id="bq" placeholder="' + esc(T("search_ph")) + '" value="' + esc(batQ) + '" oninput="onBQ(this.value)"></div>' +
+			'<div class="clist" id="blist">' + batchListHtml() + "</div>" +
+			'<button class="linkbtn" onclick="batAdding=true;renderBatchSheet()">+ ' + esc(T("bat_add")) + "</button>";
+	$id("batovl").innerHTML =
+		'<div class="sheet" onclick="event.stopPropagation()">' +
+		'<div class="shh"><div class="t">' + esc(T("bat_pick")) + " — " + esc(l.name) +
+		'</div><button class="x" aria-label="Close" onclick="closeBatch()">&#10005;</button></div>' +
+		body + "</div>";
+}
+function onBQ(v) { batQ = v; var el = $id("blist"); if (el) el.innerHTML = batchListHtml(); }
+function pickBatch(name) {
+	if (BATI == null || !cart[BATI]) { closeBatch(); return; }
+	cart[BATI].batch = name;
+	closeBatch();
+	render();
+}
+/* Adding a batch RECLASSIFIES stock into it — see vac_pos_add_batch. A new
+   Batch on its own would hold zero qty and the sale would be refused, so the
+   server moves the sold quantity out of the item's opening/largest batch. Net
+   stock is unchanged; only the attribution moves. */
+function submitNewBatch() {
+	if (BATI == null || !cart[BATI]) return;
+	var l = cart[BATI];
+	var id = ($id("nb_id") || {}).value || "";
+	var exp = ($id("nb_exp") || {}).value || "";
+	var qty = Number(($id("nb_qty") || {}).value || 0);
+	id = String(id).trim();
+	if (!id) { toast(T("bat_ph")); return; }
+	/* Adding a batch RECLASSIFIES stock — the server posts a Stock
+	   Reconciliation moving the quantity out of the opening batch. That cannot
+	   be queued for later: the outbox replays sales, and a sale referencing a
+	   batch that was never created would fail on sync with the customer long
+	   gone. So refuse offline, and say why — the generic "sync failed" toast
+	   from api() reads like a bug rather than a rule. */
+	if (!navigator.onLine) { toast(T("bat_offline"), 5000); return; }
+	if (!(qty > 0)) qty = l.qty;
+	var prof = (CATALOG && CATALOG.profile) || {};
+	toast(T("bat_saving"));
+	api("/api/method/vac_pos_add_batch", {
+		method: "POST",
+		json: {
+			item_code: l.code, batch_id: id, qty: qty,
+			warehouse: prof.warehouse, expiry: exp || null
+		}
+	}).then(function (d) {
+		var m = (d && d.message) || {};
+		/* keep the local catalog in step so the new batch is pickable at once
+		   and its source batch shows the reduced quantity */
+		if (!CATALOG.batches) CATALOG.batches = [];
+		CATALOG.batches.push({ batch: m.batch || id, item: l.code, qty: qty, expiry: exp || "" });
+		for (var i = 0; i < CATALOG.batches.length; i++) {
+			if (CATALOG.batches[i].batch === m.moved_from) {
+				CATALOG.batches[i].qty = Math.max(0, (CATALOG.batches[i].qty || 0) - qty);
+			}
+		}
+		cart[BATI].batch = m.batch || id;
+		closeBatch(); render();
+		toast(T("bat_added"));
+	}).catch(function (e) {
+		toast(String((e && e.message) || e).slice(0, 140));
+	});
+}
+
 /* ---------- receipt ---------- */
 function printSale(sale) {
 	var r = sale.result;
@@ -2667,18 +2870,44 @@ function printSale(sale) {
 	if (S.shop_sub) h += '<div class="rc sm">' + esc(S.shop_sub) + "</div>";
 	if (S.shop_gstin) h += '<div class="rc sm">GSTIN: ' + esc(S.shop_gstin) + "</div>";
 	if (S.shop_phone) h += '<div class="rc sm">&#9742; ' + esc(S.shop_phone) + "</div>";
+	/* Statutory licence numbers. FCO Form M, the Seed (Control) Order cash memo
+	   and Insecticides Rule 15 each require the dealer's licence number on the
+	   bill, and this 72mm slip is what the customer actually leaves with — an
+	   A4 that carries them is no help if nobody prints it. Served by
+	   vac_pos_catalog from the Compliance Licence register, so a renewal is a
+	   form edit and never a retype at the counter. */
+	var LICS = (CATALOG && CATALOG.licences) || [];
+	if (LICS.length) {
+		var lic = [];
+		for (var li = 0; li < LICS.length; li++) lic.push(esc(LICS[li].label) + ": " + esc(LICS[li].number));
+		h += '<div class="rc sm">' + lic.join("<br>") + "</div>";
+	}
 	h += "<hr>";
 	h += "<div>" + esc(T("billno")) + ": <span class=\"rb\">" + esc(r && r.name ? r.name : sale.ref) + "</span></div>";
 	h += '<div class="sm">' + esc(sale.ts) + "</div>";
 	h += "<div>" + esc(T("cust")) + ": " + esc(sale.customer_name) + "</div>";
+	/* Purchaser address. Officers accept the village, and it is the only
+	   address most farmers here have — Form M and the seed memo both want
+	   "name and address of the purchaser". Suppressed when the customer's own
+	   name already ends in the village, as ~1,368 of 3,608 records do. */
+	var vil = sale.village || (sale.cust && sale.cust.custom_village) || "";
+	if (vil && String(sale.customer_name || "").toLowerCase().indexOf(String(vil).toLowerCase()) === -1) {
+		h += '<div class="sm">' + esc(vil) + "</div>";
+	}
 	h += "<hr><table>";
 	for (var i = 0; i < sale.items.length; i++) {
 		var l = sale.items[i];
 		var d = l.discount_percentage ? (l.rate || 0) * l.discount_percentage / 100 : (l.discount_amount || 0);
 		var net = Math.max(0, round2((l.rate || 0) - d));
 		var dnote = d > 0 ? " (" + esc(T("disc")) + " " + (l.discount_percentage ? qtyfmt(l.discount_percentage) + "%" : fmt(l.discount_amount)) + ")" : "";
-		h += "<tr><td colspan=\"2\">" + esc(l.item_name) + "</td></tr>" +
-			'<tr><td class="sm">' + qtyfmt(l.qty) + (l.uom ? " " + esc(l.uom) : "") + " × " + fmt(net) + dnote + '</td><td class="tr">' + fmt(round2(l.qty * net)) + "</td></tr>";
+		h += "<tr><td colspan=\"2\">" + esc(l.item_name) + "</td></tr>";
+		/* Insecticides Rule 15 wants the batch on the bill. `batch_no` is what
+		   the counter picked for this line; `batch` is the cart-side field
+		   name — accept either so the receipt is right whichever path built
+		   the sale. */
+		var bno = l.batch_no || l.batch || "";
+		if (bno) h += '<tr><td colspan="2" class="sm">' + esc(T("batch")) + ": " + esc(bno) + "</td></tr>";
+		h += '<tr><td class="sm">' + qtyfmt(l.qty) + (l.uom ? " " + esc(l.uom) : "") + " × " + fmt(net) + dnote + '</td><td class="tr">' + fmt(round2(l.qty * net)) + "</td></tr>";
 	}
 	h += "</table><hr>";
 	var showTotal = r && (r.rounded_total || r.grand_total) ? (r.rounded_total || r.grand_total) : sale.total;
@@ -3193,6 +3422,7 @@ function boot() {
 	document.body.insertAdjacentHTML("beforeend", '<div class="ovl" id="custovl" onclick="closeCust()"></div>');
 	document.body.insertAdjacentHTML("beforeend", '<div class="ovl" id="fjovl" onclick="closeFJ()"></div>');
 	document.body.insertAdjacentHTML("beforeend", '<div class="ovl" id="uomovl" onclick="closeUom()"></div>');
+	document.body.insertAdjacentHTML("beforeend", '<div class="ovl" id="batovl" onclick="closeBatch()"></div>');
 	document.body.insertAdjacentHTML("beforeend", '<div class="ovl" id="discovl" onclick="closeDisc()"></div>');
 	document.body.insertAdjacentHTML("beforeend", '<div class="ovl" id="invovl" onclick="closeInvoice()"></div>');
 	document.body.insertAdjacentHTML("beforeend", '<div class="ovl" id="numovl" onclick="closeNum()"></div>');

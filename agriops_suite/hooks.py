@@ -225,12 +225,46 @@ fixtures = [
                     # per-site act, which is what keeps the shared prod+staging
                     # bench from lighting this up on production.
                     "WhatsApp Settings",
+                    # Statutory licence register (fertiliser Form A2 /
+                    # insecticide Form III / seed Form B). Definition only —
+                    # the licence RECORDS are live business state (statuses
+                    # change, renewals get filed) and are seeded per-site by
+                    # custom_doctypes/compliance_licence/cl_seed_staging.py.
+                    # ⛔ Every DocPerm flag on this doctype must stay EXPLICIT.
+                    # DocPerm defaults write/create/delete to 1, so the
+                    # Accounts Manager row written as {"read": 1} would let
+                    # counter staff delete licence records. cl_capture_fixtures
+                    # asserts it read-only before writing the fixture.
+                    "Compliance Licence",
                     # Audit trail for the WhatsApp document sender (whatsapp.py).
                     # Definition only — the LOG ROWS are runtime records of real
                     # sends and must never ship in the repo. Read-only to every
                     # role: rows are written server-side with ignore_permissions,
                     # and a delivery record nobody can edit is the point.
                     "WhatsApp Send Log",
+                ],
+            ]
+        },
+    },
+
+    # --- Licence expiry alerts ---------------------------------------------
+    # MUST sync AFTER the DocType block: each Notification's document_type
+    # points at "Compliance Licence", and a fresh site imports in file order.
+    # Native "Days Before" Notifications rather than a Server Script — frappe
+    # already ships the daily scheduler for this event, and one less scheduler
+    # of ours is one less thing to break when the bench self-updates.
+    # Channel is System Notification deliberately: neither site has a
+    # guaranteed outgoing email account, and a bell that always works beats an
+    # email that silently doesn't.
+    {
+        "dt": "Notification",
+        "filters": {
+            "name": [
+                "in",
+                [
+                    "Licence Expiry - 90 Days",
+                    "Licence Expiry - 30 Days",
+                    "Licence Expiry - 7 Days",
                 ],
             ]
         },
@@ -506,14 +540,14 @@ fixtures = [
         "dt": "Workspace Sidebar",
         "filters": {
             "name": ["in", ["LedgerLift", "CashControl", "ItemIntel",
-                            "SchemeWise", "StockPilot"]]
+                            "SchemeWise", "StockPilot", "Compliance"]]
         },
     },
     {
         "dt": "Desktop Icon",
         "filters": {
             "name": ["in", ["LedgerLift", "CashControl", "ItemIntel",
-                            "SchemeWise", "StockPilot"]]
+                            "SchemeWise", "StockPilot", "Compliance"]]
         },
     },
 
@@ -530,6 +564,11 @@ fixtures = [
                     "ItemIntel",
                     "SchemeWise",
                     "StockPilot",
+                    # Statutory compliance nav (goal: agri-input licensing).
+                    # Deliberately roomier than one DocType needs — the daily
+                    # stock & price board, Form N register, seed Form D and the
+                    # endorsement check all land here.
+                    "Compliance",
                 ],
             ]
         },

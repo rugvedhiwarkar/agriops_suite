@@ -1,0 +1,86 @@
+[
+ {
+  "attach_files": "",
+  "attach_print": 0,
+  "channel": "System Notification",
+  "condition": "doc.is_perpetual == 0 and doc.status in ('Active', 'Under Renewal')",
+  "condition_type": "Python",
+  "date_changed": "expiry_date",
+  "days_in_advance": 90,
+  "docstatus": 0,
+  "doctype": "Notification",
+  "document_type": "Compliance Licence",
+  "enabled": 1,
+  "event": "Days Before",
+  "is_standard": 0,
+  "message": "<h3>{{ doc.licence_type }} licence expires soon</h3>\n<p><b>{{ doc.licence_number }}</b> ({{ doc.form_number }}) expires on\n<b>{{ doc.expiry_date }}</b>.</p>\n<p>Licensee: {{ doc.licensee_name }}<br>\nIssuing authority: {{ doc.issuing_authority }}</p>\n<p>Trading after this date without a renewal on record is an offence under the\ngoverning order. Start the renewal now, and when it is filed set the status to\n<b>Under Renewal</b> and attach the challan.</p>\n",
+  "message_type": "Markdown",
+  "minutes_offset": 0,
+  "modified": "2026-07-30 22:21:01.559004",
+  "name": "Licence Expiry - 90 Days",
+  "recipients": [
+   {
+    "receiver_by_role": "System Manager"
+   }
+  ],
+  "send_system_notification": 0,
+  "send_to_all_assignees": 0,
+  "subject": "{{ doc.licence_type }} licence {{ doc.licence_number }} expires in 90 days"
+ },
+ {
+  "attach_files": "",
+  "attach_print": 0,
+  "channel": "System Notification",
+  "condition": "doc.is_perpetual == 0 and doc.status in ('Active', 'Under Renewal')",
+  "condition_type": "Python",
+  "date_changed": "expiry_date",
+  "days_in_advance": 30,
+  "docstatus": 0,
+  "doctype": "Notification",
+  "document_type": "Compliance Licence",
+  "enabled": 1,
+  "event": "Days Before",
+  "is_standard": 0,
+  "message": "<h3>{{ doc.licence_type }} licence expires soon</h3>\n<p><b>{{ doc.licence_number }}</b> ({{ doc.form_number }}) expires on\n<b>{{ doc.expiry_date }}</b>.</p>\n<p>Licensee: {{ doc.licensee_name }}<br>\nIssuing authority: {{ doc.issuing_authority }}</p>\n<p>Trading after this date without a renewal on record is an offence under the\ngoverning order. Start the renewal now, and when it is filed set the status to\n<b>Under Renewal</b> and attach the challan.</p>\n",
+  "message_type": "Markdown",
+  "minutes_offset": 0,
+  "modified": "2026-07-30 22:21:02.084029",
+  "name": "Licence Expiry - 30 Days",
+  "recipients": [
+   {
+    "receiver_by_role": "System Manager"
+   }
+  ],
+  "send_system_notification": 0,
+  "send_to_all_assignees": 0,
+  "subject": "{{ doc.licence_type }} licence {{ doc.licence_number }} expires in 30 days"
+ },
+ {
+  "attach_files": "",
+  "attach_print": 0,
+  "channel": "System Notification",
+  "condition": "doc.is_perpetual == 0 and doc.status in ('Active', 'Under Renewal')",
+  "condition_type": "Python",
+  "date_changed": "expiry_date",
+  "days_in_advance": 7,
+  "docstatus": 0,
+  "doctype": "Notification",
+  "document_type": "Compliance Licence",
+  "enabled": 1,
+  "event": "Days Before",
+  "is_standard": 0,
+  "message": "<h3>{{ doc.licence_type }} licence expires soon</h3>\n<p><b>{{ doc.licence_number }}</b> ({{ doc.form_number }}) expires on\n<b>{{ doc.expiry_date }}</b>.</p>\n<p>Licensee: {{ doc.licensee_name }}<br>\nIssuing authority: {{ doc.issuing_authority }}</p>\n<p>Trading after this date without a renewal on record is an offence under the\ngoverning order. Start the renewal now, and when it is filed set the status to\n<b>Under Renewal</b> and attach the challan.</p>\n",
+  "message_type": "Markdown",
+  "minutes_offset": 0,
+  "modified": "2026-07-30 22:21:02.554299",
+  "name": "Licence Expiry - 7 Days",
+  "recipients": [
+   {
+    "receiver_by_role": "System Manager"
+   }
+  ],
+  "send_system_notification": 0,
+  "send_to_all_assignees": 0,
+  "subject": "{{ doc.licence_type }} licence {{ doc.licence_number }} expires in 7 days"
+ }
+]

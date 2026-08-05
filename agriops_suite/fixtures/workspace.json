@@ -794,5 +794,61 @@
   ],
   "title": "StockPilot",
   "type": "Workspace"
+ },
+ {
+  "app": "",
+  "charts": [],
+  "content": "[{\"id\": \"clhdr1\", \"type\": \"header\", \"data\": {\"text\": \"<span class=\\\"h4\\\"><b>Compliance</b></span>\", \"col\": 12}}, {\"id\": \"clpar1\", \"type\": \"paragraph\", \"data\": {\"text\": \"Statutory obligations for the agri-input licences &mdash; fertiliser (FCO 1985), insecticide (Insecticides Act 1968) and seed (Seed Control Order 1983). The licence register is what the cash memo prints its licence numbers from.\", \"col\": 12}}, {\"id\": \"clsc1\", \"type\": \"shortcut\", \"data\": {\"shortcut_name\": \"Licence Register\", \"col\": 4}}, {\"id\": \"clcard1\", \"type\": \"card\", \"data\": {\"card_name\": \"Registers\", \"col\": 4}}]",
+  "custom_blocks": [],
+  "docstatus": 0,
+  "doctype": "Workspace",
+  "hide_custom": 0,
+  "icon": "book-text",
+  "indicator_color": "green",
+  "is_hidden": 0,
+  "label": "Compliance",
+  "link_type": "DocType",
+  "links": [
+   {
+    "hidden": 0,
+    "is_query_report": 0,
+    "label": "Registers",
+    "link_count": 1,
+    "link_type": "DocType",
+    "onboard": 0,
+    "type": "Card Break"
+   },
+   {
+    "dependencies": "",
+    "hidden": 0,
+    "is_query_report": 0,
+    "label": "Licence Register",
+    "link_count": 0,
+    "link_to": "Compliance Licence",
+    "link_type": "DocType",
+    "onboard": 0,
+    "type": "Link"
+   }
+  ],
+  "modified": "2026-07-30 22:36:09.698676",
+  "module": "",
+  "name": "Compliance",
+  "number_cards": [],
+  "parent_page": "",
+  "public": 1,
+  "quick_lists": [],
+  "roles": [],
+  "sequence_id": 2.5,
+  "shortcuts": [
+   {
+    "color": "Green",
+    "doc_view": "",
+    "label": "Licence Register",
+    "link_to": "Compliance Licence",
+    "type": "DocType"
+   }
+  ],
+  "title": "Compliance",
+  "type": "Workspace"
  }
 ]
